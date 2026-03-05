@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HPP Calculator Final</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 2000px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 40px; }
+        .header h1 { font-size: 2.8em; margin-bottom: 10px; }
+        .main { display: grid; grid-template-columns: 1fr 1fr 1.3fr; gap: 25px; margin-bottom: 30px; }
+        .card { background: white; border-radius: 12px; padding: 35px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); max-height: 92vh; overflow-y: auto; }
+        .title { font-size: 1.4em; color: #1e3c72; margin-bottom: 22px; border-bottom: 3px solid #2a5298; padding-bottom: 12px; font-weight: 700; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em; }
+        .input-group { display: flex; gap: 12px; align-items: flex-end; }
+        .input-group input { flex: 1; }
+        .unit { color: #666; min-width: 70px; text-align: center; font-weight: 600; }
+        .buttons { display: flex; gap: 12px; margin-top: 25px; }
+        button { flex: 1; padding: 14px 22px; font-size: 1.05em; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; }
+        .btn-calc { background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%); color: white; }
+        .btn-reset { background: #f5f5f5; color: #333; border: 2px solid #ddd; }
+        .results { display: none; }
+        .results.active { display: block; }
+        .summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+        .card2 { background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%); padding: 16px; border-radius: 10px; border-left: 4px solid #2a5298; }
+        .card2-title { color: #666; font-size: 0.8em; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+        .card2-value { color: #1e3c72; font-size: 1.8em; font-weight: 800; }
+        .item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e0e0e0; }
+        .label { color: #555; font-weight: 600; }
+        .value { color: #1e3c72; font-weight: 800; }
+        .total { background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%); color: white; padding: 22px; border-radius: 10px; margin-top: 20px; text-align: center; }
+        .total .val { font-size: 2.3em; font-weight: 800; margin-top: 10px; }
+        .info { background: #e3f2fd; border-left: 5px solid #2196F3; padding: 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9em; color: #1565c0; }
+        .radio-group { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+        .radio-item { display: flex; align-items: center; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; }
+        .radio-item input { width: 20px; height: 20px; margin-right: 12px; }
+        .table-wrapper { overflow-x: auto; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 0.7em; }
+        th { background: #1e3c72; color: white; padding: 6px; text-align: left; font-weight: 700; }
+        td { padding: 4px 6px; border-bottom: 1px solid #e0e0e0; }
+        td input { width: 100%; padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
+        tr:hover { background: #f9f9f9; }
+        .section-header { background: #e8f5e9; padding: 8px; font-weight: 700; color: #2e7d32; border-left: 4px solid #4CAF50; margin-top: 10px; margin-bottom: 0; font-size: 0.7em; }
+        .boq-item { padding: 4px 0; border-bottom: 1px solid #e0e0e0; }
+        .boq-item-row { display: grid; grid-template-columns: 0.3fr 2fr 0.5fr 0.5fr 0.5fr 0.6fr; gap: 4px; font-size: 0.65em; align-items: center; }
+        .boq-price { text-align: right; color: #2a5298; font-weight: 700; }
+        #noResults { text-align: center; color: #999; padding: 30px 20px; }
+        .tab-buttons { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab-btn { padding: 8px 15px; background: #f0f0f0; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8em; transition: all 0.3s; }
+        .tab-btn.active { background: #2a5298; color: white; border-color: #2a5298; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        @media (max-width: 1200px) { .main { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 HPP Cost Calculator - Final Version</h1>
+            <p>Material Selection | Amendable Multipliers | Complete BOQ Verification</p>
+        </div>
+
+        <div class="main">
+            <!-- PANEL 1: SYSTEM CONFIGURATION -->
+            <div class="card">
+                <div class="title">System Configuration</div>
+                
+                <div class="info">
+                    <strong>📌 Auto-Calculate Mode</strong>
+                </div>
+
+                <div class="form-group">
+                    <label>RO Plant Capacity</label>
+                    <div class="input-group">
+                        <input type="number" id="capacity" value="1500" step="100" oninput="autoCalculate()">
+                        <div class="unit">M³/day</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Recovery Rate</label>
+                    <div class="input-group">
+                        <input type="number" id="recovery" value="40" min="0" max="100" step="5" oninput="autoCalculate()">
+                        <div class="unit">%</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Operating Hours</label>
+                    <div class="input-group">
+                        <input type="number" id="hours" value="24" min="1" max="24" oninput="autoCalculate()">
+                        <div class="unit">hrs</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Design Flux (LMH)</label>
+                    <div class="input-group">
+                        <input type="number" id="flux" value="13" step="0.5" min="10" max="20" oninput="autoCalculate()">
+                        <div class="unit">LMH</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Pipe Velocity</label>
+                    <div class="input-group">
+                        <input type="number" id="velocity" value="2.5" step="0.1" min="1.5" max="3.5" oninput="autoCalculate()">
+                        <div class="unit">M/sec</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Membranes per PV</label>
+                    <div class="input-group">
+                        <input type="number" id="memPerPV" value="7" min="1" max="8" oninput="autoCalculate()">
+                        <div class="unit">nos</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>HPP System Type</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" name="hppType" value="HPP Only" checked onchange="autoCalculate()">
+                            <label style="margin: 0;">HPP Only (Basic)</label>
+                        </div>
+                        <div class="radio-item" style="margin-top: 8px;">
+                            <input type="radio" name="hppType" value="HPP + Booster" onchange="autoCalculate()">
+                            <label style="margin: 0;">HPP + Booster (Recovery Boost)</label>
+                        </div>
+                        <div class="radio-item" style="margin-top: 8px;">
+                            <input type="radio" name="hppType" value="HPP + PX" onchange="autoCalculate()">
+                            <label style="margin: 0;">HPP + PX (Pressure Exchanger)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Material Selection</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" name="material" value="SS316" checked onchange="autoCalculate()">
+                            <label style="margin: 0;">SS316 (-30%)</label>
+                        </div>
+                        <div class="radio-item" style="margin-top: 8px;">
+                            <input type="radio" name="material" value="Duplex" onchange="autoCalculate()">
+                            <label style="margin: 0;">Duplex (Base)</label>
+                        </div>
+                        <div class="radio-item" style="margin-top: 8px;">
+                            <input type="radio" name="material" value="Super Duplex" onchange="autoCalculate()">
+                            <label style="margin: 0;">Super Duplex (+25%)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Currency</label>
+                    <select id="currency" onchange="autoCalculate()">
+                        <option value="AED" selected>🇦🇪 AED</option>
+                        <option value="USD">🇺🇸 USD</option>
+                        <option value="EUR">🇪🇺 EUR</option>
+                        <option value="GBP">🇬🇧 GBP</option>
+                    </select>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn-calc" onclick="calculateCost()">📊 Calculate</button>
+                    <button class="btn-reset" onclick="resetForm()">↺ Reset</button>
+                </div>
+            </div>
+
+            <!-- PANEL 2: FLOW CALCULATIONS & COST -->
+            <div class="card">
+                <div class="title">Flow Calculations & Cost</div>
+                
+                <div id="noResults" style="text-align: center; color: #999; padding: 30px 20px;">
+                    <p style="font-size: 2.5em; margin-bottom: 10px;">📊</p>
+                    <p>Click Calculate to view results</p>
+                </div>
+
+                <div id="results" class="results">
+                    <div class="summary">
+                        <div class="card2">
+                            <div class="card2-title">Product Flow</div>
+                            <div class="card2-value" id="prodFlow">0</div>
+                            <div style="color: #999; font-size: 0.75em; margin-top: 4px;">M³/hr</div>
+                        </div>
+                        <div class="card2">
+                            <div class="card2-title">Feed Flow</div>
+                            <div class="card2-value" id="feedFlow">0</div>
+                            <div style="color: #999; font-size: 0.75em; margin-top: 4px;">M³/hr</div>
+                        </div>
+                        <div class="card2">
+                            <div class="card2-title">Membranes</div>
+                            <div class="card2-value" id="totalMem">0</div>
+                            <div style="color: #999; font-size: 0.75em; margin-top: 4px;">nos</div>
+                        </div>
+                        <div class="card2">
+                            <div class="card2-title">Vessels</div>
+                            <div class="card2-value" id="totalVes">0</div>
+                            <div style="color: #999; font-size: 0.75em; margin-top: 4px;">nos</div>
+                        </div>
+                    </div>
+
+                    <div class="item">
+                        <span class="label">Reject Flow:</span>
+                        <span class="value" id="rejFlow">-</span>
+                    </div>
+                    <div class="item">
+                        <span class="label">HPP Type:</span>
+                        <span class="value" id="hppTypeSelected">-</span>
+                    </div>
+                    <div class="item">
+                        <span class="label">Material:</span>
+                        <span class="value" id="materialSelected">-</span>
+                    </div>
+
+                    <div class="total">
+                        <div>TOTAL HPP PIPING COST</div>
+                        <div class="val" id="totalCost">$0</div>
+                    </div>
+
+                    <div class="item">
+                        <span class="label">Pipes & Fittings:</span>
+                        <span class="value" id="pipeCst">$0</span>
+                    </div>
+                    <div class="item">
+                        <span class="label">Valves & Checks:</span>
+                        <span class="value" id="valveCst">$0</span>
+                    </div>
+
+                    <button class="btn-calc" onclick="exportToCSV()" style="width: 100%; margin-top: 15px; background: #4CAF50;">📥 Export</button>
+                </div>
+            </div>
+
+            <!-- PANEL 3: VERIFICATION & BOQ -->
+            <div class="card">
+                <div class="title">📏 Verification & BOQ</div>
+                
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab(event, 'pipe-sizes-tab')">Pipe Sizes</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'multipliers-tab')">Multipliers</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'boq-tab')">BOQ Summary</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'cost-table-tab')">Cost Table</button>
+                    <button class="tab-btn" onclick="switchTab(event, 'boq-detail-tab')">Detailed BOQ</button>
+                </div>
+
+                <!-- PIPE SIZES TAB -->
+                <div id="pipe-sizes-tab" class="tab-content active">
+                    <div style="font-size: 0.9em; color: #2e7d32; margin-bottom: 12px; font-weight: 700; border-bottom: 2px solid #4CAF50; padding-bottom: 8px;">📏 Various Pipe Sizes</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr style="background: #2e7d32; color: white;">
+                                    <th style="font-size: 0.7em;">Location</th>
+                                    <th style="font-size: 0.7em; text-align: center;">Flow</th>
+                                    <th style="font-size: 0.7em; text-align: center;">Cal</th>
+                                    <th style="font-size: 0.7em; text-align: center;">Size</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pipeSizesVerification"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- MULTIPLIERS TAB -->
+                <div id="multipliers-tab" class="tab-content">
+                    <div style="font-size: 0.9em; color: #d97706; margin-bottom: 12px; font-weight: 700; border-bottom: 2px solid #ff9800; padding-bottom: 8px;">⚙️ Material Cost Multipliers (Amendable)</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr style="background: #d97706; color: white;">
+                                    <th>Material</th>
+                                    <th>Default</th>
+                                    <th>Current Multiplier</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #e0e0e0;">
+                                    <td style="font-size: 0.7em;">SS316</td>
+                                    <td style="font-size: 0.7em;">-30%</td>
+                                    <td style="font-size: 0.7em;"><input type="number" id="mult_ss316" value="-0.30" step="0.01" onchange="updateMultiplier('ss316', this.value); autoCalculate()" style="width: 100px;"></td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #e0e0e0; background: #f0f7ff;">
+                                    <td style="font-size: 0.7em;">Duplex</td>
+                                    <td style="font-size: 0.7em;">0% (Base)</td>
+                                    <td style="font-size: 0.7em;"><input type="number" id="mult_duplex" value="0" step="0.01" onchange="updateMultiplier('duplex', this.value); autoCalculate()" style="width: 100px;"></td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size: 0.7em;">Super Duplex</td>
+                                    <td style="font-size: 0.7em;">+25%</td>
+                                    <td style="font-size: 0.7em;"><input type="number" id="mult_superduplex" value="0.25" step="0.01" onchange="updateMultiplier('superduplex', this.value); autoCalculate()" style="width: 100px;"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.75em; padding: 10px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 4px; color: #e65100;">
+                        <strong>✎ Edit:</strong> Change multiplier values above. Values are relative to Duplex base cost (0%). Use negative for discount, positive for premium.
+                    </div>
+                </div>
+
+                <!-- BOQ SUMMARY TAB -->
+                <div id="boq-tab" class="tab-content">
+                    <div style="margin-bottom: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 0.75em;">
+                        <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; border-left: 4px solid #2196F3; text-align: center;">
+                            <div style="font-size: 0.7em; color: #666; font-weight: 700; margin-bottom: 6px;">Total BOQ</div>
+                            <div style="font-size: 1.2em; color: #1e3c72; font-weight: 800;" id="boqTotalBOQ">$0</div>
+                        </div>
+                        <div style="background: #fff3e0; padding: 12px; border-radius: 8px; border-left: 4px solid #ff9800; text-align: center;">
+                            <div style="font-size: 0.7em; color: #666; font-weight: 700; margin-bottom: 6px;">Material</div>
+                            <div style="font-size: 1.2em; color: #e65100; font-weight: 800;" id="materialMultDisplay">0%</div>
+                        </div>
+                        <div style="background: #e8f5e9; padding: 12px; border-radius: 8px; border-left: 4px solid #4CAF50; text-align: center;">
+                            <div style="font-size: 0.7em; color: #666; font-weight: 700; margin-bottom: 6px;">Total Cost</div>
+                            <div style="font-size: 1.2em; color: #2e7d32; font-weight: 800;" id="boqTotalDisplay">$0</div>
+                        </div>
+                    </div>
+
+                    <!-- EXPANDABLE BOQ SECTIONS -->
+                    <div style="font-size: 0.75em;">
+                        <!-- FEED WATER EXPANDABLE -->
+                        <div style="margin-bottom: 8px; border: 2px solid #2a5298; border-radius: 6px; overflow: hidden;">
+                            <div style="background: #e8f5e9; padding: 10px; cursor: pointer; font-weight: 700; color: #2e7d32; display: flex; justify-content: space-between; align-items: center;" onclick="toggleBoqSection('feedwater')">
+                                <span>📋 Feed Water Side</span>
+                                <span id="feedwater-arrow">▼</span>
+                            </div>
+                            <div id="feedwater-section" style="background: white; padding: 12px; display: none;">
+                                <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 8px;">
+                                    <div style="color: #666;">Subtotal:</div>
+                                    <div style="font-weight: 700; color: #2a5298; text-align: right;" id="feedWaterTotal">$0</div>
+                                </div>
+                                <div style="border-top: 1px solid #e0e0e0; padding-top: 8px; font-size: 0.65em;">
+                                    <div id="feedWaterBreakdown"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- REJECT WATER EXPANDABLE -->
+                        <div style="margin-bottom: 8px; border: 2px solid #2a5298; border-radius: 6px; overflow: hidden;">
+                            <div style="background: #e8f5e9; padding: 10px; cursor: pointer; font-weight: 700; color: #2e7d32; display: flex; justify-content: space-between; align-items: center;" onclick="toggleBoqSection('rejectwater')">
+                                <span>📋 Reject Water Side</span>
+                                <span id="rejectwater-arrow">▼</span>
+                            </div>
+                            <div id="rejectwater-section" style="background: white; padding: 12px; display: none;">
+                                <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 8px;">
+                                    <div style="color: #666;">Subtotal:</div>
+                                    <div style="font-weight: 700; color: #2a5298; text-align: right;" id="rejectWaterTotal">$0</div>
+                                </div>
+                                <div style="border-top: 1px solid #e0e0e0; padding-top: 8px; font-size: 0.65em;">
+                                    <div id="rejectWaterBreakdown"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PX EXPANDABLE -->
+                        <div style="margin-bottom: 8px; border: 2px solid #2a5298; border-radius: 6px; overflow: hidden;">
+                            <div style="background: #e8f5e9; padding: 10px; cursor: pointer; font-weight: 700; color: #2e7d32; display: flex; justify-content: space-between; align-items: center;" onclick="toggleBoqSection('px')">
+                                <span>📋 PX In / Out</span>
+                                <span id="px-arrow">▼</span>
+                            </div>
+                            <div id="px-section" style="background: white; padding: 12px; display: none;">
+                                <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 8px;">
+                                    <div style="color: #666;">Subtotal:</div>
+                                    <div style="font-weight: 700; color: #2a5298; text-align: right;" id="pxTotal">N/A</div>
+                                </div>
+                                <div style="border-top: 1px solid #e0e0e0; padding-top: 8px; font-size: 0.65em;">
+                                    <div id="pxBreakdown"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BOOSTER EXPANDABLE -->
+                        <div style="margin-bottom: 8px; border: 2px solid #2a5298; border-radius: 6px; overflow: hidden;">
+                            <div style="background: #e8f5e9; padding: 10px; cursor: pointer; font-weight: 700; color: #2e7d32; display: flex; justify-content: space-between; align-items: center;" onclick="toggleBoqSection('booster')">
+                                <span>📋 Booster Pump</span>
+                                <span id="booster-arrow">▼</span>
+                            </div>
+                            <div id="booster-section" style="background: white; padding: 12px; display: none;">
+                                <div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 8px;">
+                                    <div style="color: #666;">Subtotal:</div>
+                                    <div style="font-weight: 700; color: #2a5298; text-align: right;" id="boosterTotal">N/A</div>
+                                </div>
+                                <div style="border-top: 1px solid #e0e0e0; padding-top: 8px; font-size: 0.65em;">
+                                    <div id="boosterBreakdown"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COST TABLE TAB -->
+                <div id="cost-table-tab" class="tab-content">
+                    <div style="font-size: 0.9em; color: #d97706; margin-bottom: 12px; font-weight: 700; border-bottom: 2px solid #ff9800; padding-bottom: 8px;">💰 Editable Cost Components</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr style="background: #d97706; color: white;">
+                                    <th style="font-size: 0.7em;">Component</th>
+                                    <th style="font-size: 0.7em;">Qty</th>
+                                    <th style="font-size: 0.7em;">Unit Price AED</th>
+                                    <th style="font-size: 0.7em; text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="costComponentTable"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 0.75em; padding: 10px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 4px; color: #e65100;">
+                        <strong>✎ Edit:</strong> Change unit prices above. Total will recalculate when you click Calculate button.
+                    </div>
+                </div>
+
+                <!-- DETAILED BOQ TAB -->
+                <div id="boq-detail-tab" class="tab-content">
+                    <div style="font-size: 0.9em; color: #2e7d32; margin-bottom: 12px; font-weight: 700; border-bottom: 2px solid #4CAF50; padding-bottom: 8px;">📋 Feed Water Side - Item Breakdown</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr style="background: #1e3c72; color: white;">
+                                    <th style="font-size: 0.65em;">No.</th>
+                                    <th style="font-size: 0.65em;">Location</th>
+                                    <th style="font-size: 0.65em;">Size</th>
+                                    <th style="font-size: 0.65em;">Qty</th>
+                                    <th style="font-size: 0.65em;">Unit</th>
+                                    <th style="font-size: 0.65em;">Price</th>
+                                    <th style="font-size: 0.65em; text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="feedDetailBoq"></tbody>
+                        </table>
+                    </div>
+
+                    <div style="font-size: 0.9em; color: #2e7d32; margin-top: 15px; margin-bottom: 12px; font-weight: 700; border-bottom: 2px solid #4CAF50; padding-bottom: 8px;">📋 Reject Water Side - Item Breakdown</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr style="background: #1e3c72; color: white;">
+                                    <th style="font-size: 0.65em;">No.</th>
+                                    <th style="font-size: 0.65em;">Location</th>
+                                    <th style="font-size: 0.65em;">Size</th>
+                                    <th style="font-size: 0.65em;">Qty</th>
+                                    <th style="font-size: 0.65em;">Unit</th>
+                                    <th style="font-size: 0.65em;">Price</th>
+                                    <th style="font-size: 0.65em; text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rejectDetailBoq"></tbody>
+                        </table>
+                    </div>
+
+                    <div style="font-size: 0.9em; color: #2e7d32; margin-top: 15px; margin-bottom: 12px; font-weight: 700; border-bottom: 2px solid #4CAF50; padding-bottom: 8px;">📋 PX In/Out - Item Breakdown</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr style="background: #1e3c72; color: white;">
+                                    <th style="font-size: 0.65em;">No.</th>
+                                    <th style="font-size: 0.65em;">Location</th>
+                                    <th style="font-size: 0.65em;">Size</th>
+                                    <th style="font-size: 0.65em;">Qty</th>
+                                    <th style="font-size: 0.65em;">Unit</th>
+                                    <th style="font-size: 0.65em;">Price</th>
+                                    <th style="font-size: 0.65em; text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pxDetailBoq"></tbody>
+                        </table>
+                    </div>
+
+                    <div style="font-size: 0.9em; color: #2e7d32; margin-top: 15px; margin-bottom: 12px; font-weight: 700; border-bottom: 2px solid #4CAF50; padding-bottom: 8px;">📋 Booster Pump - Item Breakdown</div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr style="background: #1e3c72; color: white;">
+                                    <th style="font-size: 0.65em;">No.</th>
+                                    <th style="font-size: 0.65em;">Location</th>
+                                    <th style="font-size: 0.65em;">Size</th>
+                                    <th style="font-size: 0.65em;">Qty</th>
+                                    <th style="font-size: 0.65em;">Unit</th>
+                                    <th style="font-size: 0.65em;">Price</th>
+                                    <th style="font-size: 0.65em; text-align: right;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="boosterDetailBoq"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rates = { AED: 1.0, USD: 0.272, EUR: 0.251, GBP: 0.216 };
+        const symbols = { AED: 'د.إ', USD: '$', EUR: '€', GBP: '£' };
+        
+        const hppTypeMultipliers = {
+            'HPP Only': 1.0,
+            'HPP + Booster': 1.0,
+            'HPP + PX': 1.0
+        };
+        
+        let materialMultipliers = {
+            'SS316': -0.30,
+            'Duplex': 0.00,
+            'Super Duplex': 0.25
+        };
+
+        const boqData = {
+            feedWater: [
+                { loc: 'Pipe line HPP out', size: 6, qty: 16.82589418, unit: 'meter', price: 713.00 },
+                { loc: 'High Pressure pump NRV', size: 4, qty: 1, unit: 'No', price: 1048.80 },
+                { loc: 'High Pr pump gate valve', size: 4, qty: 1, unit: 'No', price: 6421.60 },
+                { loc: 'CIP inlet - Gate valve', size: 4, qty: 1, unit: 'No', price: 6421.60 },
+                { loc: 'Flanges for pipework', size: 4, qty: 6, unit: 'No', price: 927.00 },
+                { loc: 'Elbow', size: 6, qty: 2, unit: 'No', price: 529.00 },
+                { loc: 'Flanges header', size: 6, qty: 6, unit: 'No', price: 1516.16 },
+                { loc: 'Header pipeline connection', size: 4, qty: 3, unit: 'meter', price: 529.00 },
+                { loc: 'Flanges', size: 4, qty: 5.303576732, unit: 'No', price: 927.00 },
+                { loc: 'Victalulic coupling', size: 3, qty: 18.56, unit: 'No', price: 47.00 }
+            ],
+            rejectWater: [
+                { loc: 'Pipe line reject', size: 6, qty: 27.82589418, unit: 'meter', price: 713.00 },
+                { loc: 'Elbow', size: 6, qty: 6, unit: 'No', price: 529.00 },
+                { loc: 'Tee', size: 6, qty: 1, unit: 'No', price: 920.00 },
+                { loc: 'Flanges', size: 6, qty: 7, unit: 'No', price: 1516.16 },
+                { loc: 'Header connection - pipe', size: 4, qty: 3, unit: 'No', price: 529.00 },
+                { loc: 'Header connection - flanges', size: 4, qty: 5.303576732, unit: 'No', price: 927.00 },
+                { loc: 'coupling', size: 3, qty: 18.56, unit: 'No', price: 47.00 },
+                { loc: 'Reject isolation valve', size: 6, qty: 1, unit: 'No', price: 11809.12 },
+                { loc: 'Reject CIP out valve', size: 6, qty: 1, unit: 'No', price: 11809.12 }
+            ],
+            px: [
+                { loc: 'Elbow', size: 6, qty: 6, unit: 'Nos', price: 529.00 },
+                { loc: 'Elbow', size: 4, qty: 6, unit: 'Nos', price: 121.00 },
+                { loc: 'Coupling', size: 4, qty: 32, unit: 'Nos', price: 75.00 },
+                { loc: 'Pipe', size: 6, qty: 12, unit: 'Meter', price: 713.00 },
+                { loc: 'Pipe - connection', size: 4, qty: 8, unit: 'Meter', price: 529.00 }
+            ],
+            booster: [
+                { loc: 'Elbow', size: 6, qty: 4, unit: 'Nos', price: 529.00 },
+                { loc: 'Check valve', size: 6, qty: 1, unit: 'Nos', price: 1858.40 },
+                { loc: 'Flanges', size: 6, qty: 4, unit: 'Nos', price: 1516.16 },
+                { loc: 'Pipe', size: 6, qty: 8, unit: 'meter', price: 713.00 }
+            ]
+        };
+
+        function updateMultiplier(material, value) {
+            const mult = parseFloat(value) || 0;
+            if (material === 'ss316') materialMultipliers['SS316'] = mult;
+            if (material === 'duplex') materialMultipliers['Duplex'] = mult;
+            if (material === 'superduplex') materialMultipliers['Super Duplex'] = mult;
+        }
+
+        function calcDiam(flow, vel) {
+            if (flow <= 0) return 0;
+            const fs = flow / 3.6;
+            const a = fs / (vel * 1000);
+            return Math.sqrt(4 * a / Math.PI) * 39.37;
+        }
+
+        function getSize(d) {
+            if (d <= 0) return '-';
+            const s = [0.5, 0.75, 1, 1.5, 2, 2.5, 3, 4, 6, 8, 10, 12];
+            let c = s[0], m = Math.abs(s[0] - d);
+            for (let sz of s) {
+                const df = Math.abs(sz - d);
+                if (df < m) { m = df; c = sz; }
+            }
+            return c;
+        }
+
+        function generateBOQHTML(section, sym, capFac, recFac) {
+            let html = '';
+            let total = 0;
+            const qtyScaleFactor = capFac * recFac;
+            
+            section.forEach(item => {
+                const scaledQty = item.qty * qtyScaleFactor;
+                const itemTotal = scaledQty * item.price;
+                total += itemTotal;
+                const qtyDisplay = scaledQty.toFixed(2);
+                html += `<div style="display: grid; grid-template-columns: 1fr 2fr 0.5fr 0.5fr; gap: 4px; font-size: 0.65em; padding: 4px 0; border-bottom: 1px solid #e0e0e0; align-items: center;">
+                    <div>${item.loc}</div>
+                    <div>${item.size}"</div>
+                    <div>${qtyDisplay}</div>
+                    <div style="text-align: right; font-weight: 700; color: #2a5298;">${sym}${itemTotal.toFixed(0)}</div>
+                </div>`;
+            });
+            return { html, total };
+        }
+
+        function generateDetailedBOQHTML(section, sym, capFac, recFac, startNo) {
+            let html = '';
+            let total = 0;
+            let itemNo = startNo;
+            const qtyScaleFactor = capFac * recFac;
+            
+            section.forEach(item => {
+                const scaledQty = item.qty * qtyScaleFactor;
+                const itemTotal = scaledQty * item.price;
+                total += itemTotal;
+                const qtyDisplay = scaledQty.toFixed(2);
+                html += `<tr style="border-bottom: 1px solid #e0e0e0;">
+                    <td style="font-size: 0.65em;">${itemNo}</td>
+                    <td style="font-size: 0.65em;">${item.loc}</td>
+                    <td style="font-size: 0.65em;">${item.size}"</td>
+                    <td style="font-size: 0.65em; text-align: center;">${qtyDisplay}</td>
+                    <td style="font-size: 0.65em;">${item.unit}</td>
+                    <td style="font-size: 0.65em; text-align: right;">${sym}${item.price.toFixed(0)}</td>
+                    <td style="font-size: 0.65em; text-align: right; font-weight: 700; color: #2a5298;">${sym}${itemTotal.toFixed(0)}</td>
+                </tr>`;
+                itemNo++;
+            });
+            return { html, total, lastNo: itemNo };
+        }
+
+        function updateComponentPrice(idx, value) {
+            console.log('Price update for item', idx, '=', value);
+            // This function can be enhanced to track price changes
+            // For now, prices will update when user clicks Calculate again
+        }
+
+        function toggleBoqSection(section) {
+            const sectionDiv = document.getElementById(section + '-section');
+            const arrow = document.getElementById(section + '-arrow');
+            if (sectionDiv.style.display === 'none') {
+                sectionDiv.style.display = 'block';
+                arrow.textContent = '▲';
+            } else {
+                sectionDiv.style.display = 'none';
+                arrow.textContent = '▼';
+            }
+        }
+
+        function switchTab(e, tabName) {
+            document.querySelectorAll('#pipe-sizes-tab, #multipliers-tab, #boq-tab, #cost-table-tab, #boq-detail-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            e.target.classList.add('active');
+        }
+
+        function autoCalculate() {
+            calculateCost();
+        }
+
+        function calculateCost() {
+            const cap = parseFloat(document.getElementById('capacity').value) || 1500;
+            const rec = parseFloat(document.getElementById('recovery').value) || 40;
+            const hrs = parseFloat(document.getElementById('hours').value) || 24;
+            const flux = parseFloat(document.getElementById('flux').value) || 13;
+            const vel = parseFloat(document.getElementById('velocity').value) || 2.5;
+            const memPV = parseFloat(document.getElementById('memPerPV').value) || 7;
+            const hppType = document.querySelector('input[name="hppType"]:checked').value;
+            const material = document.querySelector('input[name="material"]:checked').value;
+            const curr = document.getElementById('currency').value;
+
+            // FLOW CALCULATIONS
+            const prodFlow = cap / hrs;
+            const recRate = rec / 100;
+            const feedFlow = prodFlow / recRate;
+            const rejFlow = feedFlow - prodFlow;
+
+            const membraneAreaPerElement = 37;
+            const totalMembraneAreaNeeded = (prodFlow * 1000) / flux;
+            const totMem = totalMembraneAreaNeeded / membraneAreaPerElement;
+            const totVes = totMem / memPV;
+
+            const baseBoqTotal = 149353.56;
+            const capFac = cap / 1500;
+            const recFac = (rec / 40) * 0.5 + 0.5;
+            const matMult = materialMultipliers[material] || 0;
+
+            // Calculate BOQ based on HPP type (no HPP multiplier - already included in BOQ)
+            let boqAmount = 0;
+            if (hppType === 'HPP Only') {
+                // Feed Water + Reject Water only
+                boqAmount = (48981.56 + 65540.96) * capFac * recFac;
+            } else if (hppType === 'HPP + Booster') {
+                // Feed Water + Reject Water + Booster Pump
+                boqAmount = (48981.56 + 65540.96 + 15743.04) * capFac * recFac;
+            } else if (hppType === 'HPP + PX') {
+                // Feed Water + Reject Water + PX + Booster (Complete system)
+                boqAmount = baseBoqTotal * capFac * recFac;
+            }
+
+            let totCstAED = boqAmount * (1 + matMult);
+            let pipeCstAED = totCstAED * 0.736;
+            let valvCstAED = totCstAED * 0.264;
+
+            const rate = rates[curr];
+            const sym = symbols[curr];
+            const totCst = totCstAED * rate;
+            const pipeCst = pipeCstAED * rate;
+            const valvCst = valvCstAED * rate;
+
+            document.getElementById('results').classList.add('active');
+            document.getElementById('noResults').style.display = 'none';
+
+            document.getElementById('prodFlow').textContent = prodFlow.toFixed(2);
+            document.getElementById('feedFlow').textContent = feedFlow.toFixed(2);
+            document.getElementById('rejFlow').textContent = rejFlow.toFixed(2) + ' M³/hr';
+            document.getElementById('totalMem').textContent = totMem.toFixed(2);
+            document.getElementById('totalVes').textContent = totVes.toFixed(2);
+            document.getElementById('hppTypeSelected').textContent = hppType;
+            document.getElementById('materialSelected').textContent = material;
+            document.getElementById('totalCost').textContent = sym + totCst.toLocaleString('en-US', {maximumFractionDigits: 2});
+            document.getElementById('pipeCst').textContent = sym + pipeCst.toLocaleString('en-US', {maximumFractionDigits: 2});
+            document.getElementById('valveCst').textContent = sym + valvCst.toLocaleString('en-US', {maximumFractionDigits: 2});
+
+            // PIPE SIZES - Calculate based on HPP type
+            let roMainFlow = feedFlow;      // Always present
+            let rejectMainFlow = rejFlow;   // Always present
+            let pxFlow = 0;                 // Only for HPP + PX
+            let boosterFlow = 0;            // Only for HPP + Booster and HPP + PX
+            
+            if (hppType === 'HPP Only') {
+                // No PX, No Booster
+                pxFlow = 0;
+                boosterFlow = 0;
+            } else if (hppType === 'HPP + Booster') {
+                // Booster only, no PX
+                pxFlow = 0;
+                boosterFlow = prodFlow;
+            } else if (hppType === 'HPP + PX') {
+                // Both PX and Booster
+                pxFlow = prodFlow;
+                boosterFlow = prodFlow;
+            }
+            
+            const columnFlow = prodFlow * 0.942;
+            const hppFlow = feedFlow * 0.2667;
+
+            const roMainCalc = calcDiam(roMainFlow, vel);
+            const rejectCalc = calcDiam(rejectMainFlow, vel);
+            const pxCalc = pxFlow > 0 ? calcDiam(pxFlow, vel) : 0;
+            const boosterCalc = boosterFlow > 0 ? calcDiam(boosterFlow, vel) : 0;
+            const columnCalc = calcDiam(columnFlow, vel);
+            const hppFlowCalc = calcDiam(hppFlow, vel);
+
+            const pipeSizesHTML = `
+                <tr style="background: #f0f7ff;"><td style="font-size: 0.65em;">RO main inlet</td><td style="text-align: center; font-size: 0.65em;">${roMainFlow.toFixed(2)}</td><td style="text-align: center; font-size: 0.65em;">${roMainCalc.toFixed(2)}</td><td style="text-align: center; font-weight: 700; color: #2a5298; font-size: 0.65em;">${getSize(roMainCalc)}"</td></tr>
+                <tr><td style="font-size: 0.65em;">Reject Main</td><td style="text-align: center; font-size: 0.65em;">${rejectMainFlow.toFixed(2)}</td><td style="text-align: center; font-size: 0.65em;">${rejectCalc.toFixed(2)}</td><td style="text-align: center; font-weight: 700; color: #2a5298; font-size: 0.65em;">${getSize(rejectCalc)}"</td></tr>
+                <tr style="background: #f0f7ff;"><td style="font-size: 0.65em;">PX in/out</td><td style="text-align: center; font-size: 0.65em;">${pxFlow > 0 ? pxFlow.toFixed(2) : 'N/A'}</td><td style="text-align: center; font-size: 0.65em;">${pxFlow > 0 ? pxCalc.toFixed(2) : '-'}</td><td style="text-align: center; font-weight: 700; color: #2a5298; font-size: 0.65em;">${pxFlow > 0 ? getSize(pxCalc) + '"' : 'N/A'}</td></tr>
+                <tr><td style="font-size: 0.65em;">Booster pump</td><td style="text-align: center; font-size: 0.65em;">${boosterFlow > 0 ? boosterFlow.toFixed(2) : 'N/A'}</td><td style="text-align: center; font-size: 0.65em;">${boosterFlow > 0 ? boosterCalc.toFixed(2) : '-'}</td><td style="text-align: center; font-weight: 700; color: #2a5298; font-size: 0.65em;">${boosterFlow > 0 ? getSize(boosterCalc) + '"' : 'N/A'}</td></tr>
+                <tr style="background: #f0f7ff;"><td style="font-size: 0.65em;">Flow column</td><td style="text-align: center; font-size: 0.65em;">${columnFlow.toFixed(2)}</td><td style="text-align: center; font-size: 0.65em;">${columnCalc.toFixed(2)}</td><td style="text-align: center; font-weight: 700; color: #2a5298; font-size: 0.65em;">${getSize(columnCalc)}"</td></tr>
+                <tr><td style="font-size: 0.65em;">HPP flow</td><td style="text-align: center; font-size: 0.65em;">${hppFlow.toFixed(2)}</td><td style="text-align: center; font-size: 0.65em;">${hppFlowCalc.toFixed(2)}</td><td style="text-align: center; font-weight: 700; color: #2a5298; font-size: 0.65em;">${getSize(hppFlowCalc)}"</td></tr>
+            `;
+            document.getElementById('pipeSizesVerification').innerHTML = pipeSizesHTML;
+
+            // BOQ CALCULATIONS - Only show applicable sections
+            const feedRes = generateDetailedBOQHTML(boqData.feedWater, sym, capFac, recFac, 1);
+            const rejectRes = generateDetailedBOQHTML(boqData.rejectWater, sym, capFac, recFac, feedRes.lastNo);
+            
+            // PX only for HPP + PX
+            const pxRes = hppType === 'HPP + PX' ? generateDetailedBOQHTML(boqData.px, sym, capFac, recFac, rejectRes.lastNo) : { html: '<tr><td colspan="7" style="padding: 12px; text-align: center; color: #999; font-size: 0.7em;">N/A - Only for HPP + PX selection</td></tr>', total: 0, lastNo: rejectRes.lastNo };
+            
+            // Booster only for HPP + Booster and HPP + PX
+            const boosterRes = (hppType === 'HPP + Booster' || hppType === 'HPP + PX') ? generateDetailedBOQHTML(boqData.booster, sym, capFac, recFac, pxRes.lastNo) : { html: '<tr><td colspan="7" style="padding: 12px; text-align: center; color: #999; font-size: 0.7em;">N/A - Only for HPP + Booster/PX selection</td></tr>', total: 0, lastNo: pxRes.lastNo };
+
+            const totalBOQAmount = feedRes.total + rejectRes.total + pxRes.total + boosterRes.total;
+
+            document.getElementById('feedWaterTotal').textContent = sym + (feedRes.total * (1 + matMult)).toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('rejectWaterTotal').textContent = sym + (rejectRes.total * (1 + matMult)).toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('pxTotal').textContent = hppType === 'HPP + PX' ? sym + (pxRes.total * (1 + matMult)).toLocaleString('en-US', {maximumFractionDigits: 0}) : 'N/A';
+            document.getElementById('boosterTotal').textContent = (hppType === 'HPP + Booster' || hppType === 'HPP + PX') ? sym + (boosterRes.total * (1 + matMult)).toLocaleString('en-US', {maximumFractionDigits: 0}) : 'N/A';
+
+            document.getElementById('boqTotalBOQ').textContent = sym + (totalBOQAmount * (1 + matMult)).toLocaleString('en-US', {maximumFractionDigits: 0});
+            document.getElementById('materialMultDisplay').textContent = (matMult * 100).toFixed(0) + '%';
+            document.getElementById('boqTotalDisplay').textContent = sym + totCst.toLocaleString('en-US', {maximumFractionDigits: 0});
+
+            // DETAILED BOQ TABLES
+            const feedDetail = generateDetailedBOQHTML(boqData.feedWater, sym, capFac, recFac, 1);
+            const rejectDetail = generateDetailedBOQHTML(boqData.rejectWater, sym, capFac, recFac, feedDetail.lastNo);
+            const pxDetail = hppType === 'HPP + PX' ? generateDetailedBOQHTML(boqData.px, sym, capFac, recFac, rejectDetail.lastNo) : { html: '<tr><td colspan="7" style="padding: 12px; text-align: center; color: #999; font-size: 0.7em;">N/A - Only for HPP + PX selection</td></tr>', total: 0, lastNo: rejectDetail.lastNo };
+            const boosterDetail = (hppType === 'HPP + Booster' || hppType === 'HPP + PX') ? generateDetailedBOQHTML(boqData.booster, sym, capFac, recFac, pxDetail.lastNo) : { html: '<tr><td colspan="7" style="padding: 12px; text-align: center; color: #999; font-size: 0.7em;">N/A - Only for HPP + Booster/PX selection</td></tr>', total: 0, lastNo: pxDetail.lastNo };
+
+            document.getElementById('feedDetailBoq').innerHTML = feedDetail.html;
+            document.getElementById('rejectDetailBoq').innerHTML = rejectDetail.html;
+            document.getElementById('pxDetailBoq').innerHTML = pxDetail.html;
+            document.getElementById('boosterDetailBoq').innerHTML = boosterDetail.html;
+
+            // Populate BOQ Breakdowns for expandable sections
+            function generateBreakdownHTML(section, sym, capFac, recFac) {
+                let html = '';
+                const qtyScaleFactor = capFac * recFac;
+                section.forEach(item => {
+                    const scaledQty = item.qty * qtyScaleFactor;
+                    const itemTotal = scaledQty * item.price;
+                    html += `<div style="display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 4px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div>${item.loc}</div>
+                        <div style="text-align: right; font-weight: 700; color: #2a5298;">${sym}${itemTotal.toFixed(0)}</div>
+                    </div>`;
+                });
+                return html;
+            }
+
+            document.getElementById('feedWaterBreakdown').innerHTML = generateBreakdownHTML(boqData.feedWater, sym, capFac, recFac);
+            document.getElementById('rejectWaterBreakdown').innerHTML = generateBreakdownHTML(boqData.rejectWater, sym, capFac, recFac);
+            document.getElementById('pxBreakdown').innerHTML = hppType === 'HPP + PX' ? generateBreakdownHTML(boqData.px, sym, capFac, recFac) : '<div style="color: #999;">N/A - Only for HPP + PX</div>';
+            document.getElementById('boosterBreakdown').innerHTML = (hppType === 'HPP + Booster' || hppType === 'HPP + PX') ? generateBreakdownHTML(boqData.booster, sym, capFac, recFac) : '<div style="color: #999;">N/A - Only for HPP + Booster/PX</div>';
+
+            // Populate Cost Table
+            const allItems = [...boqData.feedWater, ...boqData.rejectWater];
+            if (hppType === 'HPP + PX') allItems.push(...boqData.px);
+            if (hppType === 'HPP + Booster' || hppType === 'HPP + PX') allItems.push(...boqData.booster);
+
+            let costTableHTML = '';
+            const qtyScaleFactor = capFac * recFac;
+            allItems.forEach((item, idx) => {
+                const scaledQty = item.qty * qtyScaleFactor;
+                const itemTotal = scaledQty * item.price;
+                costTableHTML += `<tr style="border-bottom: 1px solid #e0e0e0;">
+                    <td style="font-size: 0.65em;">${item.loc}</td>
+                    <td style="font-size: 0.65em; text-align: center;">${scaledQty.toFixed(2)}</td>
+                    <td style="font-size: 0.65em;"><input type="number" value="${item.price.toFixed(0)}" onchange="updateComponentPrice(${idx}, this.value)" style="width: 80px; padding: 4px; border: 1px solid #ccc; border-radius: 4px;"></td>
+                    <td style="font-size: 0.65em; text-align: right; font-weight: 700; color: #2a5298;">${sym}${itemTotal.toFixed(0)}</td>
+                </tr>`;
+            });
+            document.getElementById('costComponentTable').innerHTML = costTableHTML;
+
+            window.lastCalc = { cap, rec, hrs, flux, vel, hppType, material, prodFlow, feedFlow, rejFlow, totMem: totMem.toFixed(2), totVes: totVes.toFixed(2), totCstAED, pipeCstAED, valvCstAED, curr, totCst, pipeCst, valvCst, calculatedAt: new Date().toLocaleString() };
+        }
+
+        function resetForm() {
+            document.getElementById('capacity').value = 1500;
+            document.getElementById('recovery').value = 40;
+            document.getElementById('hours').value = 24;
+            document.getElementById('flux').value = 13;
+            document.getElementById('velocity').value = 2.5;
+            document.getElementById('memPerPV').value = 7;
+            document.querySelectorAll('input[name="material"]')[1].checked = true;
+            document.getElementById('currency').value = 'AED';
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('noResults').style.display = 'block';
+            autoCalculate();
+        }
+
+        function exportToCSV() {
+            if (!window.lastCalc) { alert('Please calculate first'); return; }
+            const d = window.lastCalc;
+            const csv = `HPP CALCULATOR REPORT\nGenerated: ${d.calculatedAt}\n\nSYSTEM,VALUE,UNIT\nCapacity,${d.cap},M³/day\nRecovery,${d.rec},%\nProduct Flow,${d.prodFlow.toFixed(2)},M³/hr\nFeed Flow,${d.feedFlow.toFixed(2)},M³/hr\nReject Flow,${d.rejFlow.toFixed(2)},M³/hr\nMembranes,${d.totMem},nos\nVessels,${d.totVes},nos\nMaterial,${d.material},\n\nCOST (${d.curr}),AMOUNT\nTotal HPP Cost,${d.totCst.toFixed(2)}\nPipes & Fittings,${d.pipeCst.toFixed(2)}\nValves & Checks,${d.valvCst.toFixed(2)}`;
+            const a = document.createElement('a');
+            a.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
+            a.setAttribute('download', `HPP_Report_${Date.now()}.csv`);
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            resetForm();
+        });
+    </script>
+</body>
+</html>
