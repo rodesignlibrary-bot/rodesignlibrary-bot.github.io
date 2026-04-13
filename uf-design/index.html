@@ -1,0 +1,2040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UF System Design Software v1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04090f;--panel:#080f1c;--panel2:#0a1220;--border:#0c2545;
+  --accent:#00d4ff;--accent2:#00ffcc;--accent3:#ff7043;
+  --text:#b8d4e8;--dim:#3d5c78;
+  --green:#00d68f;--red:#ff4444;--yellow:#ffd700;--teal:#00d4ff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:14px;
+  -webkit-user-select:none;user-select:none;min-height:100vh;}
+input,select{-webkit-user-select:text;user-select:text;}
+
+/* ── HEADER ── */
+.hdr{
+  background:linear-gradient(135deg,#020608 0%,#050f1e 50%,#020608 100%);
+  border-bottom:2px solid var(--accent);padding:11px 20px;
+  display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:400;
+  box-shadow:0 2px 40px rgba(0,212,255,.15);
+}
+.hdr-icon{
+  width:42px;height:42px;border-radius:8px;border:2px solid var(--accent);
+  background:linear-gradient(135deg,rgba(0,212,255,.25),rgba(0,255,204,.08));
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+  flex-shrink:0;animation:glow 3s ease-in-out infinite;
+}
+@keyframes glow{0%,100%{box-shadow:0 0 10px rgba(0,212,255,.3);}50%{box-shadow:0 0 28px rgba(0,212,255,.85);}}
+.hdr-info{flex:1;}
+.hdr h1{font-size:17px;font-weight:700;letter-spacing:2.5px;color:var(--accent);line-height:1.1;}
+.hdr p{font-size:9.5px;color:var(--dim);letter-spacing:1.2px;margin-top:2px;}
+.hdr-badges{display:flex;gap:7px;margin-left:auto;align-items:center;flex-wrap:wrap;}
+.badge{padding:3px 12px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:1.5px;white-space:nowrap;}
+.badge-teal{background:rgba(0,212,255,.1);border:1px solid var(--accent);color:var(--accent);}
+.badge-orange{background:rgba(255,112,67,.1);border:1px solid var(--accent3);color:var(--accent3);}
+.badge-green{background:rgba(0,214,143,.1);border:1px solid var(--green);color:var(--green);}
+
+/* ── TAB STRIP ── */
+.tabs{display:flex;background:var(--panel2);border-bottom:1px solid var(--border);
+  position:sticky;top:65px;z-index:300;overflow-x:auto;}
+.tab{padding:9px 22px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  cursor:pointer;color:var(--dim);border-bottom:3px solid transparent;border-right:1px solid var(--border);
+  transition:all .2s;background:transparent;font-family:'Rajdhani',sans-serif;white-space:nowrap;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(0,212,255,.05);}
+.tab .bdg{margin-left:5px;padding:1px 6px;border-radius:10px;font-size:8px;
+  background:rgba(0,255,204,.12);color:var(--accent2);border:1px solid rgba(0,255,204,.2);}
+
+.sheet{display:none;}
+.sheet.active{display:block;}
+
+/* ── GLOBAL CARD ── */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:7px;margin-bottom:13px;overflow:hidden;}
+.ch{background:rgba(0,15,38,.98);padding:7px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
+.ch h2{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent);text-transform:uppercase;flex:1;}
+.ch .sub{font-size:9px;color:var(--dim);}
+
+/* ── UF DESIGN SHEET ── */
+.s-wrap{padding:14px 18px 32px;}
+.s-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.s-top h2{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--accent2);text-transform:uppercase;flex:1;}
+
+/* status bar */
+.status-bar{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.18);border-radius:6px;
+  padding:8px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.sync-pill{background:rgba(0,255,204,.12);border:1px solid var(--accent2);border-radius:3px;
+  padding:2px 10px;font-size:9px;font-weight:700;color:var(--accent2);letter-spacing:1px;}
+.status-bar span{font-size:10px;color:var(--dim);}
+.status-bar strong{color:var(--accent2);}
+
+/* two-col layout */
+.uf-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:920px){.uf-layout{grid-template-columns:1fr;}}
+.uf-panel{background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:18px;}
+.uf-panel.inp{border-color:rgba(0,170,255,.3);}
+.uf-panel.out{border-color:rgba(0,255,204,.2);}
+.uf-ph{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent);text-transform:uppercase;
+  border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.uf-sec{margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(13,45,88,.4);}
+.uf-sec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.uf-sect{font-size:9px;font-weight:700;letter-spacing:1.5px;color:var(--accent2);text-transform:uppercase;
+  margin-bottom:10px;padding-left:7px;border-left:2px solid var(--accent2);}
+.uf-frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.uf-fg{margin-bottom:10px;}
+.uf-lbl{display:block;font-size:10px;font-weight:700;color:var(--accent);margin-bottom:4px;
+  text-transform:uppercase;letter-spacing:.5px;}
+.uf-inp{width:100%;background:rgba(0,10,35,.9);border:1px solid #183860;color:var(--accent2);
+  font-family:'Share Tech Mono',monospace;font-size:11px;padding:5px 8px;border-radius:3px;outline:none;
+  transition:border-color .2s;}
+.uf-inp:focus{border-color:var(--accent);}
+.uf-inp[disabled]{color:var(--yellow);background:rgba(12,8,0,.7);cursor:default;}
+.uf-sel{width:100%;background:rgba(0,10,35,.9);border:1px solid #183860;color:var(--accent);
+  font-family:'Rajdhani',sans-serif;font-size:11px;padding:5px 7px;border-radius:3px;outline:none;}
+.uf-unit{font-size:9px;color:var(--dim);margin-top:2px;}
+.uf-ocard{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.1);padding:10px 12px;
+  border-radius:4px;margin-bottom:8px;}
+.uf-orow{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;
+  border-bottom:1px solid rgba(13,45,88,.2);}
+.uf-orow:last-child{border-bottom:none;}
+.uf-olbl{font-size:10px;color:var(--dim);font-weight:600;text-transform:uppercase;letter-spacing:.5px;}
+.uf-oval{font-size:12px;color:var(--accent2);font-family:'Share Tech Mono',monospace;font-weight:700;}
+.uf-ounit{color:var(--dim);font-size:9px;margin-left:4px;}
+.uf-highlight{background:rgba(0,255,204,.07);border:1px solid rgba(0,255,204,.28);padding:12px;
+  border-radius:4px;margin-bottom:12px;}
+.uf-grand{font-size:13px;font-weight:700;color:var(--accent3);font-family:'Share Tech Mono',monospace;}
+.push-btn{margin:14px 0 0;width:100%;padding:9px;
+  background:linear-gradient(135deg,rgba(0,212,255,.12),rgba(0,255,204,.08));
+  border:1px solid var(--accent2);color:var(--accent2);font-family:'Rajdhani',sans-serif;
+  font-size:11px;font-weight:700;letter-spacing:1.5px;border-radius:4px;cursor:pointer;
+  text-transform:uppercase;transition:all .2s;}
+.push-btn:hover{background:linear-gradient(135deg,rgba(0,212,255,.25),rgba(0,255,204,.18));box-shadow:0 0 16px rgba(0,255,204,.2);}
+.calc-btn{width:100%;padding:9px;
+  background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(0,170,255,.06));
+  border:1px solid var(--accent);color:var(--accent);font-family:'Rajdhani',sans-serif;
+  font-size:11px;font-weight:700;letter-spacing:1.5px;border-radius:4px;cursor:pointer;
+  text-transform:uppercase;transition:all .2s;margin-bottom:8px;}
+.calc-btn:hover{background:rgba(0,212,255,.2);}
+
+/* ── DESIGN GUIDELINE SHEET ── */
+.dg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:16px;}
+.dg-card{background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:16px;}
+.dg-card-title{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--accent2);text-transform:uppercase;
+  margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--border);}
+.dg-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;
+  border-bottom:1px solid rgba(13,45,88,.15);}
+.dg-row:last-child{border-bottom:none;}
+.dg-lbl{font-size:10px;color:var(--dim);}
+.dg-val{font-size:11px;font-family:'Share Tech Mono',monospace;color:var(--accent2);font-weight:700;}
+.dg-ok{color:var(--green)!important;}
+.dg-warn{color:var(--yellow)!important;}
+.dg-bad{color:var(--red)!important;}
+.dg-table{width:100%;border-collapse:collapse;font-size:11px;}
+.dg-table th{background:rgba(0,15,40,.98);color:var(--accent);font-size:9px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;padding:6px 8px;border-bottom:2px solid var(--accent);white-space:nowrap;}
+.dg-table td{padding:5px 8px;border-bottom:1px solid rgba(13,45,88,.22);font-family:'Share Tech Mono',monospace;font-size:10px;}
+.dg-table tr:hover td{background:rgba(0,22,55,.18);}
+.dg-table tr.highlight td{background:rgba(0,214,143,.07);border-left:3px solid var(--green);}
+.dg-table tr.warn-row td{background:rgba(245,159,0,.04);border-left:3px solid var(--yellow);}
+.guideline-badge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;}
+.gb-ok{background:rgba(0,214,143,.1);color:var(--green);border:1px solid rgba(0,214,143,.3);}
+.gb-warn{background:rgba(245,159,0,.1);color:var(--yellow);border:1px solid rgba(245,159,0,.3);}
+.gb-bad{background:rgba(255,68,68,.1);color:var(--red);border:1px solid rgba(255,68,68,.3);}
+.gb-na{background:rgba(61,92,120,.1);color:var(--dim);border:1px solid rgba(61,92,120,.3);}
+
+/* ── PRICE SELECTOR SHEET ── */
+.price-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px;margin-bottom:16px;}
+.price-card{background:var(--panel);border:1px solid var(--border);border-radius:7px;overflow:hidden;}
+.price-card-hd{background:rgba(0,15,38,.98);padding:7px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
+.price-card-hd h3{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--accent);text-transform:uppercase;flex:1;}
+.price-card-body{padding:12px 14px;}
+.price-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+.price-lbl{flex:1;font-size:11px;color:var(--text);}
+.price-inp{width:100px;background:rgba(0,12,35,.9);border:1px solid #183860;color:var(--accent2);
+  font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 7px;border-radius:3px;outline:none;text-align:right;}
+.price-inp:focus{border-color:var(--accent);}
+.price-unit{font-size:9px;color:var(--dim);width:28px;text-align:left;}
+.price-total-row{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;}
+.price-total-lbl{font-size:10px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;}
+.price-total-val{font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--green);font-weight:700;}
+
+/* pump/blower selector tables */
+.sel-table{width:100%;border-collapse:collapse;font-size:10px;}
+.sel-table th{background:rgba(0,15,38,.98);color:var(--accent);font-size:9px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;padding:5px 7px;border-bottom:2px solid var(--accent);white-space:nowrap;}
+.sel-table td{padding:4px 7px;border-bottom:1px solid rgba(13,45,88,.2);}
+.sel-table tr:hover td{background:rgba(0,22,55,.18);}
+.sel-table tr.auto-sel td{background:rgba(0,214,143,.06);border-left:3px solid var(--green);}
+.sel-table tr.man-sel td{background:rgba(0,170,255,.06);border-left:3px solid var(--accent);}
+.ub{padding:2px 9px;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer;white-space:nowrap;
+  font-family:'Rajdhani',sans-serif;letter-spacing:.8px;border:1px solid rgba(0,255,204,.25);
+  background:rgba(0,255,204,.05);color:var(--dim);transition:all .15s;}
+.ub:hover{background:rgba(0,255,204,.15);color:var(--accent2);border-color:var(--accent2);}
+.ub.active{background:rgba(0,214,143,.18);color:var(--green);border-color:var(--green);}
+
+/* Grand total bar */
+.grand-bar{background:rgba(0,5,18,.95);border:1px solid rgba(0,255,204,.25);border-radius:7px;
+  padding:12px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.grand-bar-lbl{font-size:10px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;}
+.grand-bar-val{font-family:'Share Tech Mono',monospace;font-size:18px;color:var(--green);font-weight:700;}
+
+/* turbidity table */
+.turb-table{width:100%;border-collapse:collapse;font-size:10px;}
+.turb-table th{background:rgba(0,15,38,.98);color:var(--accent);font-size:9px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;padding:6px 8px;border-bottom:2px solid var(--accent);}
+.turb-table td{padding:5px 8px;border-bottom:1px solid rgba(13,45,88,.22);font-family:'Share Tech Mono',monospace;font-size:10px;}
+.turb-table tr:hover td{background:rgba(0,22,55,.18);}
+.turb-table tr.t-active td{background:rgba(0,212,255,.07);border-left:3px solid var(--accent);}
+
+/* BOQ table */
+.boq-wrap{overflow-x:auto;}
+.boq-table{width:100%;border-collapse:collapse;font-size:11px;min-width:700px;}
+.boq-table th{background:rgba(0,15,38,.98);color:var(--accent);font-size:9px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;padding:6px 8px;border-bottom:2px solid var(--accent);white-space:nowrap;}
+.boq-table td{padding:5px 8px;border-bottom:1px solid rgba(13,45,88,.22);vertical-align:middle;}
+.boq-table tr:hover td{background:rgba(0,22,55,.14);}
+.boq-table tr.boq-grp td{background:rgba(0,5,18,.95);color:var(--dim);font-size:9px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;padding:4px 8px;}
+.mono{font-family:'Share Tech Mono',monospace;}
+.cg{color:var(--green);}.ca{color:var(--accent);}.ca2{color:var(--accent2);}.cy{color:var(--yellow);}
+.co{color:var(--accent3);}
+.pill{display:inline-block;padding:1px 7px;border-radius:3px;font-size:9px;font-weight:700;}
+.p-ok{background:rgba(0,214,143,.1);color:var(--green);border:1px solid rgba(0,214,143,.3);}
+.p-warn{background:rgba(255,215,0,.1);color:var(--yellow);border:1px solid rgba(255,215,0,.3);}
+.p-na{background:rgba(61,92,120,.08);color:var(--dim);border:1px solid rgba(61,92,120,.22);}
+
+.toast{position:fixed;bottom:22px;right:22px;background:rgba(0,214,143,.15);border:1px solid var(--green);
+  color:var(--green);padding:7px 16px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:1px;
+  z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.show{opacity:1;}
+.foot{text-align:center;padding:11px;font-size:9px;color:var(--dim);letter-spacing:1px;border-top:1px solid var(--border);}
+.wm{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);
+  font-size:80px;font-weight:700;color:rgba(0,212,255,.018);letter-spacing:8px;
+  pointer-events:none;z-index:0;white-space:nowrap;}
+
+/* ══ INPUT COLORS: red=empty, green=filled ══ */
+.uf-inp:not([disabled]){border:1px solid rgba(220,50,50,.8)!important;background:rgba(50,0,0,.3)!important;color:#f87171!important;}
+.uf-inp:not([disabled]).ok{border:1px solid rgba(0,200,80,.8)!important;background:rgba(0,45,15,.3)!important;color:#4ade80!important;}
+.uf-inp:not([disabled]):focus{border-color:var(--accent)!important;}
+.uf-sel{border:1px solid rgba(220,50,50,.8)!important;background:rgba(50,0,0,.3)!important;color:#f87171!important;}
+.uf-sel.ok{border:1px solid rgba(0,200,80,.8)!important;background:rgba(0,45,15,.3)!important;color:#4ade80!important;}
+/* streams override section */
+.streams-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.streams-toggle{font-size:9px;padding:3px 10px;border-radius:3px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.8px;transition:all .15s;border:1px solid rgba(0,212,255,.35);background:rgba(0,212,255,.07);color:var(--accent);}
+.streams-toggle:hover{background:rgba(0,212,255,.18);}
+.streams-toggle.active{background:rgba(255,112,67,.15);border-color:var(--accent3);color:var(--accent3);}
+
+/* ══ ADMIN MODAL ══ */
+#adm-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;align-items:center;justify-content:center;}
+#adm-ov.show{display:flex;}
+.adm-box{background:#060e1a;border:2px solid var(--accent);border-radius:12px;padding:38px 42px;min-width:340px;text-align:center;box-shadow:0 0 60px rgba(0,212,255,.35);}
+.adm-ttl{color:var(--accent);font-size:15px;letter-spacing:3px;margin-bottom:6px;text-transform:uppercase;font-weight:700;}
+.adm-sub{color:var(--dim);font-size:10px;margin-bottom:22px;letter-spacing:1px;}
+.adm-pw{width:100%;background:rgba(0,8,28,.95);border:2px solid var(--accent);color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:20px;padding:10px 14px;border-radius:5px;outline:none;text-align:center;letter-spacing:5px;margin-bottom:14px;-webkit-user-select:text;user-select:text;}
+.adm-pw:focus{border-color:var(--accent2);box-shadow:0 0 20px rgba(0,255,204,.2);}
+.adm-go{width:100%;padding:11px;cursor:pointer;border-radius:5px;background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(0,255,204,.08));border:1px solid var(--accent);color:var(--accent);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all .2s;}
+.adm-go:hover{background:rgba(0,212,255,.28);}
+.adm-err{color:#ff4444;font-size:11px;margin-top:11px;min-height:16px;letter-spacing:1px;}
+.adm-cancel{color:var(--dim);font-size:10px;margin-top:13px;cursor:pointer;letter-spacing:1px;}
+.adm-cancel:hover{color:var(--text);}
+
+/* ══ EXPIRED OVERLAY ══ */
+#exp-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:10000;align-items:center;justify-content:center;}
+#exp-ov.show{display:flex;}
+.exp-box{background:#060e1a;border:2px solid #ff4444;border-radius:12px;padding:42px;min-width:380px;text-align:center;box-shadow:0 0 80px rgba(255,68,68,.45);}
+.exp-ttl{color:#ff4444;font-size:18px;letter-spacing:3px;margin-bottom:10px;text-transform:uppercase;font-weight:700;}
+.exp-sub{color:var(--dim);font-size:11px;margin-bottom:26px;letter-spacing:.8px;line-height:1.8;}
+
+/* ══ TIMER BADGE ══ */
+#lic-tmr{background:rgba(255,112,67,.12);border:1px solid var(--accent3);color:var(--accent3);font-size:10px;font-weight:700;padding:3px 12px;border-radius:3px;letter-spacing:1px;font-family:'Share Tech Mono',monospace;white-space:nowrap;}
+#lic-tmr.warn{background:rgba(255,68,68,.18);border-color:#ff4444;color:#ff4444;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+#lic-tmr.exp{animation:blink 1s ease-in-out infinite;}
+
+/* ══ EDITABLE TABLE STYLES ══ */
+.ed-bar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+.ed-btn{font-size:10px;padding:5px 12px;border-radius:4px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;letter-spacing:.8px;transition:all .15s;white-space:nowrap;}
+.ed-add{background:rgba(0,214,143,.1);border:1px solid var(--green);color:var(--green);}
+.ed-add:hover{background:rgba(0,214,143,.25);}
+.ed-del{background:rgba(255,68,68,.1);border:1px solid #ff4444;color:#ff4444;font-size:9px;padding:2px 8px;}
+.ed-del:hover{background:rgba(255,68,68,.25);}
+.ed-save{background:rgba(0,212,255,.1);border:1px solid var(--accent);color:var(--accent);}
+.ed-save:hover{background:rgba(0,212,255,.25);}
+td input.ed-cell{background:rgba(0,8,28,.8);border:1px solid rgba(0,212,255,.3);color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 5px;border-radius:2px;width:100%;outline:none;-webkit-user-select:text;user-select:text;}
+td input.ed-cell:focus{border-color:var(--accent);}
+td select.ed-cell{background:rgba(0,8,28,.8);border:1px solid rgba(0,212,255,.3);color:var(--accent2);font-family:'Share Tech Mono',monospace;font-size:10px;padding:2px 5px;border-radius:2px;width:100%;outline:none;}
+tr.ed-new td{background:rgba(0,200,80,.04)!important;}
+
+</style>
+</head>
+<body>
+
+<!-- ADMIN MODAL -->
+<div id="adm-ov">
+  <div class="adm-box">
+    <div class="adm-ttl">🔐 Admin Access Required</div>
+    <div class="adm-sub">ENTER PASSWORD TO ACCESS ADVANCED MODULES</div>
+    <input type="password" id="adm-pw" class="adm-pw" placeholder="••••••••" maxlength="20" onkeydown="if(event.key==='Enter')_aChk()">
+    <button class="adm-go" onclick="_aChk()">▶ UNLOCK MODULES</button>
+    <div class="adm-err" id="adm-err"></div>
+    <div class="adm-cancel" onclick="_aCls()">✕ Cancel</div>
+  </div>
+</div>
+<!-- EXPIRED MODAL -->
+<div id="exp-ov">
+  <div class="exp-box">
+    <div class="exp-ttl">⚠ LICENSE EXPIRED</div>
+    <div class="exp-sub">Your 30-day license has ended.<br>Enter admin password to reset the timer.</div>
+    <input type="password" id="exp-pw" class="adm-pw" placeholder="••••••••" maxlength="20" onkeydown="if(event.key==='Enter')_eChk()">
+    <button class="adm-go" onclick="_eChk()">▶ UNLOCK &amp; RESET TIMER</button>
+    <div class="adm-err" id="exp-err"></div>
+  </div>
+</div>
+
+<div class="wm">UF DESIGN</div>
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-icon">🌊</div>
+  <div class="hdr-info">
+    <h1>UF SYSTEM DESIGN SOFTWARE</h1>
+    <p>ULTRAFILTRATION · DESIGN · SIZING · COST ESTIMATION · STANDALONE v1.0</p>
+  </div>
+  <div class="hdr-badges">
+    <span id="lic-tmr">⏱ --d --h LEFT</span>
+    <span class="badge badge-teal">INDEPENDENT</span>
+    <span class="badge badge-green">LIVE CALC</span>
+    <span class="badge badge-orange">AED PRICING</span>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('t1',this)">🌊 UF Design<span class="bdg">CALC</span></button>
+  <button class="tab" onclick="_tClick('t2',this)">🔒 Design Guidelines</button>
+  <button class="tab" onclick="_tClick('t3',this)">🔒 Price Selector<span class="bdg">AED</span></button>
+  <button class="tab" onclick="_tClick('t4',this)">🔒 BOQ Summary</button>
+  <button class="tab" onclick="_tClick('t5',this)">🔒 Reference Tables</button>
+  <button class="tab" onclick="_tClick('t6',this)" style="margin-left:auto;border-left:2px solid rgba(255,112,67,.4);color:#ff7043;">⚙ Admin</button>
+</div>
+
+<!-- ══════════ TAB 1 — UF DESIGN ══════════ -->
+<div class="sheet active" id="t1">
+<div class="s-wrap">
+
+  <div class="s-top">
+    <h2>🌊 UF System Design & Sizing</h2>
+    <button class="calc-btn" style="width:auto;padding:6px 18px;margin-bottom:0;" onclick="calcUF()">⟳ Recalculate</button>
+  </div>
+
+  <div class="status-bar">
+    <span class="sync-pill">⚡ STANDALONE MODE</span>
+    <span>Enter your <strong>RO Feed Flow</strong> manually or from your RO system data</span>
+    <span style="margin-left:auto;">Active Turbidity: <strong id="st-turbidity">20 NTU</strong> &nbsp;|&nbsp; Auto Flux: <strong id="st-flux">60 LMH</strong></span>
+  </div>
+
+  <div class="uf-layout">
+    <!-- INPUT PANEL -->
+    <div class="uf-panel inp">
+      <div class="uf-ph">📥 System Inputs</div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">Feed Water Parameters</div>
+        <div class="uf-fg">
+          <label class="uf-lbl">Required RO Feed Flow</label>
+          <input type="number" id="uf-ro-feed" class="uf-inp" value="120" min="0" step="0.5" oninput="calcUF()">
+          <div class="uf-unit">M³/hr — total flow UF must deliver to RO system</div>
+        </div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl" style="display:flex;align-items:center;justify-content:space-between;">
+              <span>No. of UF Streams</span>
+              <button class="streams-toggle" id="streams-toggle-btn" onclick="_toggleStreams()">OVERRIDE</button>
+            </label>
+            <input type="number" id="uf-streams" class="uf-inp" value="1" disabled min="1" max="20" oninput="calcUF()">
+            <div class="uf-unit" id="uf-streams-note">Auto: 1 stream per 60 modules — click OVERRIDE to set manually</div>
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">Feed TDS</label>
+            <input type="number" id="uf-feed-tds" class="uf-inp" value="35000" min="0" step="100" oninput="calcUF()">
+            <div class="uf-unit">PPM</div>
+          </div>
+        </div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl">Feed Turbidity</label>
+            <select id="uf-turbidity" class="uf-sel" onchange="ufUpdateFlux()">
+              <option value="5">5 NTU</option><option value="10">10 NTU</option>
+              <option value="20" selected>20 NTU</option><option value="30">30 NTU</option>
+              <option value="40">40 NTU</option><option value="50">50 NTU</option>
+              <option value="75">75 NTU</option><option value="100">100 NTU</option>
+            </select>
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">UF Recovery (%)</label>
+            <input type="number" id="uf-recovery" class="uf-inp" value="90" min="60" max="98" oninput="calcUF()">
+            <div class="uf-unit">% (typical 90–95%)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">UF Operating Parameters</div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl">Operating Flux (LMH)</label>
+            <input type="number" id="uf-flux" class="uf-inp" value="60" min="25" max="150" step="0.5" oninput="calcUF()">
+            <div class="uf-unit">Auto-set by turbidity; adjustable</div>
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">Module Area (M²)</label>
+            <input type="number" id="uf-module-area" class="uf-inp" value="80" min="1" step="0.1" oninput="calcUF()">
+            <div class="uf-unit">M² per module (e.g. 50, 80, 100)</div>
+          </div>
+        </div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl">Module Type</label>
+            <select id="uf-module-type" class="uf-sel" onchange="calcUF()">
+              <option value="HF">Hollow Fiber (HF)</option>
+              <option value="SW">Spiral Wound (SW)</option>
+              <option value="TUB">Tubular (TUB)</option>
+            </select>
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">Total Modules (calc)</label>
+            <input type="number" id="uf-modules-calc" class="uf-inp" value="0" disabled>
+            <div class="uf-unit">= Feed×1000 ÷ Area ÷ Flux</div>
+          </div>
+        </div>
+        <div class="uf-fg">
+          <label class="uf-lbl">Total Modules Selected (override)</label>
+          <input type="number" id="uf-modules-selected" class="uf-inp" value="0" min="1" oninput="calcUF()">
+          <div class="uf-unit">Defaults to calculated total — override to round up</div>
+        </div>
+      </div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">Backwash Configuration</div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl">BW Flux (LMH)</label>
+            <input type="number" id="uf-bw-flux" class="uf-inp" value="125" min="80" max="200" oninput="calcUF()">
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">BW Pump Config</label>
+            <select id="uf-bw-config" class="uf-sel" onchange="calcUF()">
+              <option value="duty-standby">1+1 Duty/Standby</option>
+              <option value="single">Single Pump</option>
+              <option value="2+1">2+1 Duty/Standby</option>
+            </select>
+          </div>
+        </div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl">BW Pressure (bar)</label>
+            <select id="uf-bw-pressure" class="uf-sel" onchange="calcUF()">
+              <option value="1.5">1.5 bar</option><option value="2.0">2.0 bar</option>
+              <option value="2.5" selected>2.5 bar</option><option value="3.0">3.0 bar</option>
+              <option value="3.5">3.5 bar</option><option value="4.0">4.0 bar</option>
+            </select>
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">BW Pump Efficiency</label>
+            <select id="uf-bw-eff" class="uf-sel" onchange="calcUF()">
+              <option value="70">70%</option><option value="75" selected>75%</option>
+              <option value="80">80%</option><option value="85">85%</option>
+            </select>
+          </div>
+        </div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl">BW Duration (min)</label>
+            <input type="number" id="uf-bw-dur" class="uf-inp" value="5" min="2" max="30" oninput="calcUF()">
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">BW Interval (min)</label>
+            <input type="number" id="uf-bw-interval" class="uf-inp" value="30" min="10" max="120" oninput="calcUF()">
+          </div>
+        </div>
+      </div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">Air Blower / Scour</div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl">Air Req. (Nm³/hr/module)</label>
+            <input type="number" id="uf-air" class="uf-inp" value="12" min="1" max="30" step="0.5" oninput="calcUF()">
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">Blower Config</label>
+            <select id="uf-blower-config" class="uf-sel" onchange="calcUF()">
+              <option value="duty-standby">1+1 Duty/Standby</option>
+              <option value="single">Single Blower</option>
+              <option value="2+1">2+1 Duty/Standby</option>
+            </select>
+          </div>
+        </div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl">Blower Pressure (bar)</label>
+            <select id="uf-blower-pressure" class="uf-sel" onchange="calcUF()">
+              <option value="0.3">0.3 bar</option><option value="0.5" selected>0.5 bar</option>
+              <option value="0.7">0.7 bar</option><option value="1.0">1.0 bar</option>
+            </select>
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">Blower Efficiency</label>
+            <select id="uf-blower-eff" class="uf-sel" onchange="calcUF()">
+              <option value="65">65%</option><option value="70" selected>70%</option>
+              <option value="75">75%</option><option value="80">80%</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">CIP Parameters</div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl">CIP Flux (LMH)</label>
+            <input type="number" id="uf-cip-flux" class="uf-inp" value="20" min="10" max="50" oninput="calcUF()">
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">CIP Tank (M³)</label>
+            <input type="number" id="uf-cip-tank" class="uf-inp" value="16" min="5" max="200" oninput="calcUF()">
+          </div>
+        </div>
+        <div class="uf-frow">
+          <div class="uf-fg">
+            <label class="uf-lbl">CIP Pressure (bar)</label>
+            <select id="uf-cip-pressure" class="uf-sel" onchange="calcUF()">
+              <option value="1.0">1.0 bar</option><option value="1.5">1.5 bar</option>
+              <option value="2.0">2.0 bar</option><option value="2.5">2.5 bar</option>
+              <option value="3.0" selected>3.0 bar</option><option value="4.0">4.0 bar</option>
+            </select>
+          </div>
+          <div class="uf-fg">
+            <label class="uf-lbl">CIP Efficiency</label>
+            <select id="uf-cip-eff" class="uf-sel" onchange="calcUF()">
+              <option value="65">65%</option><option value="70" selected>70%</option>
+              <option value="75">75%</option><option value="80">80%</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button class="calc-btn" onclick="calcUF()">⟳ Calculate UF System</button>
+      <button class="push-btn" onclick="calcUF();toast2('✔ BOQ updated — check BOQ Summary tab')">📋 Calculate &amp; Update BOQ</button>
+    </div><!-- /inp -->
+
+    <!-- OUTPUT PANEL -->
+    <div class="uf-panel out">
+      <div class="uf-ph">📊 Design Results</div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">Flow Summary</div>
+        <div class="uf-ocard">
+          <div class="uf-orow"><span class="uf-olbl">RO Feed Flow</span><span class="uf-oval" id="ufo-ro-feed">—<span class="uf-ounit">M³/hr</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">UF Feed (instantaneous)</span><span class="uf-oval" id="ufo-inst">—<span class="uf-ounit">M³/hr</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">UF Reject Flow</span><span class="uf-oval" id="ufo-reject">—<span class="uf-ounit">M³/hr</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">Daily Throughput</span><span class="uf-oval" id="ufo-daily">—<span class="uf-ounit">M³/day</span></span></div>
+        </div>
+      </div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">Membrane & Modules</div>
+        <div class="uf-ocard">
+          <div class="uf-orow"><span class="uf-olbl">Required Membrane Area</span><span class="uf-oval" id="ufo-area">—<span class="uf-ounit">M²</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">Total Modules (calc)</span><span class="uf-oval" id="ufo-total-mod">—<span class="uf-ounit">nos</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">Modules / Stream</span><span class="uf-oval" id="ufo-mod-stream">—</span></div>
+          <div class="uf-orow"><span class="uf-olbl">Total Modules (selected)</span><span class="uf-oval" id="ufo-total-sel">—<span class="uf-ounit">nos</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">Effective Streams</span><span class="uf-oval" id="ufo-streams">—</span></div>
+        </div>
+        <div class="uf-ocard">
+          <div class="uf-orow"><span class="uf-olbl">Operating Flux (Net)</span><span class="uf-oval" id="ufo-max-flux">—<span class="uf-ounit">LMH</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">Flux Status</span><span class="uf-oval" id="ufo-flux-status">—</span></div>
+        </div>
+      </div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">Backwash Pump</div>
+        <div class="uf-ocard">
+          <div class="uf-orow"><span class="uf-olbl">BW Flow Rate (per skid)</span><span class="uf-oval" id="ufo-bw-flow">—<span class="uf-ounit">M³/hr</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">BW Pump Config</span><span class="uf-oval" id="ufo-bw-config">—</span></div>
+          <div class="uf-orow"><span class="uf-olbl">BW Motor Power</span><span class="uf-oval" id="ufo-bw-kw">—<span class="uf-ounit">KW</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">Auto-selected Pump</span><span class="uf-oval" id="ufo-bw-model" style="font-size:10px;">—</span></div>
+        </div>
+      </div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">Air Blower</div>
+        <div class="uf-ocard">
+          <div class="uf-orow"><span class="uf-olbl">Total Air (per skid)</span><span class="uf-oval" id="ufo-air-total">—<span class="uf-ounit">Nm³/hr</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">Blower Config</span><span class="uf-oval" id="ufo-blower-config">—</span></div>
+          <div class="uf-orow"><span class="uf-olbl">Blower Motor Power</span><span class="uf-oval" id="ufo-blower-kw">—<span class="uf-ounit">KW</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">Auto-selected Blower</span><span class="uf-oval" id="ufo-blower-model" style="font-size:10px;">—</span></div>
+        </div>
+      </div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">MC Dosing Pumps</div>
+        <div class="uf-ocard">
+          <div class="uf-orow"><span class="uf-olbl">MC1 Chlorine (NaOCl)</span><span class="uf-oval" id="ufo-cl2-pump">—<span class="uf-ounit">L/hr</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">MC2 Caustic (NaOH)</span><span class="uf-oval" id="ufo-caustic-pump">—<span class="uf-ounit">L/hr</span></span></div>
+          <div class="uf-orow"><span class="uf-olbl">MC3 HCl</span><span class="uf-oval" id="ufo-hcl-pump">—<span class="uf-ounit">L/hr</span></span></div>
+        </div>
+      </div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">Power Summary</div>
+        <div class="uf-highlight">
+          <div class="uf-orow" style="border:none;padding:4px 0;">
+            <span class="uf-olbl" style="font-size:11px;">Total UF System Power</span>
+            <span class="uf-grand" id="ufo-total-power">—<span class="uf-ounit" style="color:var(--dim);font-size:9px;"> KW</span></span>
+          </div>
+          <div class="uf-orow" style="border:none;padding:2px 0;">
+            <span class="uf-olbl">SEC (kWh/M³ product)</span>
+            <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent2);" id="ufo-sec">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="uf-sec">
+        <div class="uf-sect">💰 Cost Summary (AED)</div>
+        <div class="uf-ocard">
+          <div class="uf-orow"><span class="uf-olbl">UF Modules</span><span class="uf-oval cg" id="ufc-modules">—</span></div>
+          <div class="uf-orow"><span class="uf-olbl">Backwash Pump(s)</span><span class="uf-oval ca2" id="ufc-bwpump">—</span></div>
+          <div class="uf-orow"><span class="uf-olbl">Air Blower(s)</span><span class="uf-oval ca2" id="ufc-blower">—</span></div>
+          <div class="uf-orow"><span class="uf-olbl">Auto Valves</span><span class="uf-oval ca2" id="ufc-valves">—</span></div>
+          <div class="uf-orow"><span class="uf-olbl">MC1/MC2/MC3 Dosing</span><span class="uf-oval ca2" id="ufc-dosing">—</span></div>
+          <div class="uf-orow"><span class="uf-olbl">Frontal Piping</span><span class="uf-oval ca2" id="ufc-piping">—</span></div>
+        </div>
+        <div class="uf-highlight">
+          <div class="uf-orow" style="border:none;padding:4px 0;">
+            <span class="uf-olbl" style="font-size:12px;">TOTAL UF COST</span>
+            <span class="uf-grand" id="ufc-total">—</span>
+          </div>
+        </div>
+      </div>
+    </div><!-- /out -->
+  </div><!-- /uf-layout -->
+
+</div>
+<div class="foot">UF SYSTEM DESIGN SOFTWARE — STANDALONE TOOL v1.0 — ALL PRICES IN AED</div>
+</div><!-- /t1 -->
+
+<!-- ══════════ TAB 2 — DESIGN GUIDELINES ══════════ -->
+<div class="sheet" id="t2">
+<div class="s-wrap">
+  <div class="s-top"><h2>📐 UF Design Guidelines & Compliance Check</h2></div>
+
+  <!-- Live compliance cards -->
+  <div class="dg-grid" id="dg-cards">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- Editable guidelines table -->
+  <div class="card">
+    <div class="ch">
+      <h2>✏️ Edit Turbidity–Flux Guidelines</h2>
+      <span class="sub">Modify, add or delete rows — changes apply immediately</span>
+      <button class="ed-btn ed-add" style="margin-left:auto" onclick="_dgAddRow()">+ ADD ROW</button>
+      <button class="ed-btn ed-save" style="margin-left:6px" onclick="_dgSaveAll()">💾 SAVE ALL</button>
+    </div>
+    <div style="padding:10px 14px;overflow-x:auto;">
+    <table class="turb-table" id="dg-edit-tbl">
+      <thead><tr><th>NTU</th><th>Flux (LMH)</th><th>Filter Time (min)</th><th>MC Cycles</th><th>Recovery %</th><th>Action</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Flux guideline table -->
+  <div class="card">
+    <div class="ch"><h2>🎯 Turbidity → Flux Design Guidelines</h2><span class="sub">Industry standard operating envelopes</span></div>
+    <div style="padding:10px 14px;overflow-x:auto;">
+    <table class="turb-table" id="turb-guide-tbl">
+      <thead><tr>
+        <th>Turbidity (NTU)</th><th>Rec. Flux (LMH)</th><th>Filtration Time (min)</th>
+        <th>BW Flux (LMH)</th><th>MC Cycles/day</th><th>Recovery (%)</th><th>Status</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- Design rules reference -->
+  <div class="card">
+    <div class="ch"><h2>📖 UF System Design Rules</h2></div>
+    <div style="padding:12px 16px;font-size:11px;line-height:1.9;color:var(--text);">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div style="color:var(--accent2);font-weight:700;letter-spacing:1px;margin-bottom:8px;font-size:10px;text-transform:uppercase;">Membrane Parameters</div>
+          <div>• Hollow Fiber (HF): most common, <span class="mono ca2">40–80 LMH</span> operating flux</div>
+          <div>• Spiral Wound: lower flux <span class="mono ca2">20–40 LMH</span>, for high-TSS feeds</div>
+          <div>• Tubular: highest flux <span class="mono ca2">80–150 LMH</span>, easy cleaning</div>
+          <div>• Module area: typically <span class="mono ca2">50, 80, or 100 M²</span></div>
+          <div>• Max 60 modules per skid/stream</div>
+        </div>
+        <div>
+          <div style="color:var(--accent2);font-weight:700;letter-spacing:1px;margin-bottom:8px;font-size:10px;text-transform:uppercase;">Backwash Standards</div>
+          <div>• BW Flux: <span class="mono ca2">100–150 LMH</span> (typically 2× operating)</div>
+          <div>• BW Duration: <span class="mono ca2">3–10 min</span></div>
+          <div>• BW Interval: <span class="mono ca2">20–60 min</span></div>
+          <div>• BW Pressure: <span class="mono ca2">1.5–4.0 bar</span></div>
+          <div>• Always 1+1 duty/standby for critical service</div>
+        </div>
+        <div>
+          <div style="color:var(--accent2);font-weight:700;letter-spacing:1px;margin-bottom:8px;font-size:10px;text-transform:uppercase;">Air Scour</div>
+          <div>• Air rate: <span class="mono ca2">8–15 Nm³/hr per module</span></div>
+          <div>• Blower pressure: <span class="mono ca2">0.3–0.7 bar</span></div>
+          <div>• Simultaneous air+water BW recommended</div>
+        </div>
+        <div>
+          <div style="color:var(--accent2);font-weight:700;letter-spacing:1px;margin-bottom:8px;font-size:10px;text-transform:uppercase;">CIP & Recovery</div>
+          <div>• System recovery: <span class="mono ca2">85–95%</span> typical</div>
+          <div>• CIP every <span class="mono ca2">30–90 days</span> depending on feed quality</div>
+          <div>• CIP chemicals: NaOCl (0.5–1%), NaOH (0.1 M), HCl (0.5%)</div>
+          <div>• CIP tank sized for <span class="mono ca2">1–2× module volume</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="foot">UF DESIGN GUIDELINES — BASED ON INDUSTRY STANDARDS</div>
+</div><!-- /t2 -->
+
+<!-- ══════════ TAB 3 — PRICE SELECTOR ══════════ -->
+<div class="sheet" id="t3">
+<div class="s-wrap">
+  <div class="s-top"><h2>💰 UF Equipment Price Selector (AED)</h2></div>
+
+  <div class="grand-bar">
+    <span class="grand-bar-lbl">Total UF System Cost</span>
+    <span class="grand-bar-val" id="ps-grand-total">AED —</span>
+  </div>
+
+  <div class="price-grid">
+    <!-- UF Modules -->
+    <div class="price-card">
+      <div class="price-card-hd"><h3>🧱 UF Modules</h3><span class="badge badge-teal" id="ps-mod-qty">0 nos</span></div>
+      <div class="price-card-body">
+        <div class="price-row">
+          <span class="price-lbl">Module Unit Price</span>
+          <input type="number" id="uf-price-module" class="price-inp" value="8500" min="0" oninput="calcUF()">
+          <span class="price-unit">AED</span>
+        </div>
+        <div class="price-total-row">
+          <span class="price-total-lbl">Module Total</span>
+          <span class="price-total-val" id="ps-mod-total">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BW Pump -->
+    <div class="price-card">
+      <div class="price-card-hd"><h3>💧 BW Pump(s)</h3><span class="badge badge-green" id="ps-bwp-qty">0 pumps</span></div>
+      <div class="price-card-body">
+        <div class="price-row">
+          <span class="price-lbl">BW Pump Unit Price</span>
+          <input type="number" id="uf-price-bwpump" class="price-inp" value="0" min="0" oninput="calcUF()">
+          <span class="price-unit">AED</span>
+        </div>
+        <div class="uf-unit" style="margin-bottom:8px;">0 = auto from pump selection table below</div>
+        <div id="ps-bwp-auto" style="font-size:10px;color:var(--accent2);margin-bottom:8px;"></div>
+        <div class="price-total-row">
+          <span class="price-total-lbl">BW Pump Total</span>
+          <span class="price-total-val" id="ps-bwp-total">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Air Blower -->
+    <div class="price-card">
+      <div class="price-card-hd"><h3>💨 Air Blower(s)</h3><span class="badge badge-green" id="ps-blw-qty">0 blowers</span></div>
+      <div class="price-card-body">
+        <div class="price-row">
+          <span class="price-lbl">Blower Unit Price</span>
+          <input type="number" id="uf-price-blower" class="price-inp" value="0" min="0" oninput="calcUF()">
+          <span class="price-unit">AED</span>
+        </div>
+        <div class="uf-unit" style="margin-bottom:8px;">0 = auto from blower selection table below</div>
+        <div id="ps-blw-auto" style="font-size:10px;color:var(--accent2);margin-bottom:8px;"></div>
+        <div class="price-total-row">
+          <span class="price-total-lbl">Blower Total</span>
+          <span class="price-total-val" id="ps-blw-total">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auto Valves -->
+    <div class="price-card">
+      <div class="price-card-hd"><h3>🔧 Auto Valves</h3><span class="badge badge-teal" id="ps-vav-qty">per stream</span></div>
+      <div class="price-card-body">
+        <div class="price-row">
+          <span class="price-lbl">Valve Set (per stream)</span>
+          <input type="number" id="uf-price-valves" class="price-inp" value="18500" min="0" oninput="calcUF()">
+          <span class="price-unit">AED</span>
+        </div>
+        <div class="price-total-row">
+          <span class="price-total-lbl">Valves Total</span>
+          <span class="price-total-val" id="ps-vav-total">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MC Dosing -->
+    <div class="price-card">
+      <div class="price-card-hd"><h3>⚗️ MC Dosing Pumps</h3><span class="badge badge-orange">3 pumps</span></div>
+      <div class="price-card-body">
+        <div class="price-row">
+          <span class="price-lbl">MC1 Chlorine (NaOCl)</span>
+          <input type="number" id="uf-price-mc1" class="price-inp" value="4500" min="0" oninput="calcUF()">
+          <span class="price-unit">AED</span>
+        </div>
+        <div class="price-row">
+          <span class="price-lbl">MC2 Caustic (NaOH)</span>
+          <input type="number" id="uf-price-mc2" class="price-inp" value="4500" min="0" oninput="calcUF()">
+          <span class="price-unit">AED</span>
+        </div>
+        <div class="price-row">
+          <span class="price-lbl">MC3 Acid (HCl)</span>
+          <input type="number" id="uf-price-mc3" class="price-inp" value="4500" min="0" oninput="calcUF()">
+          <span class="price-unit">AED</span>
+        </div>
+        <div class="price-total-row">
+          <span class="price-total-lbl">Dosing Total</span>
+          <span class="price-total-val" id="ps-dos-total">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Piping -->
+    <div class="price-card">
+      <div class="price-card-hd"><h3>🔩 Frontal Piping</h3><span class="badge badge-teal" id="ps-pip-qty">per stream</span></div>
+      <div class="price-card-body">
+        <div class="price-row">
+          <span class="price-lbl">Piping Lumpsum (per stream)</span>
+          <input type="number" id="uf-price-piping" class="price-inp" value="35000" min="0" oninput="calcUF()">
+          <span class="price-unit">AED</span>
+        </div>
+        <div class="price-total-row">
+          <span class="price-total-lbl">Piping Total</span>
+          <span class="price-total-val" id="ps-pip-total">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BW Pump selection table -->
+  <div class="card">
+    <div class="ch"><h2>💧 BW Pump Selection Table (SS316 Feed Pumps)</h2><span class="sub">Auto-highlighted = best match</span>
+      <button class="ed-btn ed-add" style="margin-left:auto" onclick="_prAddRow('bwp')">+ ADD PUMP</button>
+    </div>
+    <div style="overflow-x:auto;"><table class="sel-table" id="bwp-sel-tbl">
+      <thead><tr><th>#</th><th>Flow M³/hr</th><th>Pr Bar</th><th>KW</th><th>Material</th><th>Model</th><th>Price AED</th><th>Actions</th></tr></thead>
+      <tbody id="bwp-tb"></tbody>
+    </table></div>
+  </div>
+
+  <!-- Blower selection table -->
+  <div class="card">
+    <div class="ch"><h2>💨 Blower Selection Table (Kaeser Series)</h2><span class="sub">Auto-highlighted = best match</span>
+      <button class="ed-btn ed-add" style="margin-left:auto" onclick="_prAddRow('blw')">+ ADD BLOWER</button>
+    </div>
+    <div style="overflow-x:auto;"><table class="sel-table" id="blw-sel-tbl">
+      <thead><tr><th>#</th><th>Flow Nm³/hr</th><th>Pr mbar</th><th>KW</th><th>Make</th><th>Model</th><th>Price AED</th><th>Actions</th></tr></thead>
+      <tbody id="blw-tb"></tbody>
+    </table></div>
+  </div>
+
+</div>
+<div class="foot">PRICE SELECTOR — ALL PRICES IN AED — VERIFY WITH SUPPLIERS</div>
+</div><!-- /t3 -->
+
+<!-- ══════════ TAB 4 — BOQ SUMMARY ══════════ -->
+<div class="sheet" id="t4">
+<div class="s-wrap">
+  <div class="s-top">
+    <h2>📋 UF System Bill of Quantities</h2>
+    <button class="calc-btn" style="width:auto;padding:6px 16px;margin-bottom:0;" onclick="renderBOQ()">⟳ Refresh BOQ</button>
+  </div>
+
+  <div class="grand-bar">
+    <span class="grand-bar-lbl">Total UF System Cost (AED)</span>
+    <span class="grand-bar-val" id="boq-grand">AED —</span>
+  </div>
+
+  <div class="card">
+    <div class="ch"><h2>📋 Full Equipment BOQ</h2><span class="sub" id="boq-sub">Run calcUF first</span></div>
+    <div class="boq-wrap">
+    <table class="boq-table">
+      <thead><tr>
+        <th style="width:30px;">#</th>
+        <th style="min-width:200px;">Description</th>
+        <th>Make / Type</th>
+        <th>Model / Spec</th>
+        <th>Duty</th>
+        <th>Standby</th>
+        <th>Unit Price AED</th>
+        <th>Total Nos</th>
+        <th>Total AED</th>
+      </tr></thead>
+      <tbody id="boq-tbody"></tbody>
+    </table>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:20px;align-items:center;padding:9px 14px;background:rgba(0,5,18,.95);border-top:1px solid rgba(13,45,88,.5);">
+      <span style="color:var(--dim);font-size:10px;letter-spacing:1px;">TOTAL UF SYSTEM COST</span>
+      <span style="font-family:'Share Tech Mono',monospace;font-weight:700;color:var(--green);font-size:16px;" id="boq-foot-total">AED —</span>
+    </div>
+  </div>
+</div>
+<div class="foot">BOQ SUMMARY — UF SYSTEM — ALL PRICES INDICATIVE</div>
+</div><!-- /t4 -->
+
+<!-- ══════════ TAB 5 — REFERENCE TABLES ══════════ -->
+<div class="sheet" id="t5">
+<div class="s-wrap">
+  <div class="s-top"><h2>📊 Reference Data & Selection Tables</h2></div>
+
+  <div class="card">
+    <div class="ch"><h2>🌊 Turbidity–Flux Reference</h2><span class="sub">Industry-standard UF design guidelines by feed water quality</span></div>
+    <div style="padding:10px 14px;overflow-x:auto;">
+    <table class="turb-table">
+      <thead><tr>
+        <th>Turbidity (NTU)</th><th>Operating Flux (LMH)</th><th>Filtration Time (min)</th>
+        <th>BW Duration (min)</th><th>MC Cycles/Day</th><th>UF Recovery %</th><th>Notes</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>5</td><td class="mono ca2">73.9</td><td>30</td><td>3–5</td><td>1</td><td>93–95</td><td style="font-size:9px;color:var(--dim);">Clear water, minimal maintenance</td></tr>
+        <tr><td>10</td><td class="mono ca2">68</td><td>30</td><td>3–5</td><td>1</td><td>92–95</td><td style="font-size:9px;color:var(--dim);">Good quality, standard operation</td></tr>
+        <tr><td>20</td><td class="mono ca2">60</td><td>25</td><td>5</td><td>1</td><td>90–93</td><td style="font-size:9px;color:var(--dim);">Moderate turbidity</td></tr>
+        <tr><td>30</td><td class="mono ca2">57</td><td>25</td><td>5</td><td>2</td><td>88–92</td><td style="font-size:9px;color:var(--dim);">Increased BW frequency</td></tr>
+        <tr><td>40</td><td class="mono ca2">51</td><td>25</td><td>5–7</td><td>2</td><td>87–91</td><td style="font-size:9px;color:var(--dim);">High turbidity operation</td></tr>
+        <tr><td>50</td><td class="mono ca2">45</td><td>25</td><td>5–7</td><td>2</td><td>85–90</td><td style="font-size:9px;color:var(--dim);">Frequent maintenance req'd</td></tr>
+        <tr><td>75</td><td class="mono ca2">40</td><td>25</td><td>7–10</td><td>2</td><td>83–88</td><td style="font-size:9px;color:var(--dim);">Very high turbidity</td></tr>
+        <tr><td>100</td><td class="mono ca2">39</td><td>20</td><td>7–10</td><td>2</td><td>80–85</td><td style="font-size:9px;color:var(--dim);">Maximum limit — consider pre-treatment</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><h2>💧 Backwash Pump Database (SS316)</h2></div>
+    <div style="overflow-x:auto;">
+    <table class="sel-table">
+      <thead><tr><th>#</th><th>Flow M³/hr</th><th>Pressure Bar</th><th>Power KW</th><th>Material</th><th>Price AED</th><th>Model</th></tr></thead>
+      <tbody id="bwp-ref-tb"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch"><h2>💨 Blower Database (Kaeser)</h2></div>
+    <div style="overflow-x:auto;">
+    <table class="sel-table">
+      <thead><tr><th>#</th><th>Flow Nm³/hr</th><th>Pressure mbar</th><th>Power KW</th><th>Make</th><th>Price AED</th><th>Model</th></tr></thead>
+      <tbody id="blw-ref-tb"></tbody>
+    </table>
+    </div>
+  </div>
+
+</div>
+<div class="foot">REFERENCE TABLES — UF DESIGN SOFTWARE</div>
+</div><!-- /t5 -->
+
+<!-- ══════════ TAB 6 — ADMIN PANEL ══════════ -->
+<div class="sheet" id="t6">
+<div class="s-wrap">
+
+  <!-- Admin login gate — shown when not yet authenticated this session -->
+  <div id="adm-gate" style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
+    <div style="background:#060e1a;border:2px solid var(--accent3);border-radius:14px;padding:44px 48px;min-width:360px;text-align:center;box-shadow:0 0 60px rgba(255,112,67,.25);">
+      <div style="font-size:36px;margin-bottom:14px;">⚙️</div>
+      <div style="color:var(--accent3);font-size:16px;font-weight:700;letter-spacing:3px;margin-bottom:6px;text-transform:uppercase;">Admin Panel</div>
+      <div style="color:var(--dim);font-size:10px;margin-bottom:26px;letter-spacing:1px;">ENTER ADMINISTRATOR PASSWORD</div>
+      <input type="password" id="adm6-pw" class="adm-pw" placeholder="••••••••" maxlength="20"
+        onkeydown="if(event.key==='Enter')_adm6Login()"
+        style="border-color:var(--accent3);">
+      <button onclick="_adm6Login()" style="width:100%;padding:11px;cursor:pointer;border-radius:5px;
+        background:linear-gradient(135deg,rgba(255,112,67,.15),rgba(255,80,40,.08));
+        border:1px solid var(--accent3);color:var(--accent3);font-family:'Rajdhani',sans-serif;
+        font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all .2s;"
+        onmouseover="this.style.background='rgba(255,112,67,.3)'" onmouseout="this.style.background='linear-gradient(135deg,rgba(255,112,67,.15),rgba(255,80,40,.08))'">
+        ▶ ENTER ADMIN PANEL
+      </button>
+      <div id="adm6-err" style="color:#ff4444;font-size:11px;margin-top:11px;min-height:16px;letter-spacing:1px;"></div>
+    </div>
+  </div>
+
+  <!-- Admin dashboard — shown after correct password -->
+  <div id="adm-dashboard" style="display:none;">
+
+    <div class="s-top">
+      <h2>⚙️ Administrator Panel</h2>
+      <button class="calc-btn" style="width:auto;padding:6px 16px;margin-bottom:0;border-color:#ff4444;color:#ff4444;background:rgba(255,68,68,.08);"
+        onclick="_adm6Logout()">🔒 Lock Panel</button>
+    </div>
+
+    <!-- SESSION INFO -->
+    <div class="card">
+      <div class="ch"><h2>👤 Session Info</h2></div>
+      <div style="padding:14px 18px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:14px 16px;text-align:center;">
+          <div style="font-size:9px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Admin Status</div>
+          <div id="adm-sess-status" style="font-size:16px;font-weight:700;color:var(--green);font-family:'Share Tech Mono',monospace;">ACTIVE</div>
+        </div>
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:14px 16px;text-align:center;">
+          <div style="font-size:9px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Tabs Unlocked</div>
+          <div id="adm-tabs-status" style="font-size:16px;font-weight:700;color:var(--accent2);font-family:'Share Tech Mono',monospace;">ALL 4</div>
+        </div>
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:14px 16px;text-align:center;">
+          <div style="font-size:9px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Login Time</div>
+          <div id="adm-login-time" style="font-size:13px;font-weight:700;color:var(--accent);font-family:'Share Tech Mono',monospace;">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LICENSE TIMER MANAGEMENT -->
+    <div class="card">
+      <div class="ch"><h2>⏱ License Timer Management</h2><span class="sub">30-day rolling license</span></div>
+      <div style="padding:18px 20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;">
+          <!-- Current status -->
+          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:18px;">
+            <div style="font-size:9px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">Current License Status</div>
+            <div id="adm-lic-remaining" style="font-size:28px;font-weight:800;color:var(--accent2);font-family:'Share Tech Mono',monospace;margin-bottom:4px;">-- d -- h</div>
+            <div id="adm-lic-started" style="font-size:10px;color:var(--dim);margin-bottom:4px;">Started: —</div>
+            <div id="adm-lic-expires" style="font-size:10px;color:var(--dim);">Expires: —</div>
+            <div id="adm-lic-bar-wrap" style="margin-top:12px;background:rgba(0,0,0,.4);border-radius:3px;height:6px;overflow:hidden;">
+              <div id="adm-lic-bar" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .5s;"></div>
+            </div>
+          </div>
+          <!-- Reset controls -->
+          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:18px;">
+            <div style="font-size:9px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;">Timer Controls</div>
+            <button onclick="_adm6ResetTimer(30)" style="width:100%;padding:10px;margin-bottom:8px;cursor:pointer;border-radius:5px;
+              background:rgba(0,214,143,.1);border:1px solid var(--green);color:var(--green);
+              font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;
+              text-transform:uppercase;transition:all .2s;"
+              onmouseover="this.style.background='rgba(0,214,143,.25)'" onmouseout="this.style.background='rgba(0,214,143,.1)'">
+              🔄 RESET TO 30 DAYS
+            </button>
+            <button onclick="_adm6ResetTimer(60)" style="width:100%;padding:10px;margin-bottom:8px;cursor:pointer;border-radius:5px;
+              background:rgba(0,212,255,.08);border:1px solid var(--accent);color:var(--accent);
+              font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;
+              text-transform:uppercase;transition:all .2s;"
+              onmouseover="this.style.background='rgba(0,212,255,.22)'" onmouseout="this.style.background='rgba(0,212,255,.08)'">
+              📅 EXTEND TO 60 DAYS
+            </button>
+            <button onclick="_adm6ResetTimer(90)" style="width:100%;padding:10px;cursor:pointer;border-radius:5px;
+              background:rgba(99,102,241,.08);border:1px solid #6366f1;color:#6366f1;
+              font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.5px;
+              text-transform:uppercase;transition:all .2s;"
+              onmouseover="this.style.background='rgba(99,102,241,.22)'" onmouseout="this.style.background='rgba(99,102,241,.08)'">
+              📆 EXTEND TO 90 DAYS
+            </button>
+          </div>
+        </div>
+        <!-- Custom days input -->
+        <div style="background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:6px;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <span style="font-size:10px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;">Custom Extension:</span>
+          <input type="number" id="adm-custom-days" min="1" max="365" value="30"
+            style="width:80px;background:rgba(0,8,28,.9);border:1px solid var(--accent);color:var(--accent2);
+            font-family:'Share Tech Mono',monospace;font-size:13px;padding:6px 8px;border-radius:3px;outline:none;
+            -webkit-user-select:text;user-select:text;">
+          <span style="font-size:10px;color:var(--dim);">days</span>
+          <button onclick="_adm6ResetTimerCustom()" style="padding:7px 18px;cursor:pointer;border-radius:4px;
+            background:rgba(245,158,11,.1);border:1px solid #f59e0b;color:#f59e0b;
+            font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">
+            ⚡ APPLY CUSTOM
+          </button>
+          <span id="adm-reset-msg" style="font-size:11px;color:var(--green);margin-left:auto;"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCESS LOG -->
+    <div class="card">
+      <div class="ch"><h2>📋 Access Log</h2><span class="sub">Last 10 admin logins (stored locally)</span>
+        <button class="ed-btn ed-del" style="margin-left:auto" onclick="_adm6ClearLog()">CLEAR LOG</button>
+      </div>
+      <div style="padding:10px 16px;">
+        <table style="width:100%;border-collapse:collapse;font-size:10px;" id="adm-log-tbl">
+          <thead><tr>
+            <th style="text-align:left;color:var(--accent);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:5px 8px;border-bottom:1px solid var(--border);">Date/Time</th>
+            <th style="text-align:left;color:var(--accent);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:5px 8px;border-bottom:1px solid var(--border);">Action</th>
+            <th style="text-align:left;color:var(--accent);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:5px 8px;border-bottom:1px solid var(--border);">Details</th>
+          </tr></thead>
+          <tbody id="adm-log-body"></tbody>
+        </table>
+        <div id="adm-log-empty" style="color:var(--dim);font-size:11px;padding:14px 8px;display:none;">No log entries yet.</div>
+      </div>
+    </div>
+
+    <!-- SYSTEM INFO -->
+    <div class="card">
+      <div class="ch"><h2>🖥 System Information</h2></div>
+      <div style="padding:14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><span style="font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;">Software Version</span><br>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent2);">UF Design Software v1.0</span></div>
+        <div><span style="font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;">License Model</span><br>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent2);">Rolling Timer</span></div>
+        <div><span style="font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;">Storage</span><br>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent2);">localStorage (browser)</span></div>
+        <div><span style="font-size:9px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;">Browser</span><br>
+          <span id="adm-ua" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent2);">—</span></div>
+      </div>
+    </div>
+
+  </div><!-- /adm-dashboard -->
+</div>
+<div class="foot">ADMIN PANEL — RESTRICTED ACCESS</div>
+</div><!-- /t6 -->
+
+<script>
+// ════════════════════════════════════════════
+// REFERENCE DATA
+// ════════════════════════════════════════════
+const UF_TURBIDITY_FLUX={
+  5:{flux:73.9,duration:30,mc:1,rec:94},10:{flux:68,duration:30,mc:1,rec:93},
+  20:{flux:60,duration:25,mc:1,rec:91},30:{flux:57,duration:25,mc:2,rec:90},
+  40:{flux:51,duration:25,mc:2,rec:89},50:{flux:45,duration:25,mc:2,rec:88},
+  75:{flux:40,duration:25,mc:2,rec:86},100:{flux:39,duration:20,mc:2,rec:83}
+};
+
+// SS316 pumps [idx, flow, pressure, kW, material, price, model]
+const BW_PUMPS=[
+  [1,1.5,3,0.37,'SS316',2413,'CRN1-6'],[2,5.8,4,1.1,'SS316',3518,'CRN5-8'],
+  [3,10,2.5,2.2,'SS316',7671,'CM15-2'],[4,17,3.3,3,'SS316',6463,'CRN15-3'],
+  [5,30,4,5.5,'SS316',12206,'CRN32-3-2'],[6,36,40,7.5,'SS316',13704,'NB40-160/171'],
+  [7,45,5,11,'SS316',16570,'CRN45-3-2'],[8,50,3,7.5,'SS316',15496,'NB50-160/151'],
+  [9,66,4,15,'SS316',18500,'NB50-160/177'],[10,72,3.5,11,'SS316',21285,'NB50-160/167'],
+  [11,80,3,11,'SS316',22100,'NB65-160/158'],[12,90,3,11,'SS316',18250,'NB65-160/158'],
+  [13,101,3.5,15,'SS316',17762,'NB65-160/173'],[14,130,3,15,'SS316',20638,'NB65-160/173'],
+  [15,170,3,22,'SS316',24947,'NB80-160/166'],[16,187,3,22,'SS316',41400,'CRN185-1'],
+  [17,190,3,22,'SS316',27112,'NB80-160/170'],[18,195,3.5,30,'SS316',30428,'NB80-200/188'],
+  [19,232,3.5,37,'SS316',37688,'NB100-200/181'],[20,260,4,45,'SS316',42773,'NB100-200/188'],
+];
+
+// Air blowers [idx, flow Nm³/hr, pressure mbar, kW, make, price, model]
+const UF_BLOWER=[
+  [1,50,500,1.5,'Kaeser',8500,'BB-50'],[2,100,500,3.0,'Kaeser',12000,'BB-100'],
+  [3,200,500,5.5,'Kaeser',18500,'BB-200'],[4,300,500,7.5,'Kaeser',24000,'BB-300'],
+  [5,500,500,11,'Kaeser',35000,'BB-500'],[6,750,500,15,'Kaeser',48000,'BB-750'],
+  [7,1000,500,22,'Kaeser',62000,'BB-1000'],[8,1500,500,30,'Kaeser',85000,'BB-1500'],
+  [9,2000,500,45,'Kaeser',110000,'BB-2000'],[10,3000,500,55,'Kaeser',145000,'BB-3000'],
+  [11,5000,500,75,'Kaeser',195000,'BB-5000'],
+];
+
+let UF_RESULTS={};
+let PINNED_BWP=null, PINNED_BLW=null;
+
+// ════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════
+function guf(id){return parseFloat(document.getElementById(id)?.value)||0;}
+function gufv(id){return document.getElementById(id)?.value||'';}
+function sv(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function f2(v){return parseFloat(v).toFixed(2);}
+function aed(v){return 'AED '+Math.round(v).toLocaleString();}
+function toast2(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function switchTab(id,btn){
+  document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='t2') renderGuidelines();
+  if(id==='t3') renderPriceTables();
+  if(id==='t4') renderBOQ();
+  if(id==='t5') renderRefTables();
+  if(id==='t6' && typeof _adm6RefreshDashboard==='function') _adm6RefreshDashboard();
+}
+
+// ════════════════════════════════════════════
+// FLUX AUTO-UPDATE
+// ════════════════════════════════════════════
+function ufUpdateFlux(){
+  const t=parseInt(document.getElementById('uf-turbidity')?.value);
+  const p=UF_TURBIDITY_FLUX[t];
+  if(p){
+    const fe=document.getElementById('uf-flux');
+    if(fe) fe.value=p.flux;
+    sv('st-turbidity',t+' NTU');
+    sv('st-flux',p.flux+' LMH');
+  }
+  calcUF();
+}
+
+// ════════════════════════════════════════════
+// MAIN CALCULATION ENGINE
+// ════════════════════════════════════════════
+function calcUF(){
+  const roFeed   = guf('uf-ro-feed')||120;
+  const recovery = guf('uf-recovery')||90;
+  const flux     = guf('uf-flux')||60;
+  const modArea  = guf('uf-module-area')||80;
+  const bwFlux   = guf('uf-bw-flux')||125;
+  const bwPres   = guf('uf-bw-pressure')||2.5;
+  const bwEff    = (guf('uf-bw-eff')||75)/100;
+  const airNm3   = guf('uf-air')||12;
+  const blwPres  = guf('uf-blower-pressure')||0.5;
+  const blwEff   = (guf('uf-blower-eff')||70)/100;
+  const cipFlux  = guf('uf-cip-flux')||20;
+  const cipPres  = guf('uf-cip-pressure')||3.0;
+  const cipEff   = (guf('uf-cip-eff')||70)/100;
+  const bwConfig = gufv('uf-bw-config')||'duty-standby';
+  const blwConfig= gufv('uf-blower-config')||'duty-standby';
+
+  // Flows
+  const ufFeed  = roFeed/(recovery/100);  // total feed including reject
+  const ufReject= ufFeed - roFeed;
+  const daily   = roFeed * 24;
+
+  // Modules
+  const MAX_MOD_PER_SKID=60;
+  const totalArea   = (roFeed*1000)/flux;
+  const totalModReq = Math.ceil(totalArea/modArea);
+  const autoStreams  = Math.max(1,Math.ceil(totalModReq/MAX_MOD_PER_SKID));
+  // Respect manual override if active
+  const streamsEl2=document.getElementById('uf-streams');
+  const effectiveStreams = (_streamsOverride && streamsEl2 && !streamsEl2.disabled)
+    ? (parseInt(streamsEl2.value)||autoStreams)
+    : autoStreams;
+  const pumpSets    = Math.ceil(effectiveStreams/4);
+
+  // Update stream display
+  const streamsEl=document.getElementById('uf-streams');
+  if(streamsEl) streamsEl.value=effectiveStreams;
+  const streamsNote=document.getElementById('uf-streams-note');
+  if(streamsNote){
+    streamsNote.textContent = effectiveStreams>1
+      ? effectiveStreams+' streams ('+totalModReq+' mods > 60/stream cap)'
+      : '1 stream (≤ 60 modules)';
+    streamsNote.style.color = effectiveStreams>1?'var(--yellow)':'var(--accent2)';
+  }
+
+  const calcEl=document.getElementById('uf-modules-calc');
+  if(calcEl) calcEl.value=totalModReq;
+  const selEl=document.getElementById('uf-modules-selected');
+  if(selEl&&!selEl.dataset.userSet) selEl.value=totalModReq;
+  const totalModSel = Math.ceil(parseFloat(selEl?.value)||totalModReq);
+  const modSel = Math.ceil(totalModSel/effectiveStreams);
+  const areaPerSkid = modSel*modArea;
+  const actualArea  = totalModSel*modArea;
+  const netFlux = (roFeed*1000)/(totalModSel*modArea);
+
+  // BW (per skid)
+  const bwFlow     = (areaPerSkid/1000)*bwFlux;
+  const bwHydroKW  = (bwFlow/3600)*(bwPres*100000)/1000;
+  const bwMotorKW  = bwHydroKW/bwEff;
+  const bwDuty     = bwConfig==='single'?1:(bwConfig==='2+1'?2:1);
+  const bwStandby  = bwConfig==='single'?0:1;
+  const bwLabel    = bwConfig==='single'?'Single':(bwConfig==='2+1'?'2+1 D/S':'1+1 D/S');
+
+  // Auto BW pump
+  let bwPumpIdx = PINNED_BWP!=null ? PINNED_BWP : BW_PUMPS.findIndex(r=>r[1]>=bwFlow);
+  if(bwPumpIdx<0) bwPumpIdx=BW_PUMPS.length-1;
+  const bwPumpR=BW_PUMPS[bwPumpIdx];
+
+  // Air blower (per skid)
+  const airTotal   = modSel*airNm3;
+  const blwHydroKW = (airTotal/3600)*(blwPres*100000)/1000;
+  const blwMotorKW = blwHydroKW/blwEff;
+  const blwDuty    = blwConfig==='single'?1:(blwConfig==='2+1'?2:1);
+  const blwStandby = blwConfig==='single'?0:1;
+  const blwLabel   = blwConfig==='single'?'Single':(blwConfig==='2+1'?'2+1 D/S':'1+1 D/S');
+
+  let blwIdx = PINNED_BLW!=null ? PINNED_BLW : UF_BLOWER.findIndex(r=>r[1]>=airTotal);
+  if(blwIdx<0) blwIdx=UF_BLOWER.length-1;
+  const blwR=UF_BLOWER[blwIdx];
+
+  // CIP
+  const cipFlow   = (actualArea/1000)*cipFlux;
+  const cipHydroKW= (cipFlow/3600)*(cipPres*100000)/1000;
+  const cipMotorKW= cipHydroKW/cipEff;
+
+  // MC Dosing
+  const mcFlow   = bwFlow*0.5;
+  const cl2Pump  = mcFlow*2.083;
+  const causticP = mcFlow*0.5;
+  const hclPump  = mcFlow*0.833;
+
+  const totalPower = bwMotorKW+blwMotorKW+cipMotorKW;
+  const sec = roFeed>0 ? (totalPower/(roFeed*24))*1000 : 0;
+
+  // Prices
+  const priceModule = guf('uf-price-module')||8500;
+  const priceBwPump = (guf('uf-price-bwpump')>0)?guf('uf-price-bwpump'):(bwPumpR?bwPumpR[5]:0);
+  const priceBlower = (guf('uf-price-blower')>0)?guf('uf-price-blower'):(blwR?blwR[5]:0);
+  const priceValves = guf('uf-price-valves')||18500;
+  const priceMC1    = guf('uf-price-mc1')||4500;
+  const priceMC2    = guf('uf-price-mc2')||4500;
+  const priceMC3    = guf('uf-price-mc3')||4500;
+  const pipingLump  = guf('uf-price-piping')||35000;
+
+  const costModules = totalModSel*priceModule;
+  const costBwPumps = priceBwPump*(bwDuty+bwStandby)*pumpSets;
+  const costBlowers = priceBlower*(blwDuty+blwStandby)*pumpSets;
+  const costValves  = priceValves*effectiveStreams;
+  const costDosing  = priceMC1+priceMC2+priceMC3;
+  const costPiping  = pipingLump*effectiveStreams;
+  const totalCost   = costModules+costBwPumps+costBlowers+costValves+costDosing+costPiping;
+
+  // Flux status check
+  const t=parseInt(document.getElementById('uf-turbidity')?.value)||20;
+  const guideline=UF_TURBIDITY_FLUX[t];
+  let fluxStatus='—', fluxClass='';
+  if(guideline){
+    const ratio=netFlux/guideline.flux;
+    if(ratio<=0.9){fluxStatus='✔ Conservative (safe)';fluxClass='p-ok';}
+    else if(ratio<=1.05){fluxStatus='✔ On-guideline';fluxClass='p-ok';}
+    else if(ratio<=1.2){fluxStatus='⚠ Slightly high';fluxClass='p-warn';}
+    else{fluxStatus='✗ Exceeds guideline';fluxClass='gb-bad';}
+  }
+
+  // Store globally
+  UF_RESULTS={
+    roFeed,ufFeed,ufReject,daily,totalArea,totalModReq,totalModSel,modSel,effectiveStreams,
+    autoStreams,areaPerSkid,pumpSets,actualArea,netFlux,flux,bwFlow,bwMotorKW,bwLabel,
+    bwDuty,bwStandby,bwPumpR,bwPumpIdx,priceBwPump,airTotal,blwMotorKW,blwLabel,blwDuty,
+    blwStandby,blwR,blwIdx,priceBlower,mcFlow,cl2Pump,causticP,hclPump,totalPower,sec,
+    cipMotorKW,priceModule,priceValves,priceMC1,priceMC2,priceMC3,pipingLump,
+    costModules,costBwPumps,costBlowers,costValves,costDosing,costPiping,totalCost,
+    bwConfig,blwConfig,blwIdx_auto: UF_BLOWER.findIndex(r=>r[1]>=airTotal),
+    bwPumpIdx_auto: BW_PUMPS.findIndex(r=>r[1]>=bwFlow)
+  };
+
+  // ── Update outputs ──
+  sv('ufo-ro-feed',roFeed.toFixed(2));
+  sv('ufo-inst',ufFeed.toFixed(2));
+  sv('ufo-reject',ufReject.toFixed(2));
+  sv('ufo-daily',daily.toFixed(0));
+  sv('ufo-area',totalArea.toFixed(2));
+  sv('ufo-total-mod',totalModReq+' [ '+roFeed.toFixed(1)+'×1000÷'+modArea+'÷'+flux+' ]');
+  sv('ufo-mod-stream',modSel+' mods × '+effectiveStreams+' stream(s)');
+  sv('ufo-total-sel',totalModSel);
+  sv('ufo-streams',effectiveStreams+(effectiveStreams>1?' streams':' stream'));
+  sv('ufo-max-flux',netFlux.toFixed(2));
+  const fs=document.getElementById('ufo-flux-status');
+  if(fs){fs.innerHTML=`<span class="pill ${fluxClass}">${fluxStatus}</span>`;}
+  sv('ufo-bw-flow',bwFlow.toFixed(2));
+  sv('ufo-bw-config',bwLabel+' ('+pumpSets+' set'+(pumpSets>1?'s':'')+', '+(bwDuty+bwStandby)*pumpSets+' total)');
+  sv('ufo-bw-kw',bwMotorKW.toFixed(2));
+  sv('ufo-bw-model',bwPumpR?bwPumpR[6]+' — '+bwPumpR[1]+' M³/hr '+bwPumpR[2]+' Bar':'—');
+  sv('ufo-air-total',airTotal.toFixed(2));
+  sv('ufo-blower-config',blwLabel+' ('+pumpSets+' set'+(pumpSets>1?'s':'')+', '+(blwDuty+blwStandby)*pumpSets+' total)');
+  sv('ufo-blower-kw',blwMotorKW.toFixed(2));
+  sv('ufo-blower-model',blwR?blwR[6]+' — '+blwR[1]+' Nm³/hr '+blwR[3]+' kW':'—');
+  sv('ufo-cl2-pump',cl2Pump.toFixed(1));
+  sv('ufo-caustic-pump',causticP.toFixed(1));
+  sv('ufo-hcl-pump',hclPump.toFixed(2));
+  sv('ufo-total-power',totalPower.toFixed(2));
+  sv('ufo-sec',(sec||0).toFixed(3)+' kWh/M³');
+  sv('ufc-modules',aed(costModules)+' ('+totalModSel+' × AED '+priceModule.toLocaleString()+')');
+  sv('ufc-bwpump',aed(costBwPumps)+' ('+pumpSets+' set'+(pumpSets>1?'s':'')+' × '+(bwDuty+bwStandby)+' pumps)');
+  sv('ufc-blower',aed(costBlowers)+' ('+pumpSets+' set'+(pumpSets>1?'s':'')+' × '+(blwDuty+blwStandby)+' blowers)');
+  sv('ufc-valves',aed(costValves)+' ('+effectiveStreams+' stream'+(effectiveStreams>1?'s':'')+')');
+  sv('ufc-dosing',aed(costDosing)+' (MC1+MC2+MC3)');
+  sv('ufc-piping',aed(costPiping)+' ('+effectiveStreams+' × AED '+pipingLump.toLocaleString()+')');
+  sv('ufc-total',aed(totalCost));
+
+  // Update status bar
+  sv('st-turbidity',t+' NTU');
+  sv('st-flux',netFlux.toFixed(1)+' LMH');
+
+  // Update price selector totals if visible
+  updatePricePanel();
+  // Refresh guide badges if visible
+  if(document.getElementById('t2')?.classList.contains('active')) renderGuidelines();
+  if(document.getElementById('t3')?.classList.contains('active')) renderPriceTables();
+  if(document.getElementById('t4')?.classList.contains('active')) renderBOQ();
+}
+
+// ════════════════════════════════════════════
+// PRICE PANEL UPDATE
+// ════════════════════════════════════════════
+function updatePricePanel(){
+  const R=UF_RESULTS;
+  if(!R.totalModSel) return;
+  sv('ps-mod-qty',R.totalModSel+' nos');
+  sv('ps-bwp-qty',R.pumpSets*((R.bwDuty||1)+(R.bwStandby||1))+' pumps');
+  sv('ps-blw-qty',R.pumpSets*((R.blwDuty||1)+(R.blwStandby||1))+' blowers');
+  sv('ps-vav-qty',R.effectiveStreams+' streams');
+  sv('ps-pip-qty',R.effectiveStreams+' streams');
+  sv('ps-mod-total','AED '+Math.round(R.costModules).toLocaleString());
+  sv('ps-bwp-total','AED '+Math.round(R.costBwPumps).toLocaleString());
+  sv('ps-blw-total','AED '+Math.round(R.costBlowers).toLocaleString());
+  sv('ps-vav-total','AED '+Math.round(R.costValves).toLocaleString());
+  sv('ps-dos-total','AED '+Math.round(R.costDosing).toLocaleString());
+  sv('ps-pip-total','AED '+Math.round(R.costPiping).toLocaleString());
+  sv('ps-grand-total','AED '+Math.round(R.totalCost).toLocaleString());
+  sv('boq-grand','AED '+Math.round(R.totalCost).toLocaleString());
+  sv('boq-foot-total','AED '+Math.round(R.totalCost).toLocaleString());
+
+  const bwpAuto=document.getElementById('ps-bwp-auto');
+  if(bwpAuto&&R.bwPumpR) bwpAuto.textContent='Auto: '+R.bwPumpR[6]+' @ AED '+R.bwPumpR[5].toLocaleString();
+  const blwAuto=document.getElementById('ps-blw-auto');
+  if(blwAuto&&R.blwR) blwAuto.textContent='Auto: '+R.blwR[6]+' @ AED '+R.blwR[5].toLocaleString();
+}
+
+// ════════════════════════════════════════════
+// PRICE TABLES RENDER
+// ════════════════════════════════════════════
+function renderPriceTables(){
+  const R=UF_RESULTS;
+  // BW Pump table
+  let html='';
+  BW_PUMPS.forEach((r,i)=>{
+    const isAuto=r[0]-1===(R.bwPumpIdx_auto>=0?R.bwPumpIdx_auto:R.bwPumpIdx);
+    const isPinned=PINNED_BWP===i;
+    const cls=isPinned?'man-sel':isAuto?'auto-sel':'';
+    html+=`<tr class="${cls}">
+      <td class="mono ca">${r[0]}</td>
+      <td class="mono ca2">${r[1]}</td>
+      <td class="mono">${r[2]}</td>
+      <td class="mono">${r[3]}</td>
+      <td>${r[4]}</td>
+      <td class="mono">${r[6]}</td>
+      <td class="mono cg">${r[5].toLocaleString()}</td>
+      <td style="display:flex;gap:4px;"><button class="ub ${isPinned?'active':''}" onclick="pinBWP(${i})">${isPinned?'UNPIN':'USE →'}</button><button class="ed-btn ed-del" onclick="_prDelBwp(${i})">✕</button></td>
+    </tr>`;
+  });
+  const tb=document.getElementById('bwp-tb');
+  if(tb) tb.innerHTML=html;
+  // Add-row button
+  var bwAddBar=document.getElementById('bwp-add-bar');
+  if(bwAddBar) bwAddBar.style.display='flex';
+
+  // Blower table
+  html='';
+  UF_BLOWER.forEach((r,i)=>{
+    const isAuto=r[0]-1===(R.blwIdx_auto>=0?R.blwIdx_auto:R.blwIdx);
+    const isPinned=PINNED_BLW===i;
+    const cls=isPinned?'man-sel':isAuto?'auto-sel':'';
+    html+=`<tr class="${cls}">
+      <td class="mono ca">${r[0]}</td>
+      <td class="mono ca2">${r[1]}</td>
+      <td class="mono">${r[2]}</td>
+      <td class="mono">${r[3]}</td>
+      <td>${r[4]}</td>
+      <td class="mono">${r[6]}</td>
+      <td class="mono cg">${r[5].toLocaleString()}</td>
+      <td style="display:flex;gap:4px;"><button class="ub ${isPinned?'active':''}" onclick="pinBLW(${i})">${isPinned?'UNPIN':'USE →'}</button><button class="ed-btn ed-del" onclick="_prDelBlw(${i})">✕</button></td>
+    </tr>`;
+  });
+  const tb2=document.getElementById('blw-tb');
+  if(tb2) tb2.innerHTML=html;
+}
+
+function pinBWP(i){
+  PINNED_BWP = (PINNED_BWP===i)?null:i;
+  calcUF(); renderPriceTables();
+  toast2(PINNED_BWP!==null?'✔ BW Pump pinned: '+BW_PUMPS[i][6]:'🔓 BW Pump unpinned — auto selection restored');
+}
+function pinBLW(i){
+  PINNED_BLW = (PINNED_BLW===i)?null:i;
+  calcUF(); renderPriceTables();
+  toast2(PINNED_BLW!==null?'✔ Blower pinned: '+UF_BLOWER[i][6]:'🔓 Blower unpinned — auto selection restored');
+}
+
+// ════════════════════════════════════════════
+// DESIGN GUIDELINES RENDER
+// ════════════════════════════════════════════
+function renderGuidelines(){
+  const R=UF_RESULTS;
+  if(!R.roFeed){renderGuidelineEmpty();return;}
+
+  const t=parseInt(document.getElementById('uf-turbidity')?.value)||20;
+  const g=UF_TURBIDITY_FLUX[t]||{flux:60,rec:90};
+
+  function badge(ok,warn,txt){return `<span class="guideline-badge ${ok?'gb-ok':warn?'gb-warn':'gb-bad'}">${txt}</span>`;}
+
+  const fluxRatio=R.netFlux/g.flux;
+  const bwFlux=guf('uf-bw-flux')||125;
+  const bwOk=bwFlux>=100&&bwFlux<=150;
+  const bwRatio=bwFlux/R.netFlux;
+  const bwRatioOk=bwRatio>=1.8&&bwRatio<=2.5;
+  const recOk=R.effectiveStreams>=1;
+
+  const cards=[
+    {title:'Operating Flux',rows:[
+      {l:'Selected Flux',v:R.netFlux.toFixed(1)+' LMH'},
+      {l:'Guideline Flux ('+t+' NTU)',v:g.flux+' LMH'},
+      {l:'Ratio',v:(fluxRatio*100).toFixed(0)+'%'},
+      {l:'Status',v:badge(fluxRatio<=1.05,fluxRatio<=1.2,fluxRatio<=1.0?'Conservative':fluxRatio<=1.05?'On-guideline':fluxRatio<=1.2?'Slightly high':'Exceeds limit')},
+    ]},
+    {title:'Recovery & Streams',rows:[
+      {l:'RO Feed Flow',v:R.roFeed.toFixed(2)+' M³/hr'},
+      {l:'UF Feed (gross)',v:R.ufFeed.toFixed(2)+' M³/hr'},
+      {l:'UF Reject',v:R.ufReject.toFixed(2)+' M³/hr'},
+      {l:'Effective Streams',v:R.effectiveStreams+badge(true,false,R.effectiveStreams===1?'Single':'Multi')},
+    ]},
+    {title:'Backwash Parameters',rows:[
+      {l:'BW Flow (per skid)',v:R.bwFlow.toFixed(2)+' M³/hr'},
+      {l:'BW Flux',v:bwFlux+' LMH '+badge(bwOk,false,bwOk?'OK':'Out of range')},
+      {l:'BW/Op Flux Ratio',v:bwRatio.toFixed(1)+'× '+badge(bwRatioOk,false,bwRatioOk?'OK':'Check')},
+      {l:'BW Motor Power',v:R.bwMotorKW.toFixed(2)+' kW'},
+    ]},
+    {title:'Air Scour',rows:[
+      {l:'Air per module',v:guf('uf-air')+' Nm³/hr/mod'},
+      {l:'Air per skid total',v:R.airTotal.toFixed(1)+' Nm³/hr'},
+      {l:'Blower Power',v:R.blwMotorKW.toFixed(2)+' kW'},
+      {l:'Blower Model',v:R.blwR?R.blwR[6]:'—'},
+    ]},
+    {title:'Power & Energy',rows:[
+      {l:'Total UF Power',v:R.totalPower.toFixed(2)+' kW'},
+      {l:'SEC (kWh/M³)',v:(R.sec||0).toFixed(3)},
+      {l:'Daily Energy',v:(R.totalPower*24/1000).toFixed(1)+' MWh/day'},
+      {l:'SEC Status',v:badge(R.sec<0.4,R.sec<0.6,(R.sec||0).toFixed(3)+' kWh/M³')},
+    ]},
+    {title:'Cost Metrics',rows:[
+      {l:'Total UF Cost',v:'AED '+Math.round(R.totalCost).toLocaleString()},
+      {l:'Cost per Module',v:'AED '+guf('uf-price-module').toLocaleString()},
+      {l:'Cost per M² area',v:'AED '+(R.totalCost/R.actualArea).toFixed(0)},
+      {l:'Modules',v:R.totalModSel+' nos × '+R.effectiveStreams+' stream(s)'},
+    ]},
+  ];
+
+  const container=document.getElementById('dg-cards');
+  if(!container) return;
+  container.innerHTML=cards.map(c=>`
+    <div class="dg-card">
+      <div class="dg-card-title">${c.title}</div>
+      ${c.rows.map(r=>`<div class="dg-row"><span class="dg-lbl">${r.l}</span><span class="dg-val">${r.v}</span></div>`).join('')}
+    </div>`).join('');
+  // Rebuild the editable guideline table
+  const dget=document.getElementById('dg-edit-tbl');
+  if(dget){
+    let ethtml='';
+    Object.entries(UF_TURBIDITY_FLUX).forEach(([ntu,d])=>{
+      ethtml+=`<tr>
+        <td><input class="ed-cell" value="${ntu}" type="number" onchange="var old=${ntu};delete UF_TURBIDITY_FLUX[old];UF_TURBIDITY_FLUX[parseInt(this.value)]={flux:${d.flux},duration:${d.duration},mc:${d.mc},rec:${d.rec}};renderGuidelines();" style="width:55px"></td>
+        <td><input class="ed-cell" value="${d.flux}" type="number" onchange="UF_TURBIDITY_FLUX[${ntu}].flux=parseFloat(this.value);renderGuidelines();" style="width:65px"></td>
+        <td><input class="ed-cell" value="${d.duration}" type="number" onchange="UF_TURBIDITY_FLUX[${ntu}].duration=parseInt(this.value);" style="width:55px"></td>
+        <td><input class="ed-cell" value="${d.mc}" type="number" onchange="UF_TURBIDITY_FLUX[${ntu}].mc=parseInt(this.value);" style="width:45px"></td>
+        <td><input class="ed-cell" value="${d.rec}" type="number" onchange="UF_TURBIDITY_FLUX[${ntu}].rec=parseFloat(this.value);" style="width:55px"></td>
+        <td><button class="ed-btn ed-del" onclick="_dgDelNtu(${ntu})">✕ DEL</button></td>
+      </tr>`;
+    });
+    dget.querySelector('tbody').innerHTML=ethtml;
+  }
+
+  // Turbidity guideline table
+  const tb=document.querySelector('#turb-guide-tbl tbody');
+  if(tb){
+    let html='';
+    Object.entries(UF_TURBIDITY_FLUX).forEach(([ntu,d])=>{
+      const active=parseInt(ntu)===t;
+      html+=`<tr class="${active?'t-active':''}">
+        <td class="mono ${active?'ca':''}">${ntu}</td>
+        <td class="mono ca2">${d.flux}</td>
+        <td class="mono">${d.duration}</td>
+        <td class="mono">100–150</td>
+        <td class="mono">${d.mc}</td>
+        <td class="mono">${d.rec}</td>
+        <td>${active?'<span class="pill p-ok">▶ ACTIVE</span>':'<span class="pill p-na">—</span>'}</td>
+      </tr>`;
+    });
+    tb.innerHTML=html;
+  }
+}
+
+function renderGuidelineEmpty(){
+  const container=document.getElementById('dg-cards');
+  if(container) container.innerHTML='<div style="color:var(--dim);font-size:11px;padding:16px;">Run the UF Design calculator first to see compliance results.</div>';
+}
+
+// ════════════════════════════════════════════
+// BOQ RENDER
+// ════════════════════════════════════════════
+function renderBOQ(){
+  const R=UF_RESULTS;
+  const tb=document.getElementById('boq-tbody');
+  if(!tb) return;
+  if(!R.roFeed){tb.innerHTML='<tr><td colspan="9" style="padding:20px;color:var(--dim);font-size:11px;">Run the UF Design calculator first.</td></tr>';return;}
+
+  let i=1, html='';
+  const bwpTotal=(R.bwDuty+R.bwStandby)*R.pumpSets;
+  const blwTotal=(R.blwDuty+R.blwStandby)*R.pumpSets;
+
+  // Group: Membrane
+  html+=`<tr class="boq-grp"><td colspan="9">A — UF MEMBRANE MODULES</td></tr>`;
+  html+=row(i++,'UF Hollow Fiber Modules','Pentair / Pall',
+    gufv('uf-module-type')+' — '+guf('uf-module-area')+' M²/module',
+    R.totalModSel,0,guf('uf-price-module')||8500,R.costModules);
+
+  // Group: BW Pump
+  html+=`<tr class="boq-grp"><td colspan="9">B — BACKWASH PUMPS</td></tr>`;
+  html+=row(i++,'BW Pump (duty)','Grundfos / SS316',R.bwPumpR?R.bwPumpR[6]:R.bwFlow.toFixed(1)+' M³/hr',
+    R.bwDuty*R.pumpSets,0,R.priceBwPump,R.bwDuty*R.pumpSets*R.priceBwPump);
+  if(R.bwStandby>0)
+    html+=row(i++,'BW Pump (standby)','Grundfos / SS316',R.bwPumpR?R.bwPumpR[6]:R.bwFlow.toFixed(1)+' M³/hr',
+      R.bwStandby*R.pumpSets,0,R.priceBwPump,R.bwStandby*R.pumpSets*R.priceBwPump);
+
+  // Group: Air Blower
+  html+=`<tr class="boq-grp"><td colspan="9">C — AIR BLOWERS</td></tr>`;
+  html+=row(i++,'Air Blower (duty)','Kaeser',R.blwR?R.blwR[6]:R.airTotal.toFixed(0)+' Nm³/hr',
+    R.blwDuty*R.pumpSets,0,R.priceBlower,R.blwDuty*R.pumpSets*R.priceBlower);
+  if(R.blwStandby>0)
+    html+=row(i++,'Air Blower (standby)','Kaeser',R.blwR?R.blwR[6]:R.airTotal.toFixed(0)+' Nm³/hr',
+      R.blwStandby*R.pumpSets,0,R.priceBlower,R.blwStandby*R.pumpSets*R.priceBlower);
+
+  // Group: Valves
+  html+=`<tr class="boq-grp"><td colspan="9">D — AUTOMATIC VALVES</td></tr>`;
+  html+=row(i++,'Auto Valve Set (per stream)','Local / SS316','Pneumatic Valve Set',
+    R.effectiveStreams,0,R.priceValves,R.costValves);
+
+  // Group: Dosing
+  html+=`<tr class="boq-grp"><td colspan="9">E — MC DOSING PUMPS</td></tr>`;
+  html+=row(i++,'MC1 Chlorine Dosing Pump','ProMinent / PP','NaOCl — '+R.cl2Pump.toFixed(1)+' L/hr',1,0,guf('uf-price-mc1')||4500,guf('uf-price-mc1')||4500);
+  html+=row(i++,'MC2 Caustic Dosing Pump','ProMinent / PP','NaOH — '+R.causticP.toFixed(1)+' L/hr',1,0,guf('uf-price-mc2')||4500,guf('uf-price-mc2')||4500);
+  html+=row(i++,'MC3 HCl Dosing Pump','ProMinent / PP','HCl — '+R.hclPump.toFixed(2)+' L/hr',1,0,guf('uf-price-mc3')||4500,guf('uf-price-mc3')||4500);
+
+  // Group: Piping
+  html+=`<tr class="boq-grp"><td colspan="9">F — PIPING & FITTINGS</td></tr>`;
+  html+=row(i++,'Frontal Piping (per stream)','Local / UPVC+HDPE','Lumpsum per stream',
+    R.effectiveStreams,0,guf('uf-price-piping')||35000,R.costPiping);
+
+  tb.innerHTML=html;
+
+  const sub=document.getElementById('boq-sub');
+  if(sub) sub.textContent=R.totalModSel+' modules · '+R.effectiveStreams+' stream(s) · Feed: '+R.roFeed.toFixed(1)+' M³/hr';
+  sv('boq-grand','AED '+Math.round(R.totalCost).toLocaleString());
+  sv('boq-foot-total','AED '+Math.round(R.totalCost).toLocaleString());
+}
+
+function row(n,desc,make,model,duty,standby,unit,total){
+  return `<tr>
+    <td class="mono ca" style="font-size:10px;">${n}</td>
+    <td style="font-size:11px;font-weight:600;">${desc}</td>
+    <td style="font-size:10px;color:var(--dim);">${make}</td>
+    <td style="font-size:10px;" class="mono">${model}</td>
+    <td class="mono ca2">${duty}</td>
+    <td class="mono cd">${standby||'—'}</td>
+    <td class="mono">AED ${Math.round(unit).toLocaleString()}</td>
+    <td class="mono ca2">${+duty+(+standby||0)}</td>
+    <td class="mono cg" style="font-weight:700;">AED ${Math.round(total).toLocaleString()}</td>
+  </tr>`;
+}
+
+// ════════════════════════════════════════════
+// REFERENCE TABLES RENDER
+// ════════════════════════════════════════════
+function renderRefTables(){
+  // BW Pump
+  let html='';
+  BW_PUMPS.forEach(r=>{
+    html+=`<tr><td class="mono ca">${r[0]}</td><td class="mono ca2">${r[1]}</td>
+      <td class="mono">${r[2]}</td><td class="mono">${r[3]}</td>
+      <td>${r[4]}</td><td class="mono cg">${r[5].toLocaleString()}</td>
+      <td class="mono">${r[6]}</td></tr>`;
+  });
+  const t1=document.getElementById('bwp-ref-tb');
+  if(t1) t1.innerHTML=html;
+
+  // Blower
+  html='';
+  UF_BLOWER.forEach(r=>{
+    html+=`<tr><td class="mono ca">${r[0]}</td><td class="mono ca2">${r[1]}</td>
+      <td class="mono">${r[2]}</td><td class="mono">${r[3]}</td>
+      <td>${r[4]}</td><td class="mono cg">${r[5].toLocaleString()}</td>
+      <td class="mono">${r[6]}</td></tr>`;
+  });
+  const t2=document.getElementById('blw-ref-tb');
+  if(t2) t2.innerHTML=html;
+}
+
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════
+// ACCESS CONTROL
+// ══════════════════════════════════════════════════════
+var _AU=false,_PT=null,_PB=null;
+function _h(s){var h=0;for(var i=0;i<s.length;i++){h=Math.imul(31,h)+s.charCodeAt(i)|0;}return h;}
+var _PH=-931617482; // access key
+
+function _aChk(){
+  var v=document.getElementById('adm-pw').value;
+  if(_h(v)===_PH){
+    _AU=true;
+    document.getElementById('adm-ov').classList.remove('show');
+    document.getElementById('adm-err').textContent='';
+    document.querySelectorAll('.tab').forEach(function(t){t.innerHTML=t.innerHTML.replace('🔒','🔓');});
+    if(_PT){switchTab(_PT,_PB);_PT=null;_PB=null;}
+    toast2('✔ Admin access granted — all modules unlocked');
+  }else{
+    document.getElementById('adm-err').textContent='✗ Wrong password';
+    document.getElementById('adm-pw').value='';
+    document.getElementById('adm-pw').focus();
+  }
+}
+function _aCls(){document.getElementById('adm-ov').classList.remove('show');_PT=null;_PB=null;}
+function _eChk(){
+  var v=document.getElementById('exp-pw').value;
+  if(_h(v)===_PH){
+    _AU=true;_licRst();
+    document.getElementById('exp-ov').classList.remove('show');
+    document.getElementById('exp-err').textContent='';
+    document.querySelectorAll('.tab').forEach(function(t){t.innerHTML=t.innerHTML.replace('🔒','🔓');});
+    toast2('✔ License reset — 30 days renewed');
+  }else{
+    document.getElementById('exp-err').textContent='✗ Wrong password';
+    document.getElementById('exp-pw').value='';
+    document.getElementById('exp-pw').focus();
+  }
+}
+function _tClick(tid,btn){
+  if(_licExp()){document.getElementById('exp-ov').classList.add('show');return;}
+  // Admin tab (t6) has its own in-page gate — always allow switching to it
+  if(tid==='t6'){switchTab(tid,btn);_adm6RefreshDashboard();return;}
+  if(_AU){switchTab(tid,btn);return;}
+  _PT=tid;_PB=btn;
+  document.getElementById('adm-pw').value='';
+  document.getElementById('adm-err').textContent='';
+  document.getElementById('adm-ov').classList.add('show');
+  setTimeout(function(){document.getElementById('adm-pw').focus();},120);
+}
+
+// ══════════════════════════════════════════════════════
+// ADMIN PANEL (TAB 6) — separate session auth
+// ══════════════════════════════════════════════════════
+var _adm6Auth=false;
+var _adm6LoginTs=null;
+var _ADM_LOG_KEY='_ufd_alog';
+var _LIC_DAYS_KEY='_ufd_td'; // stores custom day count
+
+function _adm6Login(){
+  var v=document.getElementById('adm6-pw').value;
+  if(_h(v)===_PH){
+    _adm6Auth=true;
+    _adm6LoginTs=new Date();
+    document.getElementById('adm6-pw').value='';
+    document.getElementById('adm6-err').textContent='';
+    document.getElementById('adm-gate').style.display='none';
+    document.getElementById('adm-dashboard').style.display='block';
+    // Also unlock all tabs for this session
+    _AU=true;
+    document.querySelectorAll('.tab').forEach(function(t){t.innerHTML=t.innerHTML.replace('🔒','🔓');});
+    _adm6RefreshDashboard();
+    _adm6Log('Admin Login','Session started');
+    toast2('✔ Admin panel unlocked');
+  }else{
+    document.getElementById('adm6-err').textContent='✗ Wrong password — try again';
+    document.getElementById('adm6-pw').value='';
+    document.getElementById('adm6-pw').focus();
+    _adm6Log('Failed Login','Wrong password attempt');
+  }
+}
+
+function _adm6Logout(){
+  _adm6Auth=false;
+  document.getElementById('adm-gate').style.display='flex';
+  document.getElementById('adm-dashboard').style.display='none';
+  document.getElementById('adm6-pw').value='';
+}
+
+function _adm6RefreshDashboard(){
+  if(!_adm6Auth) return;
+  // Session info
+  if(_adm6LoginTs){
+    var t=_adm6LoginTs;
+    document.getElementById('adm-login-time').textContent=
+      t.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+  document.getElementById('adm-ua').textContent=
+    (navigator.userAgent.match(/Chrome\/[\d.]+|Firefox\/[\d.]+|Safari\/[\d.]+/)||['Unknown'])[0];
+  // License info
+  _adm6RefreshLicTimer();
+  // Log
+  _adm6RenderLog();
+}
+
+function _adm6RefreshLicTimer(){
+  var s=localStorage.getItem(_LK);
+  var customDays=parseInt(localStorage.getItem(_LIC_DAYS_KEY))||30;
+  var totalMs=customDays*864e5;
+  var elapsed=s?(Date.now()-parseInt(s)):totalMs;
+  var rem=totalMs-elapsed;
+  var pct=Math.max(0,Math.min(100,(rem/totalMs)*100));
+
+  var el=document.getElementById('adm-lic-remaining');
+  var barEl=document.getElementById('adm-lic-bar');
+  var startEl=document.getElementById('adm-lic-started');
+  var expiresEl=document.getElementById('adm-lic-expires');
+
+  if(rem<=0){
+    if(el)el.textContent='EXPIRED';
+    if(el)el.style.color='#ff4444';
+    if(barEl)barEl.style.width='0%';
+  }else{
+    var d=Math.floor(rem/864e5);
+    var h=Math.floor((rem%864e5)/36e5);
+    var m=Math.floor((rem%36e5)/6e4);
+    if(el){el.textContent=d+'d '+h+'h '+m+'m';el.style.color=d<3?'#ff4444':d<7?'#ffd700':'var(--accent2)';}
+    if(barEl){barEl.style.width=pct+'%';barEl.style.background=pct<10?'#ff4444':pct<25?'#ffd700':'linear-gradient(90deg,var(--accent),var(--accent2))';}
+  }
+  if(s){
+    var st=new Date(parseInt(s));
+    var ex=new Date(parseInt(s)+totalMs);
+    if(startEl)startEl.textContent='Started: '+st.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+st.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    if(expiresEl)expiresEl.textContent='Expires: '+ex.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+' '+ex.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  }
+}
+
+function _adm6ResetTimer(days){
+  _LD=days;
+  localStorage.setItem(_LIC_DAYS_KEY,days);
+  localStorage.setItem(_LK,Date.now());
+  _licTick();
+  _adm6RefreshLicTimer();
+  var msg=document.getElementById('adm-reset-msg');
+  if(msg){msg.textContent='✔ Timer reset to '+days+' days';setTimeout(function(){msg.textContent='';},3000);}
+  _adm6Log('Timer Reset','License reset to '+days+' days');
+  toast2('✔ License timer reset to '+days+' days');
+}
+
+function _adm6ResetTimerCustom(){
+  var days=parseInt(document.getElementById('adm-custom-days').value)||30;
+  if(days<1||days>365){toast2('⚠ Enter between 1–365 days');return;}
+  _adm6ResetTimer(days);
+}
+
+// ── Access Log ──
+function _adm6Log(action,detail){
+  var logs=[];
+  try{logs=JSON.parse(localStorage.getItem(_ADM_LOG_KEY)||'[]');}catch(e){}
+  var entry={ts:new Date().toLocaleString('en-GB'),action:action,detail:detail};
+  logs.unshift(entry);
+  if(logs.length>20)logs=logs.slice(0,20);
+  try{localStorage.setItem(_ADM_LOG_KEY,JSON.stringify(logs));}catch(e){}
+  _adm6RenderLog();
+}
+
+function _adm6RenderLog(){
+  var logs=[];
+  try{logs=JSON.parse(localStorage.getItem(_ADM_LOG_KEY)||'[]');}catch(e){}
+  var tbody=document.getElementById('adm-log-body');
+  var empty=document.getElementById('adm-log-empty');
+  if(!tbody)return;
+  if(!logs.length){
+    tbody.innerHTML='';
+    if(empty)empty.style.display='block';
+    return;
+  }
+  if(empty)empty.style.display='none';
+  tbody.innerHTML=logs.slice(0,10).map(function(l){
+    var clr=l.action.includes('Failed')?'#ff4444':l.action.includes('Reset')?'var(--green)':'var(--accent2)';
+    return '<tr><td style="padding:5px 8px;font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--dim);border-bottom:1px solid rgba(13,45,88,.2)">'+l.ts+'</td>'+
+      '<td style="padding:5px 8px;font-size:10px;font-weight:700;color:'+clr+';border-bottom:1px solid rgba(13,45,88,.2)">'+l.action+'</td>'+
+      '<td style="padding:5px 8px;font-size:10px;color:var(--text);border-bottom:1px solid rgba(13,45,88,.2)">'+l.detail+'</td></tr>';
+  }).join('');
+}
+
+function _adm6ClearLog(){
+  if(confirm('Clear access log?')){
+    localStorage.removeItem(_ADM_LOG_KEY);
+    _adm6RenderLog();
+    toast2('✔ Access log cleared');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// LICENSE TIMER
+// ══════════════════════════════════════════════════════
+var _LK='_ufd_t',_LD=30;
+function _licInit(){
+  _LD=parseInt(localStorage.getItem('_ufd_td'))||30;
+  if(!localStorage.getItem(_LK))localStorage.setItem(_LK,Date.now());
+  _licTick();setInterval(_licTick,60000);
+}
+function _licExp(){var s=localStorage.getItem(_LK);if(!s)return true;var d=parseInt(localStorage.getItem('_ufd_td'))||_LD;return(Date.now()-parseInt(s))>d*864e5;}
+function _licInfo(){var s=localStorage.getItem(_LK);var d=parseInt(localStorage.getItem('_ufd_td'))||_LD;if(!s)return{d:0,h:0,exp:true};var rem=d*864e5-(Date.now()-parseInt(s));if(rem<=0)return{d:0,h:0,exp:true};return{d:Math.floor(rem/864e5),h:Math.floor((rem%864e5)/36e5),exp:false};}
+function _licRst(){localStorage.setItem(_LK,Date.now());_licTick();}
+function _licTick(){
+  var inf=_licInfo(),el=document.getElementById('lic-tmr');
+  if(!el)return;
+  if(inf.exp){el.textContent='⚠ EXPIRED';el.className='exp warn';document.getElementById('exp-ov').classList.add('show');}
+  else{el.textContent='⏱ '+inf.d+'d '+inf.h+'h LEFT';el.className=(inf.d<3)?'warn':'';}
+}
+
+// ══════════════════════════════════════════════════════
+// STREAMS OVERRIDE
+// ══════════════════════════════════════════════════════
+var _streamsOverride=false;
+function _toggleStreams(){
+  var el=document.getElementById('uf-streams');
+  var btn=document.getElementById('streams-toggle-btn');
+  var note=document.getElementById('uf-streams-note');
+  _streamsOverride=!_streamsOverride;
+  if(_streamsOverride){
+    el.disabled=false;el.classList.add('ok');
+    btn.classList.add('active');btn.textContent='AUTO';
+    note.innerHTML='<span style="color:var(--accent3)">⚠ MANUAL OVERRIDE — streams fixed, calc uses your value</span>';
+  }else{
+    el.disabled=true;el.classList.remove('ok');
+    btn.classList.remove('active');btn.textContent='OVERRIDE';
+    note.textContent='Auto: 1 stream per 60 modules — click OVERRIDE to set manually';
+    calcUF();
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// INPUT COLOR SYSTEM
+// ══════════════════════════════════════════════════════
+var _INP=['uf-ro-feed','uf-feed-tds','uf-recovery','uf-flux','uf-module-area',
+          'uf-modules-selected','uf-bw-flux','uf-bw-dur','uf-bw-interval','uf-air','uf-cip-flux','uf-cip-tank'];
+var _SEL=['uf-turbidity','uf-module-type','uf-bw-config','uf-bw-pressure','uf-bw-eff',
+          'uf-blower-config','uf-blower-pressure','uf-blower-eff','uf-cip-pressure','uf-cip-eff'];
+function _colRefresh(){
+  _INP.forEach(function(id){
+    var el=document.getElementById(id);if(!el||el.disabled)return;
+    var filled=(el.value.trim()!==''&&parseFloat(el.value)>0);
+    el.classList.toggle('ok',filled);
+  });
+}
+function _selTouch(el){el.classList.add('ok');}
+
+// ══════════════════════════════════════════════════════
+// EDITABLE GUIDELINES TABLE
+// ══════════════════════════════════════════════════════
+function _dgAddRow(){
+  var tb=document.querySelector('#dg-edit-tbl tbody');if(!tb)return;
+  var tr=document.createElement('tr');tr.className='ed-new';
+  tr.innerHTML='<td><input class="ed-cell" placeholder="NTU" type="number"></td>'+
+    '<td><input class="ed-cell" placeholder="Flux LMH" type="number"></td>'+
+    '<td><input class="ed-cell" placeholder="Min" type="number"></td>'+
+    '<td><input class="ed-cell" placeholder="1 or 2" type="number"></td>'+
+    '<td><input class="ed-cell" placeholder="%" type="number"></td>'+
+    '<td><input class="ed-cell" placeholder="Notes"></td>'+
+    '<td><button class="ed-btn ed-del" onclick="this.closest(\'tr\').remove()">✕</button></td>';
+  tb.appendChild(tr);
+}
+function _dgSaveRow(ntu,flux,dur,mc,rec){
+  if(!ntu||!flux)return;
+  UF_TURBIDITY_FLUX[parseInt(ntu)]={flux:parseFloat(flux),duration:parseInt(dur)||25,mc:parseInt(mc)||1,rec:parseFloat(rec)||90};
+  renderGuidelines();toast2('✔ Guideline row saved for '+ntu+' NTU');
+}
+function _dgSaveAll(){
+  var rows=document.querySelectorAll('#dg-edit-tbl tbody tr');
+  rows.forEach(function(tr){
+    var ins=tr.querySelectorAll('input');
+    if(ins.length>=5){_dgSaveRow(ins[0].value,ins[1].value,ins[2].value,ins[3].value,ins[4].value);}
+  });
+  renderGuidelines();toast2('✔ All guideline rows saved');
+}
+function _dgDelNtu(ntu){
+  if(confirm('Delete guideline for '+ntu+' NTU?')){
+    delete UF_TURBIDITY_FLUX[ntu];renderGuidelines();toast2('✔ Deleted '+ntu+' NTU row');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// EDITABLE PRICE TABLE
+// ══════════════════════════════════════════════════════
+function _prAddRow(type){
+  var tbId=type==='bwp'?'bwp-tb':'blw-tb';
+  var tb=document.getElementById(tbId);if(!tb)return;
+  var arr=type==='bwp'?BW_PUMPS:UF_BLOWER;
+  var nextIdx=arr.length+1;
+  var tr=document.createElement('tr');tr.className='ed-new';
+  if(type==='bwp'){
+    tr.innerHTML='<td class="mono ca">'+nextIdx+'</td>'+
+      '<td><input class="ed-cell" placeholder="Flow M³/hr" type="number"></td>'+
+      '<td><input class="ed-cell" placeholder="Press bar" type="number"></td>'+
+      '<td><input class="ed-cell" placeholder="kW" type="number"></td>'+
+      '<td><input class="ed-cell" placeholder="SS316"></td>'+
+      '<td><input class="ed-cell" placeholder="Model"></td>'+
+      '<td><input class="ed-cell" placeholder="Price AED" type="number"></td>'+
+      '<td><button class="ed-btn ed-del" onclick="this.closest(\'tr\').remove()">✕</button><button class="ed-btn ed-save" style="margin-left:4px" onclick="_prSaveBwp(this)">💾</button></td>';
+  }else{
+    tr.innerHTML='<td class="mono ca">'+nextIdx+'</td>'+
+      '<td><input class="ed-cell" placeholder="Flow Nm³/hr" type="number"></td>'+
+      '<td><input class="ed-cell" placeholder="Press mbar" type="number"></td>'+
+      '<td><input class="ed-cell" placeholder="kW" type="number"></td>'+
+      '<td><input class="ed-cell" placeholder="Make"></td>'+
+      '<td><input class="ed-cell" placeholder="Model"></td>'+
+      '<td><input class="ed-cell" placeholder="Price AED" type="number"></td>'+
+      '<td><button class="ed-btn ed-del" onclick="this.closest(\'tr\').remove()">✕</button><button class="ed-btn ed-save" style="margin-left:4px" onclick="_prSaveBlw(this)">💾</button></td>';
+  }
+  tb.appendChild(tr);
+}
+function _prSaveBwp(btn){
+  var ins=btn.closest('tr').querySelectorAll('input');
+  var r=[BW_PUMPS.length+1,parseFloat(ins[0].value),parseFloat(ins[1].value),parseFloat(ins[2].value),ins[3].value||'SS316',parseFloat(ins[5].value)||0,ins[4].value];
+  BW_PUMPS.push(r);renderPriceTables();toast2('✔ BW Pump row added');
+}
+function _prSaveBlw(btn){
+  var ins=btn.closest('tr').querySelectorAll('input');
+  var r=[UF_BLOWER.length+1,parseFloat(ins[0].value),parseFloat(ins[1].value),parseFloat(ins[2].value),ins[3].value||'Kaeser',parseFloat(ins[5].value)||0,ins[4].value];
+  UF_BLOWER.push(r);renderPriceTables();toast2('✔ Blower row added');
+}
+function _prDelBwp(i){if(confirm('Delete pump #'+(i+1)+'?')){BW_PUMPS.splice(i,1);renderPriceTables();}}
+function _prDelBlw(i){if(confirm('Delete blower #'+(i+1)+'?')){UF_BLOWER.splice(i,1);renderPriceTables();}}
+
+// ══════════════════════════════════════════════════════
+// EDITABLE BOQ ROW (inline edit on click)
+// ══════════════════════════════════════════════════════
+function _boqInlineEdit(td){
+  if(td.querySelector('input'))return;
+  var orig=td.textContent.trim();
+  var inp=document.createElement('input');
+  inp.className='ed-cell';inp.value=orig;inp.style.width='100%';
+  td.textContent='';td.appendChild(inp);inp.focus();
+  inp.onblur=function(){td.textContent=inp.value||orig;};
+  inp.onkeydown=function(e){if(e.key==='Enter')inp.blur();};
+}
+
+// ══════════════════════════════════════════════════════
+// COPY / VIEW-SOURCE PROTECTION
+// ══════════════════════════════════════════════════════
+document.addEventListener('contextmenu',function(e){e.preventDefault();});
+document.addEventListener('keydown',function(e){
+  var c=e.ctrlKey||e.metaKey;
+  if(c&&'uUsS'.includes(e.key))e.preventDefault();
+  if(e.key==='F12')e.preventDefault();
+  if(c&&e.shiftKey&&'iIjJcC'.includes(e.key))e.preventDefault();
+});
+document.addEventListener('selectstart',function(e){
+  var t=e.target.tagName;if(t!=='INPUT'&&t!=='TEXTAREA')e.preventDefault();
+});
+
+document.addEventListener('DOMContentLoaded',function(){
+  // Color system
+  _INP.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('input',function(){_colRefresh();});
+  });
+  _SEL.forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('change',function(){_selTouch(this);});
+  });
+  // Module override
+  var ms=document.getElementById('uf-modules-selected');
+  if(ms) ms.addEventListener('input',function(){this.dataset.userSet='true';});
+  // Init
+  ufUpdateFlux();
+  calcUF();
+  renderRefTables();
+  _colRefresh();
+  _licInit();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electrical BOQ Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a;--surface:#101422;--surface2:#161c2e;--surface3:#1e2640;
+  --border:#1e2d50;--border2:#2a3a60;
+  --amber:#f0a500;--amber2:#ffcc44;--cyan:#00cfff;--green:#00e87a;
+  --red:#ff4466;--text:#ccd8f0;--text2:#6a88b8;--text3:#2e4068;--yellow:#ffe566;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* HEADER */
+.hdr{background:var(--surface);border-bottom:2px solid var(--border2);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:200}
+.hdr-brand{display:flex;align-items:center;gap:12px}
+.hdr-icon{width:34px;height:34px;background:linear-gradient(135deg,#e07000,var(--amber));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hdr-title{font-weight:800;font-size:16px;letter-spacing:.5px}
+.hdr-title em{color:var(--amber);font-style:normal}
+.hdr-sub{font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-top:1px}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.timer-badge{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;padding:5px 12px;border-radius:6px;border:1px solid var(--amber);background:rgba(240,165,0,.1);color:var(--amber);min-width:78px;text-align:center;cursor:default}
+.timer-badge.warn{border-color:var(--red);background:rgba(255,68,102,.15);color:var(--red);animation:pulse .7s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.adm-btn{background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--text2);padding:5px 14px;border-radius:6px;cursor:pointer;font-family:'Barlow',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;transition:all .15s}
+.adm-btn:hover{border-color:var(--amber);color:var(--amber)}
+
+/* TABS */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 24px;gap:2px}
+.tab{padding:11px 20px;cursor:pointer;font-weight:700;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text2);border-bottom:3px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:'Barlow',sans-serif}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+.tab:hover:not(.active){color:var(--text)}
+.panel{display:none;padding:20px 24px;max-width:1600px;margin:0 auto}
+.panel.active{display:block}
+
+/* BUTTONS */
+.btn{border:none;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:700;border-radius:6px;padding:8px 16px;font-size:12px;letter-spacing:.5px;transition:all .15s}
+.btn-primary{background:var(--amber);color:#0a0e1a}
+.btn-primary:hover{background:var(--amber2)}
+.btn-success{background:rgba(0,232,122,.12);color:var(--green);border:1px solid rgba(0,232,122,.3)}
+.btn-success:hover{background:rgba(0,232,122,.22)}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{background:rgba(255,255,255,.1);color:var(--text)}
+.btn-danger{background:rgba(255,68,102,.1);color:var(--red);border:1px solid rgba(255,68,102,.3)}
+.btn-danger:hover{background:rgba(255,68,102,.2)}
+.btn-sm{padding:5px 12px;font-size:11px}
+
+/* GRAND BAR */
+.grand-bar{background:linear-gradient(90deg,rgba(240,165,0,.12),rgba(240,165,0,.03));border:1px solid rgba(240,165,0,.22);border-radius:10px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.grand-val{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--amber)}
+.grand-items{display:flex;gap:20px;flex-wrap:wrap}
+.g-item{display:flex;flex-direction:column;align-items:flex-end}
+.g-item-lbl{font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.g-item-val{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--text)}
+
+/* BOQ TABLE */
+.boq-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:var(--surface)}
+.boq-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:1480px}
+.boq-tbl th{background:var(--surface2);padding:8px 6px;text-align:center;border-bottom:2px solid var(--border2);font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text2);font-weight:700;white-space:nowrap}
+.boq-tbl th.ca{color:var(--amber)}
+.boq-tbl th.cc{color:var(--cyan)}
+.boq-tbl th.cg{color:var(--green)}
+.boq-row td{padding:4px 5px;border-bottom:1px solid var(--border);vertical-align:middle}
+.boq-row:hover td{background:rgba(240,165,0,.025)}
+.boq-row.sub td{background:rgba(0,207,255,.018)}
+.boq-row.sub:hover td{background:rgba(0,207,255,.04)}
+.ci{width:100%;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;padding:3px 4px;outline:none;text-align:center}
+.ci:focus{border-bottom-color:var(--amber);background:rgba(240,165,0,.05);border-radius:3px}
+.cs{width:100%;background:transparent;border:none;border-bottom:1px solid transparent;color:var(--text);font-family:'Barlow',sans-serif;font-size:11px;padding:3px 2px;outline:none;cursor:pointer}
+.cs:focus{border-bottom-color:var(--amber)}
+.ca-cell{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cyan);text-align:center;padding:4px 5px}
+.cost-cell{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--amber);text-align:right;padding:3px 6px}
+.tot-cell{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--green);text-align:right;padding:4px 8px;font-weight:700}
+.del-btn{background:none;border:1px solid rgba(255,68,102,.25);color:rgba(255,68,102,.5);width:20px;height:20px;border-radius:4px;cursor:pointer;font-size:12px;line-height:1;transition:all .15s}
+.del-btn:hover{border-color:var(--red);color:var(--red);background:rgba(255,68,102,.1)}
+.add-sub-btn{background:rgba(0,207,255,.06);border:1px solid rgba(0,207,255,.2);color:rgba(0,207,255,.5);width:20px;height:20px;border-radius:4px;cursor:pointer;font-size:13px;line-height:1;transition:all .15s;margin-right:2px}
+.add-sub-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,207,255,.12)}
+
+/* START TYPE BADGES */
+.sb{display:inline-block;padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.sb-dol{background:rgba(0,232,122,.1);color:var(--green);border:1px solid rgba(0,232,122,.3)}
+.sb-sd{background:rgba(255,204,68,.1);color:var(--amber2);border:1px solid rgba(255,204,68,.3)}
+.sb-ss{background:rgba(0,207,255,.1);color:var(--cyan);border:1px solid rgba(0,207,255,.3)}
+.sb-vfd{background:rgba(200,150,255,.1);color:#cc99ff;border:1px solid rgba(200,150,255,.3)}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.card-hd{background:linear-gradient(90deg,rgba(240,165,0,.15),rgba(240,165,0,.03));padding:9px 15px;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--amber);border-bottom:1px solid var(--border)}
+.card-bd{padding:14px}
+.sum-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.sum-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.sum-card-lbl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:5px}
+.sum-card-val{font-family:'IBM Plex Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--amber)}
+.sum-card-sub{font-size:10px;color:var(--text3);margin-top:3px}
+.bb{margin-bottom:9px}
+.bb-lbl{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.bb-track{height:8px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.bb-fill{height:100%;border-radius:4px;transition:width .4s}
+
+/* FORM */
+.form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px}
+.form-group label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2)}
+.form-group input,.form-group select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+.form-group input:focus,.form-group select:focus{border-color:var(--amber)}
+.form-group select option{background:var(--surface2)}
+
+/* ADMIN */
+.overlay{display:none;position:fixed;inset:0;z-index:800;background:rgba(5,10,20,.92);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:420px;max-width:95vw;overflow:hidden}
+.modal-hd{background:linear-gradient(90deg,rgba(240,165,0,.22),rgba(240,165,0,.04));padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.modal-hd h3{font-weight:800;font-size:14px;color:var(--amber)}
+.modal-x{background:none;border:none;color:var(--text2);cursor:pointer;font-size:20px;line-height:1}
+.modal-bd{padding:20px}
+.modal-inp{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:7px;font-family:'IBM Plex Mono',monospace;font-size:1rem;text-align:center;letter-spacing:4px;outline:none}
+.modal-inp:focus{border-color:var(--amber)}
+.modal-err{color:var(--red);font-size:11px;text-align:center;min-height:16px;margin-top:6px}
+.adm-overlay{display:none;position:fixed;inset:0;z-index:600;background:rgba(5,10,20,.75);backdrop-filter:blur(4px);justify-content:flex-end}
+.adm-overlay.open{display:flex}
+.adm-panel{background:var(--surface);width:700px;max-width:100vw;height:100vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:-8px 0 50px rgba(0,0,0,.6)}
+.adm-ph{background:var(--surface2);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.adm-tabs{display:flex;background:var(--surface2);border-bottom:1px solid var(--border);padding:0 16px;gap:2px;flex-shrink:0;overflow-x:auto}
+.adm-tab{padding:9px 14px;cursor:pointer;font-weight:700;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'Barlow',sans-serif;white-space:nowrap}
+.adm-tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+.adm-body{padding:16px 18px;overflow-y:auto;flex:1}
+.apanel{display:none}
+.apanel.active{display:block}
+.adm-sec{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:13px 15px;margin-bottom:12px}
+.adm-sec h4{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.tbl-wrap{max-height:400px;overflow:auto;border:1px solid var(--border);border-radius:7px}
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:var(--surface2);padding:7px 8px;text-align:left;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:700;position:sticky;top:0;z-index:1}
+.tbl td{padding:5px 8px;border-bottom:1px solid var(--border)}
+.tbl tr:hover td{background:rgba(240,165,0,.025)}
+.ni{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--amber);font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:right;padding:2px 4px;outline:none;width:80px}
+.ni:focus{border-bottom-color:var(--amber)}
+.preset-btn{background:rgba(240,165,0,.07);border:1px solid rgba(240,165,0,.2);color:var(--amber);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Barlow',sans-serif;transition:all .15s}
+.preset-btn:hover{background:rgba(240,165,0,.18);border-color:var(--amber)}
+
+/* EXPIRED WALL */
+.exp-wall{display:none;position:fixed;inset:0;z-index:9999;background:rgba(5,8,18,.97);align-items:center;justify-content:center;flex-direction:column;gap:16px;text-align:center;padding:30px}
+.exp-wall.show{display:flex}
+
+@media print{
+  .hdr,.tabs,.hdr-r,.adm-overlay,.overlay,.exp-wall,.add-sub-btn,.del-btn{display:none!important}
+  .panel{display:block!important;padding:0}body{background:#fff;color:#000}
+  .boq-wrap{border:1px solid #ccc}.grand-bar{background:#f9f5e8;border:1px solid #ccc}
+}
+</style>
+</head>
+<body>
+
+<!-- EXPIRED WALL -->
+<div class="exp-wall" id="expWall">
+  <div style="font-size:4rem">⚡</div>
+  <div style="font-weight:800;font-size:1.8rem;color:#fff;font-family:'Barlow',sans-serif">Session Expired</div>
+  <div style="color:var(--text2);max-width:340px;line-height:1.7;font-size:.9rem">Your 30-minute session has ended. Log in as admin to continue.</div>
+  <button class="btn btn-primary" style="padding:12px 32px;font-size:13px" onclick="openLogin()">🔐 Admin Login</button>
+</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-icon">⚡</div>
+    <div>
+      <div class="hdr-title"><em>Electrical</em> BOQ Calculator</div>
+      <div class="hdr-sub">RO Design Library · v1.0</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div id="proj-badge" style="font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace">No project</div>
+    <div class="timer-badge" id="timerBadge" title="Session timer">⏱ 30:00</div>
+    <button class="adm-btn" onclick="openLogin()">⚙ Admin</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('boq',this)">📋 BOQ Builder</button>
+  <button class="tab" onclick="showTab('summary',this)">📊 Summary</button>
+</div>
+
+<!-- ══ BOQ PANEL ══ -->
+<div class="panel active" id="panel-boq">
+
+  <!-- Grand total bar -->
+  <div class="grand-bar" id="grand-bar" style="display:none">
+    <div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text2)">Total Cost</div>
+      <div class="grand-val" id="grand-cost">AED 0.00</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px" id="grand-sale"></div>
+    </div>
+    <div class="grand-items">
+      <div class="g-item"><span class="g-item-lbl">Cable</span><span class="g-item-val" id="gt-cable">—</span></div>
+      <div class="g-item"><span class="g-item-lbl">Tray</span><span class="g-item-val" id="gt-tray">—</span></div>
+      <div class="g-item"><span class="g-item-lbl">Termination</span><span class="g-item-val" id="gt-term">—</span></div>
+      <div class="g-item"><span class="g-item-lbl">Fixing+Laying</span><span class="g-item-val" id="gt-fix">—</span></div>
+      <div class="g-item"><span class="g-item-lbl">Starter/VFD</span><span class="g-item-val" id="gt-starter">—</span></div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <div>
+      <div style="font-size:17px;font-weight:800">Electrical Bill of Quantities</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">Enter equipment KW, duty &amp; cable distance → cable size, start type &amp; all costs auto-fill from reference table</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <input type="text" id="proj-name" placeholder="Project reference..." style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;outline:none;width:180px" oninput="document.getElementById('proj-badge').textContent=this.value||'No project'">
+      <!-- Save / Load / New -->
+      <button class="btn btn-sm" id="save-btn" onclick="saveProject()"
+        style="background:rgba(0,232,122,.14);color:var(--green);border:1px solid rgba(0,232,122,.35);font-weight:700">💾 Save</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadProject()" title="Load last saved project">📂 Load</button>
+      <button class="btn btn-success btn-sm" onclick="addRow()">+ Add Equipment</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearAll()">🗑 Clear</button>
+      <button class="btn btn-primary btn-sm" onclick="showTab('summary',document.querySelectorAll('.tab')[1])">Summary →</button>
+    </div>
+  </div>
+  <!-- Save status -->
+  <div id="save-status" style="display:none;font-size:10px;color:var(--text3);margin-bottom:8px;font-family:'IBM Plex Mono',monospace"></div>
+
+  <!-- TABLE -->
+  <div class="boq-wrap">
+    <table class="boq-tbl" id="boq-tbl">
+      <thead>
+        <tr style="background:var(--surface3)">
+          <th rowspan="2" style="width:36px">Sr</th>
+          <th rowspan="2" style="min-width:170px;text-align:left" class="ca">Equipment / Description</th>
+          <th rowspan="2" style="width:96px" class="ca">KW</th>
+          <th style="width:58px" class="ca">Duty<br><span style="font-weight:400;font-size:9px;color:var(--text3)">qty</span></th>
+          <th style="width:58px" class="ca">Standby<br><span style="font-weight:400;font-size:9px;color:var(--text3)">qty</span></th>
+          <th rowspan="2" style="width:110px" class="ca">Start Type<br><span style="font-weight:400;font-size:9px;color:var(--text3)">DOL≤7.5kW · S/D≤45kW</span></th>
+          <th rowspan="2" style="width:74px" class="ca">Dist (m)</th>
+          <th rowspan="2" style="width:100px">Cable Type</th>
+          <th colspan="3" style="text-align:center;border-bottom:1px solid var(--border2)" class="cc">Auto-Calculated</th>
+          <th colspan="6" style="text-align:center;border-bottom:1px solid var(--border2)" class="ca">Cost Breakdown (AED) — editable</th>
+          <th rowspan="2" style="min-width:115px;text-align:right" class="cg">Row Total</th>
+          <th rowspan="2" style="width:48px"></th>
+        </tr>
+        <tr>
+          <th class="ca" style="font-size:9px;color:var(--text3)">running</th>
+          <th class="ca" style="font-size:9px;color:var(--text3)">spare</th>
+          <th class="cc" style="width:80px">Cable Size</th>
+          <th class="cc" style="width:68px">Cable Qty</th>
+          <th class="cc" style="width:80px">Starter</th>
+          <th style="width:88px">Cable Cost</th>
+          <th style="width:76px">Tray</th>
+          <th style="width:90px">Termination</th>
+          <th style="width:76px">Fixing</th>
+          <th style="width:76px">Laying</th>
+          <th style="width:88px">Starter/VFD</th>
+        </tr>
+      </thead>
+      <tbody id="boq-tbody"></tbody>
+      <tfoot id="boq-tfoot" style="display:none">
+        <tr style="background:var(--surface2)">
+          <td colspan="10" style="padding:10px 14px;font-weight:800;font-size:12px;color:var(--amber)">GRAND TOTAL</td>
+          <td colspan="6" style="padding:10px 8px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:700;color:var(--green)" id="tfoot-total"></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+    <div id="boq-empty" style="text-align:center;padding:60px 20px;color:var(--text2)">
+      <div style="font-size:3.5rem;margin-bottom:12px">⚡</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px">No equipment added yet</div>
+      <div style="font-size:12px;margin-bottom:18px;color:var(--text3)">Add pumps, motors, fans, blowers or any electrical load</div>
+      <button class="btn btn-primary" onclick="addRow()">+ Add First Equipment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SUMMARY PANEL ══ -->
+<div class="panel" id="panel-summary">
+  <div class="card">
+    <div class="card-hd">📊 Project Cost Summary</div>
+    <div class="card-bd">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px">
+        <label style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2)">Profit Margin (%)</label>
+        <input type="number" id="profit-pct" value="15" min="0" max="100" step="1" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:13px;outline:none;width:80px" oninput="renderSummary()">
+        <label style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2)">Project</label>
+        <input type="text" id="sum-proj" placeholder="Project name" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;outline:none;width:200px">
+      </div>
+      <div class="sum-grid" id="sum-grid"></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="card">
+      <div class="card-hd">Cost Breakdown</div>
+      <div class="card-bd" id="sum-breakdown"></div>
+    </div>
+    <div class="card">
+      <div class="card-hd">Equipment Cost List</div>
+      <div class="card-bd" style="overflow-x:auto" id="sum-equip"></div>
+    </div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:8px">
+    <button class="btn btn-primary" onclick="exportCSV()">⬇ Export CSV</button>
+    <button class="btn btn-ghost" onclick="window.print()">🖨 Print</button>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal">
+    <div class="modal-hd"><h3>🔐 Admin Access</h3><button class="modal-x" onclick="closeLogin()">✕</button></div>
+    <div class="modal-bd">
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:2rem;margin-bottom:6px">⚡</div>
+        <div style="font-size:11px;color:var(--text2)">Admin password to manage timer &amp; reference data</div>
+      </div>
+      <input class="modal-inp" type="password" id="adm-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="modal-err" id="login-err"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="doLogin()">Unlock Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="adm-overlay" id="admOverlay">
+  <div class="adm-panel">
+    <div class="adm-ph">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:30px;height:30px;background:linear-gradient(135deg,#e07000,var(--amber));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px">⚙</div>
+        <div style="font-weight:800;font-size:13px;color:var(--amber)">Admin Panel</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="timer-badge" id="adm-timer-badge">⏱ —</div>
+        <button class="modal-x" onclick="closeAdmin()">✕</button>
+      </div>
+    </div>
+    <div class="adm-tabs">
+      <button class="adm-tab active" id="atab-timer"  onclick="showAdmTab('timer',this)">⏱ Timer</button>
+      <button class="adm-tab"        id="atab-ref"    onclick="showAdmTab('ref',this)">📐 Reference Table</button>
+      <button class="adm-tab"        id="atab-prices" onclick="showAdmTab('prices',this)">💰 Rates</button>
+    </div>
+
+    <!-- TIMER -->
+    <div class="adm-body apanel active" id="apanel-timer">
+      <div class="adm-sec">
+        <h4>⏱ Session Timer</h4>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div id="adm-time-big" style="font-family:'IBM Plex Mono',monospace;font-size:2.2rem;font-weight:700;color:var(--amber)">30:00</div>
+          <div id="adm-timer-mode" style="font-size:12px;font-weight:700;color:var(--green)">● Running</div>
+        </div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px">
+          <button class="preset-btn" onclick="setTimerMins(15)">15 min</button>
+          <button class="preset-btn" onclick="setTimerMins(30)">30 min</button>
+          <button class="preset-btn" onclick="setTimerMins(60)">60 min</button>
+          <button class="preset-btn" onclick="setTimerMins(90)">90 min</button>
+          <button class="preset-btn" style="border-color:var(--green);color:var(--green)" onclick="setTimerUnlimited()">∞ Unlimited</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input type="number" id="custom-mins" placeholder="Minutes" min="1" max="600"
+            style="width:110px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;font-family:'IBM Plex Mono',monospace;outline:none"
+            onkeydown="if(event.key==='Enter')setTimerCustom()">
+          <button class="btn btn-primary btn-sm" onclick="setTimerCustom()">Set &amp; Reset</button>
+          <button class="btn btn-ghost btn-sm" onclick="resetTimer()">↺ Reset Now</button>
+        </div>
+      </div>
+      <div class="adm-sec" style="background:rgba(255,68,102,.05);border-color:rgba(255,68,102,.2)">
+        <h4 style="color:var(--red)">⚠ Danger Zone</h4>
+        <button class="btn btn-danger btn-sm" onclick="if(confirm('Clear all BOQ data?')){rows=[];renderTable();closeAdmin()}">🗑 Clear All BOQ Data</button>
+      </div>
+    </div>
+
+    <!-- REFERENCE TABLE -->
+    <div class="adm-body apanel" id="apanel-ref">
+      <div class="adm-sec">
+        <h4>📐 KW → Cable &amp; Starter Reference Table</h4>
+        <div style="background:rgba(0,207,255,.06);border:1px solid rgba(0,207,255,.15);border-radius:6px;padding:10px 12px;font-size:10px;color:var(--text2);line-height:1.8;margin-bottom:10px">
+          Each row = KW threshold. Calculator picks the <b>next higher or equal</b> KW row for each equipment.
+          All cost columns are base values for the 20m reference length and scale with actual distance.
+          <b>Starter (Duty)</b> = cost for single duty pump. <b>Starter (S/B)</b> = cost for duty+standby pair.
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <button class="btn btn-success btn-sm" onclick="addRefRow()">+ Add Row</button>
+          <button class="btn btn-ghost btn-sm" onclick="if(confirm('Reset reference table to defaults?')){REF=JSON.parse(JSON.stringify(REF_DEFAULT));renderRefTable();renderTable()}">↺ Reset</button>
+          <span id="ref-count" style="font-size:10px;color:var(--text2);line-height:2.5"></span>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl" style="min-width:920px">
+            <thead><tr>
+              <th>KW ≤</th><th>Cable</th><th>Start</th>
+              <th>Rubber<br>/m</th><th>Armoured<br>/m</th>
+              <th>Termination</th><th>Fixing<br>/m</th><th>Tray<br>/m</th>
+              <th style="color:var(--green)">Starter<br>(Duty)</th>
+              <th style="color:var(--green)">Starter<br>(S/B)</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="ref-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RATES -->
+    <div class="adm-body apanel" id="apanel-prices">
+      <div class="adm-sec">
+        <h4>💰 Installation Rate Defaults</h4>
+        <div class="form-row">
+          <div class="form-group"><label>Cable tray (AED/m)</label>
+            <input type="number" id="p-tray" value="15" step="0.5" oninput="PRICES.trayRate=+this.value;renderTable()"></div>
+          <div class="form-group"><label>Tray support (AED/ea)</label>
+            <input type="number" id="p-support" value="60" step="1" oninput="PRICES.traySupport=+this.value;renderTable()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Support spacing (m)</label>
+            <input type="number" id="p-spacing" value="2" step="0.5" oninput="PRICES.supportSpacing=+this.value;renderTable()"></div>
+          <div class="form-group"><label>Cable laying (AED/m)</label>
+            <input type="number" id="p-lay" value="6" step="0.5" oninput="PRICES.layRate=+this.value;renderTable()"></div>
+        </div>
+        <div style="margin-top:6px;font-size:10px;color:var(--text3);line-height:1.7">
+          Tray total = distance × trayRate + ⌈distance ÷ supportSpacing⌉ × traySupport
+        </div>
+      </div>
+      <div class="adm-sec">
+        <h4>🔧 Starter / VFD Multipliers</h4>
+        <div class="form-row">
+          <div class="form-group"><label>Duty only (×)</label>
+            <input type="number" id="p-duty" value="1" step="0.1" oninput="PRICES.dutyMult=+this.value;renderTable()"></div>
+          <div class="form-group"><label>Duty + Standby (×)</label>
+            <input type="number" id="p-sb" value="1.5" step="0.1" oninput="PRICES.sbMult=+this.value;renderTable()"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3)">
+          Standby means an identical second starter/drive is included at the multiplier rate.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// REFERENCE DATA
+// ══════════════════════════════════════════════════════════════════
+const REF_DEFAULT = [
+  {kw:2.2,  cable:'2.5mm²',    start:'DOL',        rubber:7,     armoured:7.89,  termination:160, fixing:20,  tray:60, duty:240,   standby:480},
+  {kw:5.5,  cable:'6mm²',      start:'DOL',        rubber:14,    armoured:13.88, termination:160, fixing:20,  tray:60, duty:600,   standby:1200},
+  {kw:7.5,  cable:'6mm²',      start:'DOL',        rubber:14,    armoured:13.88, termination:160, fixing:20,  tray:60, duty:600,   standby:1200},
+  {kw:11,   cable:'10mm²',     start:'Star Delta', rubber:24.5,  armoured:20.86, termination:240, fixing:20,  tray:60, duty:1248,  standby:2400},
+  {kw:15,   cable:'10mm²',     start:'Star Delta', rubber:24.5,  armoured:20.86, termination:240, fixing:20,  tray:60, duty:1248,  standby:2400},
+  {kw:18.5, cable:'16mm²',     start:'Star Delta', rubber:36.62, armoured:29.16, termination:320, fixing:20,  tray:60, duty:1820,  standby:3600},
+  {kw:22,   cable:'16mm²',     start:'Star Delta', rubber:36.62, armoured:29.16, termination:320, fixing:20,  tray:60, duty:1820,  standby:3600},
+  {kw:30,   cable:'25mm²',     start:'Star Delta', rubber:55.5,  armoured:44,    termination:320, fixing:50,  tray:60, duty:2860,  standby:5600},
+  {kw:37,   cable:'35mm²',     start:'Star Delta', rubber:75,    armoured:57.4,  termination:320, fixing:50,  tray:60, duty:3380,  standby:6700},
+  {kw:45,   cable:'35mm²',     start:'Star Delta', rubber:75,    armoured:57.4,  termination:320, fixing:50,  tray:60, duty:3380,  standby:6700},
+  {kw:55,   cable:'50mm²',     start:'VFD',        rubber:108,   armoured:74.42, termination:400, fixing:50,  tray:60, duty:3400,  standby:6800},
+  {kw:75,   cable:'70mm²',     start:'VFD',        rubber:152,   armoured:107.12,termination:480, fixing:80,  tray:60, duty:4720,  standby:9440},
+  {kw:90,   cable:'90mm²',     start:'VFD',        rubber:180,   armoured:146,   termination:480, fixing:80,  tray:60, duty:6200,  standby:12400},
+  {kw:110,  cable:'150mm²',    start:'VFD',        rubber:280,   armoured:228,   termination:800, fixing:80,  tray:60, duty:6370,  standby:12700},
+  {kw:132,  cable:'185mm²',    start:'VFD',        rubber:336,   armoured:276,   termination:800, fixing:120, tray:60, duty:8060,  standby:16120},
+  {kw:160,  cable:'240mm²',    start:'VFD',        rubber:254,   armoured:357,   termination:960, fixing:120, tray:60, duty:9360,  standby:18720},
+  {kw:200,  cable:'2×120mm²',  start:'VFD',        rubber:560,   armoured:456,   termination:1920,fixing:120, tray:60, duty:9360,  standby:18720},
+  {kw:210,  cable:'2×150mm²',  start:'VFD',        rubber:560,   armoured:456,   termination:1920,fixing:360, tray:60, duty:12740, standby:25400},
+  {kw:250,  cable:'2×185mm²',  start:'VFD',        rubber:672,   armoured:552,   termination:1920,fixing:360, tray:60, duty:16120, standby:32000},
+  {kw:265,  cable:'2×185mm²',  start:'VFD',        rubber:672,   armoured:552,   termination:2240,fixing:360, tray:60, duty:16120, standby:32000},
+  {kw:320,  cable:'2×240mm²',  start:'VFD',        rubber:1120,  armoured:912,   termination:2240,fixing:360, tray:60, duty:18720, standby:37440},
+];
+
+let REF = JSON.parse(JSON.stringify(REF_DEFAULT));
+const PRICES = {trayRate:15, layRate:6, traySupport:60, supportSpacing:2, dutyMult:1, sbMult:1.5};
+const ADMIN_PASS = '42304230';
+
+// Get ref row — always next higher or equal KW
+// If KW exceeds max table entry, returns max row + a multiplier (parallel cables)
+// e.g. 1000 KW / 320 KW = 3.125 → 4 parallel cables of 2×240mm²
+function getRef(kw){
+  if(!kw||kw<=0) return null;
+  const src=[...REF].sort((a,b)=>a.kw-b.kw);
+  const maxRow=src[src.length-1];
+  // Exact or next-higher match
+  const exact=src.find(r=>r.kw===kw);
+  if(exact) return {...exact, mult:1};
+  const higher=src.filter(r=>r.kw>=kw);
+  if(higher.length>0) return {...higher[0], mult:1};
+  // KW exceeds table max → compute parallel cable multiplier
+  const mult=Math.ceil(kw/maxRow.kw);
+  return {...maxRow, mult};
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BOQ STATE
+// ══════════════════════════════════════════════════════════════════
+let rows=[], nextId=1;
+
+function addRow(prefill){
+  const row=Object.assign({
+    id:nextId++, isSub:false, parentId:null,
+    desc:'', kw:'', dutyQty:1, standbyQty:0, start:'Auto', dist:20, cableType:'Armoured cable',
+    cableCost:null, trayCost:null, termCost:null, fixCost:null, layCost:null, starterCost:null
+  }, prefill||{});
+  rows.push(row);
+  renderTable();
+  setTimeout(()=>document.getElementById('d'+row.id)?.focus(),60);
+}
+
+function addSubRow(parentRi){
+  const p=rows[parentRi];
+  let at=parentRi+1;
+  while(at<rows.length&&rows[at].isSub&&rows[at].parentId===p.id) at++;
+  const s={id:nextId++,isSub:true,parentId:p.id,desc:'',kw:p.kw,dutyQty:p.dutyQty,standbyQty:p.standbyQty,start:p.start,dist:p.dist,cableType:p.cableType,
+           cableCost:null,trayCost:null,termCost:null,fixCost:null,layCost:null,starterCost:null};
+  rows.splice(at,0,s);
+  renderTable();
+  setTimeout(()=>document.getElementById('d'+s.id)?.focus(),60);
+}
+
+function deleteRow(ri){
+  const row=rows[ri];
+  if(!row.isSub){const ids=rows.filter(r=>r.id===row.id||r.parentId===row.id).map(r=>r.id);rows=rows.filter(r=>!ids.includes(r.id));}
+  else rows.splice(ri,1);
+  renderTable();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CALCULATIONS
+// ══════════════════════════════════════════════════════════════════
+const REF_DIST=20; // reference table base distance
+// Valid start types for a given KW
+// DOL: only ≤ 7.5 KW
+// Star Delta: only ≤ 45 KW
+// Soft Starter, VFD: always
+function validStartOptions(kw){
+  const k=parseFloat(kw)||0;
+  const opts=['Auto','Soft Starter','VFD'];
+  if(k<=7.5)  opts.splice(1,0,'DOL');        // insert DOL after Auto
+  if(k<=45)   opts.splice(opts.indexOf('Soft Starter'),0,'Star Delta'); // before Soft Starter
+  return opts;
+}
+
+// If current start choice is no longer valid for KW, revert to Auto
+function sanitizeStart(row){
+  const kw=parseFloat(row.kw)||0;
+  if(row.start==='DOL'       && kw>7.5)  return 'Auto';
+  if(row.start==='Star Delta'&& kw>45)   return 'Auto';
+  return row.start;
+}
+
+function calcRow(row){
+  const kw=parseFloat(row.kw)||0, dist=parseFloat(row.dist)||0;
+  const dutyQty=parseInt(row.dutyQty)||1, standbyQty=parseInt(row.standbyQty)||0;
+  const ref=getRef(kw);
+  if(!ref||kw<=0) return {cableSize:'—',startType:'—',mult:1,cableCost:0,trayCost:0,termCost:0,fixCost:0,layCost:0,starterCost:0,total:0};
+
+  const mult=ref.mult||1; // parallel cable multiplier for oversized motors
+
+  const startType=(row.start==='Auto'||!sanitizeStart(row)||sanitizeStart(row)==='Auto')
+    ?ref.start : sanitizeStart(row);
+
+  const isRubber=row.cableType?.toLowerCase().includes('rubber');
+  const pricePerM=isRubber?ref.rubber:ref.armoured;
+
+  // Cable size display: prefix multiplier if needed
+  const cableSize = mult>1 ? `${mult}× ${ref.cable}` : ref.cable;
+
+  // All costs × mult (parallel runs = mult times the single-run cost)
+  const autoCable=(pricePerM*dist)*mult;
+  const autoTray=((dist*PRICES.trayRate)+Math.ceil(dist/PRICES.supportSpacing)*PRICES.traySupport)*mult;
+  const autoTerm=(ref.termination*(dist/REF_DIST>1?Math.ceil(dist/REF_DIST):1))*mult;
+  const autoFix=(ref.fixing*(dist/REF_DIST))*mult;
+  const autoLay=(PRICES.layRate*dist)*mult;
+
+  // Starter cost = duty units × duty cost + standby units × standby cost (starter itself not multiplied — one VFD per motor)
+  const autoStarter=(dutyQty * ref.duty * PRICES.dutyMult) + (standbyQty * ref.standby * PRICES.sbMult);
+
+  const cc=row.cableCost!=null?row.cableCost:autoCable;
+  const tc=row.trayCost!=null?row.trayCost:autoTray;
+  const tmc=row.termCost!=null?row.termCost:autoTerm;
+  const fc=row.fixCost!=null?row.fixCost:autoFix;
+  const lc=row.layCost!=null?row.layCost:autoLay;
+  const sc=row.starterCost!=null?row.starterCost:autoStarter;
+
+  return {cableSize,startType,mult,pricePerM,cableCost:cc,trayCost:tc,termCost:tmc,fixCost:fc,layCost:lc,starterCost:sc,total:cc+tc+tmc+fc+lc+sc};
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER TABLE
+// ══════════════════════════════════════════════════════════════════
+function renderTable(){
+  const tbody=document.getElementById('boq-tbody');
+  const empty=document.getElementById('boq-empty');
+  const tfoot=document.getElementById('boq-tfoot');
+  const gbar =document.getElementById('grand-bar');
+  if(!tbody) return;
+
+  if(rows.length===0){tbody.innerHTML='';empty.style.display='block';tfoot.style.display='none';gbar.style.display='none';return;}
+  empty.style.display='none';tfoot.style.display='';gbar.style.display='';
+
+  let sr=0;
+  tbody.innerHTML=rows.map((row,ri)=>{
+    if(!row.isSub) sr++;
+    const c=calcRow(row);
+    const isSub=row.isSub;
+    const sLabel=isSub?'':String(sr);
+
+    // auto cells — cable size with multiplier badge, cable qty with mult note
+    const multBadge=c.mult>1?`<span style="display:inline-block;background:rgba(255,204,68,.15);color:var(--amber2);border:1px solid rgba(255,204,68,.35);border-radius:3px;font-size:8px;font-weight:700;padding:1px 4px;margin-left:4px;vertical-align:middle">${c.mult}× runs</span>`:'';
+    const csHtml=`<td class="ca-cell" id="cs${row.id}" style="white-space:nowrap">${c.cableSize}${multBadge}</td>`;
+    const cqHtml=`<td class="ca-cell" id="cq${row.id}">${row.kw&&row.dist?row.dist+'m'+(c.mult>1?` ×${c.mult}`:''):''}</td>`;
+    const stHtml=`<td class="ca-cell" id="st${row.id}">${badgeHTML(c.startType)}</td>`;
+
+    // cost inputs
+    const costInp=(val,field,id)=>
+      `<td style="padding:2px 4px"><input type="number" class="ci" id="${id}${row.id}" value="${val!=null&&val>0?val.toFixed(2):''}" step="0.01" placeholder="auto" style="text-align:right;color:var(--amber)" oninput="rows[${ri}]['${field}']=this.value?parseFloat(this.value):null;refreshTotals(${ri})"></td>`;
+
+    const descHtml=isSub
+      ?`<td style="padding:4px 8px;padding-left:22px"><span style="color:var(--text3);font-size:10px;margin-right:4px">↳</span><input class="ci" id="d${row.id}" style="text-align:left" value="${esc(row.desc)}" placeholder="Sub-item detail" onchange="rows[${ri}].desc=this.value"></td>`
+      :`<td style="padding:4px 8px"><input class="ci" id="d${row.id}" style="text-align:left" value="${esc(row.desc)}" placeholder="e.g. Feed pump" onchange="rows[${ri}].desc=this.value" onkeydown="if(event.key==='Enter')document.getElementById('k${row.id}')?.focus()"></td>`;
+
+    return `<tr class="boq-row${isSub?' sub':''}" id="row${row.id}">
+      <td style="text-align:center;padding:5px 3px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:${isSub?'var(--text3)':'var(--text2)'};">${sLabel}</td>
+      ${descHtml}
+      <td style="padding:3px 4px"><input type="number" class="ci" id="k${row.id}" value="${row.kw||''}" placeholder="kW" min="0" step="0.1" oninput="rows[${ri}].kw=this.value;refreshRow(${ri})" onkeydown="if(event.key==='Enter')document.getElementById('dq${row.id}')?.focus()"></td>
+      <!-- Duty qty -->
+      <td style="padding:3px 4px">
+        <input type="number" class="ci" id="dq${row.id}" value="${row.dutyQty??1}" min="0" step="1" style="text-align:center"
+          oninput="rows[${ri}].dutyQty=parseInt(this.value)||0;refreshRow(${ri})"
+          onkeydown="if(event.key==='Enter')document.getElementById('sq${row.id}')?.focus()">
+      </td>
+      <!-- Standby qty -->
+      <td style="padding:3px 4px">
+        <input type="number" class="ci" id="sq${row.id}" value="${row.standbyQty??0}" min="0" step="1" style="text-align:center"
+          oninput="rows[${ri}].standbyQty=parseInt(this.value)||0;refreshRow(${ri})"
+          onkeydown="if(event.key==='Enter')document.getElementById('sts${row.id}')?.focus()">
+      </td>
+      <!-- Start type — dynamic options based on KW -->
+      <td style="padding:3px 4px" id="start-cell${row.id}">
+        ${buildStartSelect(row, ri)}
+      </td>
+      <td style="padding:3px 4px"><input type="number" class="ci" id="dt${row.id}" value="${row.dist||''}" placeholder="m" min="0" step="1" oninput="rows[${ri}].dist=parseFloat(this.value)||0;refreshRow(${ri})"></td>
+      <td style="padding:3px 4px">
+        <select class="cs" id="ct${row.id}" onchange="rows[${ri}].cableType=this.value;refreshRow(${ri})">
+          <option ${row.cableType==='Armoured cable'?'selected':''}>Armoured cable</option>
+          <option ${row.cableType==='Rubber cable'?'selected':''}>Rubber cable</option>
+        </select>
+      </td>
+      ${csHtml}${cqHtml}${stHtml}
+      ${costInp(c.cableCost,  'cableCost',  'cc')}
+      ${costInp(c.trayCost,   'trayCost',   'tc')}
+      ${costInp(c.termCost,   'termCost',   'tmc')}
+      ${costInp(c.fixCost,    'fixCost',    'fc')}
+      ${costInp(c.layCost,    'layCost',    'lc')}
+      ${costInp(c.starterCost,'starterCost','sc')}
+      <td class="tot-cell" id="rt${row.id}">${c.total>0?'AED '+fmtN(c.total):'—'}</td>
+      <td style="padding:4px 3px;text-align:center;white-space:nowrap">
+        ${!isSub?`<button class="add-sub-btn" onclick="addSubRow(${ri})" title="Add sub-item">+</button>`:''}
+        <button class="del-btn" onclick="deleteRow(${ri})" title="Delete">×</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  updateGrand();
+  renderSummary();
+}
+
+// Build the start type select with only valid options for current KW
+function buildStartSelect(row, ri){
+  const kw=parseFloat(row.kw)||0;
+  const opts=validStartOptions(kw);
+  const curVal=sanitizeStart(row); // may revert to Auto if invalid
+  // Update stored value if it was sanitized
+  if(curVal!==row.start) rows[ri].start=curVal;
+  return `<select class="cs" id="sts${row.id}" onchange="rows[${ri}].start=this.value;refreshRow(${ri})">
+    ${opts.map(o=>`<option ${curVal===o?'selected':''}>${o}</option>`).join('')}
+  </select>`;
+}
+
+function badgeHTML(s){
+  const cls=s==='DOL'?'sb-dol':s==='Star Delta'?'sb-sd':s==='Soft Starter'?'sb-ss':s==='VFD'?'sb-vfd':'sb-dol';
+  return `<span class="sb ${cls}">${s||'—'}</span>`;
+}
+
+function refreshRow(ri){
+  const row=rows[ri];
+  const c=calcRow(row);
+  const cs=document.getElementById('cs'+row.id);
+  const cq=document.getElementById('cq'+row.id);
+  const st=document.getElementById('st'+row.id);
+  if(cs){
+    const badge=c.mult>1?`<span style="display:inline-block;background:rgba(255,204,68,.15);color:var(--amber2);border:1px solid rgba(255,204,68,.35);border-radius:3px;font-size:8px;font-weight:700;padding:1px 4px;margin-left:4px;vertical-align:middle">${c.mult}× runs</span>`:'';
+    cs.innerHTML=c.cableSize+badge;
+  }
+  if(cq) cq.textContent=row.kw&&row.dist ? (row.dist+'m'+(c.mult>1?` ×${c.mult}`:'')) : '';  if(st) st.innerHTML=badgeHTML(c.startType);
+
+  // Rebuild start dropdown in case KW changed valid options
+  const startCell=document.getElementById('start-cell'+row.id);
+  if(startCell) startCell.innerHTML=buildStartSelect(row,ri);
+
+  const auto={cableCost:c.cableCost,trayCost:c.trayCost,termCost:c.termCost,fixCost:c.fixCost,layCost:c.layCost,starterCost:c.starterCost};
+  const fields={cableCost:'cc',trayCost:'tc',termCost:'tmc',fixCost:'fc',layCost:'lc',starterCost:'sc'};
+  Object.entries(fields).forEach(([k,pfx])=>{
+    if(row[k]==null){const el=document.getElementById(pfx+row.id);if(el)el.value=auto[k]>0?auto[k].toFixed(2):'';}
+  });
+  refreshTotals(ri);
+}
+
+function refreshTotals(ri){
+  const row=rows[ri];
+  const c=calcRow(row);
+  const el=document.getElementById('rt'+row.id);
+  if(el) el.textContent=c.total>0?'AED '+fmtN(c.total):'—';
+  updateGrand();
+}
+
+function updateGrand(){
+  let grand=0,cable=0,tray=0,term=0,fix=0,starter=0;
+  rows.forEach(r=>{const c=calcRow(r);grand+=c.total;cable+=c.cableCost;tray+=c.trayCost;term+=c.termCost;fix+=c.fixCost+c.layCost;starter+=c.starterCost;});
+  const profit=parseFloat(document.getElementById('profit-pct')?.value||15)/100;
+  const sale=grand/(1-profit);
+  document.getElementById('grand-cost').textContent='AED '+fmtN(grand);
+  document.getElementById('grand-sale').textContent='Sale: AED '+fmtN(sale)+' ('+Math.round(profit*100)+'% margin)';
+  document.getElementById('gt-cable').textContent=fmtN(cable);
+  document.getElementById('gt-tray').textContent=fmtN(tray);
+  document.getElementById('gt-term').textContent=fmtN(term);
+  document.getElementById('gt-fix').textContent=fmtN(fix);
+  document.getElementById('gt-starter').textContent=fmtN(starter);
+  document.getElementById('tfoot-total').textContent='AED '+fmtN(grand)+' cost  ·  AED '+fmtN(sale)+' sale';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SUMMARY
+// ══════════════════════════════════════════════════════════════════
+function renderSummary(){
+  const profit=parseFloat(document.getElementById('profit-pct')?.value||15)/100;
+  let grand=0,cable=0,tray=0,term=0,fix=0,lay=0,starter=0;
+  rows.forEach(r=>{const c=calcRow(r);grand+=c.total;cable+=c.cableCost;tray+=c.trayCost;term+=c.termCost;fix+=c.fixCost;lay+=c.layCost;starter+=c.starterCost;});
+  const sale=grand/(1-profit), margin=sale-grand;
+  const grid=document.getElementById('sum-grid');
+  if(grid) grid.innerHTML=[
+    ['Total Cost','AED '+fmtN(grand),rows.filter(r=>!r.isSub).length+' equipment','var(--amber)'],
+    ['Sale Price','AED '+fmtN(sale),(profit*100).toFixed(0)+'% margin applied','var(--green)'],
+    ['Gross Margin','AED '+fmtN(margin),'Profit amount','var(--cyan)'],
+    ['Cable','AED '+fmtN(cable),grand>0?(cable/grand*100).toFixed(1)+'% of total':'','var(--amber)'],
+    ['Starter/VFD','AED '+fmtN(starter),grand>0?(starter/grand*100).toFixed(1)+'% of total':'','#cc99ff'],
+    ['Tray+Install','AED '+fmtN(tray+fix+lay),grand>0?((tray+fix+lay)/grand*100).toFixed(1)+'% of total':'','var(--cyan)'],
+  ].map(([l,v,s,c])=>`<div class="sum-card"><div class="sum-card-lbl">${l}</div><div class="sum-card-val" style="color:${c}">${v}</div><div class="sum-card-sub">${s}</div></div>`).join('');
+
+  const bd=document.getElementById('sum-breakdown');
+  if(bd&&grand>0){
+    const cats=[['Cable',cable,'var(--amber)'],['Cable Tray',tray,'var(--cyan)'],['Termination',term,'#cc99ff'],['Fixing',fix,'var(--green)'],['Laying',lay,'#88ccff'],['Starter/VFD',starter,'var(--yellow)']];
+    bd.innerHTML=cats.filter(([,v])=>v>0).map(([l,v,c])=>`<div class="bb"><div class="bb-lbl"><span>${l}</span><span style="font-family:'IBM Plex Mono',monospace;color:var(--text2)">${(v/grand*100).toFixed(1)}% · AED ${fmtN(v)}</span></div><div class="bb-track"><div class="bb-fill" style="width:${(v/grand*100).toFixed(1)}%;background:${c}"></div></div></div>`).join('');
+  } else if(bd) bd.innerHTML='<div style="color:var(--text2);font-size:12px">No data yet</div>';
+
+  const eq=document.getElementById('sum-equip');
+  if(eq){
+    if(!rows.length){eq.innerHTML='<div style="color:var(--text2);font-size:12px">No equipment</div>';return;}
+    eq.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="border-bottom:2px solid var(--border)">
+      <th style="padding:5px 7px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text2)">Equipment</th>
+      <th style="padding:5px 7px;text-align:center;font-size:9px;color:var(--text2)">KW</th>
+      <th style="padding:5px 7px;text-align:center;font-size:9px;color:var(--amber)">D</th>
+      <th style="padding:5px 7px;text-align:center;font-size:9px;color:var(--text2)">S/B</th>
+      <th style="padding:5px 7px;text-align:center;font-size:9px;color:var(--text2)">Start</th>
+      <th style="padding:5px 7px;text-align:center;font-size:9px;color:var(--cyan)">Cable</th>
+      <th style="padding:5px 7px;text-align:center;font-size:9px;color:var(--text2)">Dist</th>
+      <th style="padding:5px 7px;text-align:right;font-size:9px;color:var(--amber)">Cost</th>
+      <th style="padding:5px 7px;text-align:right;font-size:9px;color:var(--green)">Sale</th>
+    </tr></thead><tbody>${rows.filter(r=>!r.isSub).map(row=>{
+      const c=calcRow(row),s=c.total/(1-profit);
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:5px 7px;font-weight:600">${esc(row.desc||'—')}</td>
+        <td style="padding:5px 7px;text-align:center;font-family:'IBM Plex Mono',monospace">${row.kw||'—'}</td>
+        <td style="padding:5px 7px;text-align:center;font-family:'IBM Plex Mono',monospace;color:var(--amber)">${row.dutyQty??1}</td>
+        <td style="padding:5px 7px;text-align:center;font-family:'IBM Plex Mono',monospace;color:var(--text2)">${row.standbyQty??0}</td>
+        <td style="padding:5px 7px;text-align:center">${badgeHTML(c.startType)}</td>
+        <td style="padding:5px 7px;text-align:center;font-family:'IBM Plex Mono',monospace;color:var(--cyan);font-size:10px">${c.cableSize}</td>
+        <td style="padding:5px 7px;text-align:center;font-family:'IBM Plex Mono',monospace;color:var(--text2)">${row.dist}m</td>
+        <td style="padding:5px 7px;text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--amber)">${c.total>0?'AED '+fmtN(c.total):'—'}</td>
+        <td style="padding:5px 7px;text-align:right;font-family:'IBM Plex Mono',monospace;color:var(--green)">${c.total>0?'AED '+fmtN(s):'—'}</td>
+      </tr>`;}).join('')}</tbody></table>`;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ADMIN REF TABLE EDITOR
+// ══════════════════════════════════════════════════════════════════
+function renderRefTable(){
+  const tbody=document.getElementById('ref-tbody');
+  const cnt=document.getElementById('ref-count');
+  if(!tbody) return;
+  if(cnt) cnt.textContent=REF.length+' rows';
+  const sorted=[...REF].sort((a,b)=>a.kw-b.kw);
+  const ni=(v,f,ri,col)=>`<input type="number" class="ni" value="${v??''}" step="0.01" style="${col?'color:var(--green)':''}" onchange="REF[${ri}]['${f}']=parseFloat(this.value)||0;renderTable()" onfocus="this.style.borderBottomColor='var(--amber)'" onblur="this.style.borderBottomColor='var(--border)'">`;
+  tbody.innerHTML=sorted.map((r,ri)=>{
+    const origRi=REF.indexOf(r);
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td>${ni(r.kw,'kw',origRi,false)}</td>
+      <td><input type="text" class="ni" style="color:var(--cyan);width:90px" value="${esc(r.cable)}" onchange="REF[${origRi}].cable=this.value"></td>
+      <td><select style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:11px;outline:none;cursor:pointer;width:90px" onchange="REF[${origRi}].start=this.value">
+        ${['DOL','Star Delta','Soft Starter','VFD'].map(s=>`<option ${r.start===s?'selected':''}>${s}</option>`).join('')}
+      </select></td>
+      <td>${ni(r.rubber,'rubber',origRi,false)}</td>
+      <td>${ni(r.armoured,'armoured',origRi,false)}</td>
+      <td>${ni(r.termination,'termination',origRi,false)}</td>
+      <td>${ni(r.fixing,'fixing',origRi,false)}</td>
+      <td>${ni(r.tray,'tray',origRi,false)}</td>
+      <td>${ni(r.duty,'duty',origRi,true)}</td>
+      <td>${ni(r.standby,'standby',origRi,true)}</td>
+      <td><button class="del-btn" onclick="REF.splice(${origRi},1);renderRefTable();renderTable()">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function addRefRow(){
+  REF.push({kw:0,cable:'',start:'DOL',rubber:0,armoured:0,termination:0,fixing:0,tray:60,duty:0,standby:0});
+  renderRefTable();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TABS / ADMIN / TIMER
+// ══════════════════════════════════════════════════════════════════
+function showTab(id,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+  if(id==='summary') renderSummary();
+}
+
+function openLogin(){document.getElementById('loginOverlay').classList.add('open');document.getElementById('adm-pwd').value='';document.getElementById('login-err').textContent='';setTimeout(()=>document.getElementById('adm-pwd').focus(),80);}
+function closeLogin(){document.getElementById('loginOverlay').classList.remove('open')}
+function doLogin(){
+  if(document.getElementById('adm-pwd').value===ADMIN_PASS){
+    closeLogin();document.getElementById('admOverlay').classList.add('open');
+    showAdmTab('timer',document.getElementById('atab-timer'));
+  } else {document.getElementById('login-err').textContent='Incorrect password.';document.getElementById('adm-pwd').value='';}
+}
+function closeAdmin(){document.getElementById('admOverlay').classList.remove('open')}
+function showAdmTab(id,btn){
+  document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.apanel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('apanel-'+id).classList.add('active');
+  if(id==='timer') renderAdminTimerDisplay();
+  if(id==='ref')   renderRefTable();
+}
+
+// Timer
+let timerSecs=30*60,timerTotal=30*60,timerUnlimited=false,timerTick;
+function startTimer(){
+  clearInterval(timerTick);if(timerUnlimited){renderTimerBadge();return;}
+  timerTick=setInterval(()=>{timerSecs--;renderTimerBadge();if(document.getElementById('admOverlay').classList.contains('open'))renderAdminTimerDisplay();if(timerSecs<=0){clearInterval(timerTick);document.getElementById('expWall').classList.add('show');}},1000);
+  renderTimerBadge();
+}
+function renderTimerBadge(){
+  const el=document.getElementById('timerBadge'),ae=document.getElementById('adm-timer-badge');
+  if(timerUnlimited){[el,ae].forEach(e=>{if(e){e.textContent='∞ Unlimited';e.style.cssText='border-color:var(--green);color:var(--green);background:rgba(0,232,122,.1)'}});return;}
+  const m=Math.floor(Math.max(timerSecs,0)/60),s=Math.max(timerSecs,0)%60;
+  const t=`⏱ ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const w=timerSecs<=120&&timerSecs>0,exp=timerSecs<=0;
+  if(el){el.textContent=exp?'⏱ EXPIRED':t;el.className='timer-badge'+(w?' warn':'');}
+  if(ae) ae.textContent=exp?'⏱ EXPIRED':t;
+}
+function renderAdminTimerDisplay(){
+  const m=Math.floor(Math.max(timerSecs,0)/60),s=Math.max(timerSecs,0)%60;
+  const big=document.getElementById('adm-time-big'),mode=document.getElementById('adm-timer-mode');
+  if(big) big.textContent=timerUnlimited?'∞':`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if(mode){mode.textContent=timerUnlimited?'∞ Unlimited':timerSecs<=0?'● Expired':timerSecs<=120?'⚠ Expiring':'● Running';mode.style.color=timerSecs<=120&&!timerUnlimited?'var(--red)':'var(--green)';}
+}
+function setTimerMins(m){timerUnlimited=false;timerSecs=m*60;timerTotal=m*60;document.getElementById('expWall').classList.remove('show');startTimer();renderAdminTimerDisplay();}
+function setTimerUnlimited(){timerUnlimited=true;clearInterval(timerTick);document.getElementById('expWall').classList.remove('show');renderTimerBadge();renderAdminTimerDisplay();}
+function setTimerCustom(){const v=parseInt(document.getElementById('custom-mins').value);if(v>0&&v<=600)setTimerMins(v);}
+function resetTimer(){timerUnlimited=false;timerSecs=timerTotal;document.getElementById('expWall').classList.remove('show');startTimer();renderAdminTimerDisplay();}
+
+// ══════════════════════════════════════════════════════════════════
+// SAVE / LOAD  (localStorage)
+// ══════════════════════════════════════════════════════════════════
+const SAVE_KEY = 'elec_boq_project';
+
+function saveProject(){
+  const proj={
+    version:2,
+    savedAt: new Date().toISOString(),
+    projName: document.getElementById('proj-name')?.value||'',
+    profitPct: document.getElementById('profit-pct')?.value||15,
+    rows: rows,
+    nextId: nextId,
+    REF: REF,
+    PRICES: {...PRICES},
+  };
+  try{
+    localStorage.setItem(SAVE_KEY, JSON.stringify(proj));
+    showSaveStatus('✔ Saved — '+new Date().toLocaleTimeString(), 'var(--green)');
+    // Flash button
+    const btn=document.getElementById('save-btn');
+    if(btn){btn.textContent='✔ Saved';btn.style.background='rgba(0,232,122,.3)';setTimeout(()=>{btn.textContent='💾 Save';btn.style.background='rgba(0,232,122,.14)';},1800);}
+  } catch(e){
+    showSaveStatus('⚠ Save failed (storage full?)', 'var(--red)');
+  }
+}
+
+function loadProject(){
+  const raw=localStorage.getItem(SAVE_KEY);
+  if(!raw){alert('No saved project found in this browser.');return;}
+  try{
+    const proj=JSON.parse(raw);
+    if(confirm(`Load saved project "${proj.projName||'Unnamed'}"?\nSaved: ${new Date(proj.savedAt).toLocaleString()}\n\nThis will replace current data.`)){
+      rows = proj.rows||[];
+      nextId = proj.nextId||rows.length+1;
+      if(proj.REF)    REF=[...proj.REF];
+      if(proj.PRICES) Object.assign(PRICES,proj.PRICES);
+      const pn=document.getElementById('proj-name');if(pn){pn.value=proj.projName||'';document.getElementById('proj-badge').textContent=proj.projName||'No project';}
+      const pp=document.getElementById('profit-pct');if(pp) pp.value=proj.profitPct||15;
+      renderTable();
+      showSaveStatus('📂 Loaded — saved '+new Date(proj.savedAt).toLocaleTimeString(), 'var(--cyan)');
+    }
+  } catch(e){alert('Could not load save data — it may be corrupted.');}
+}
+
+function clearAll(){
+  if(!confirm('Clear all BOQ rows? This cannot be undone (use Save first to preserve data).')) return;
+  rows=[];nextId=1;renderTable();renderSummary();
+  showSaveStatus('🗑 Cleared', 'var(--text2)');
+}
+
+function showSaveStatus(msg, color){
+  const el=document.getElementById('save-status');
+  if(!el) return;
+  el.textContent=msg;
+  el.style.color=color||'var(--text2)';
+  el.style.display='block';
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.style.display='none', 4000);
+}
+
+// Check for existing save on load and show a hint
+function checkExistingSave(){
+  const raw=localStorage.getItem(SAVE_KEY);
+  if(!raw) return;
+  try{
+    const proj=JSON.parse(raw);
+    const savedAt=new Date(proj.savedAt).toLocaleString();
+    showSaveStatus(`💾 Saved project available: "${proj.projName||'Unnamed'}" (${savedAt}) — click 📂 Load`, 'var(--text2)');
+  } catch(e){}
+}
+
+// Export
+function exportCSV(){
+  const profit=parseFloat(document.getElementById('profit-pct')?.value||15)/100;
+  const proj=document.getElementById('proj-name')?.value||'Project';
+  let csv=`"${proj} - Electrical BOQ"\n"Sr","Description","KW","Duty Qty","Standby Qty","Start Type","Cable Type","Cable Size","Distance(m)","Cable AED","Tray AED","Term AED","Fix AED","Lay AED","Starter AED","Total AED","Sale AED"\n`;
+  let sr=0;
+  rows.forEach(row=>{
+    if(!row.isSub) sr++;
+    const c=calcRow(row),sale=(c.total/(1-profit)).toFixed(2);
+    csv+=`"${row.isSub?'':sr}","${row.desc}","${row.kw}","${row.dutyQty??1}","${row.standbyQty??0}","${c.startType}","${row.cableType}","${c.cableSize}","${row.dist}","${c.cableCost.toFixed(2)}","${c.trayCost.toFixed(2)}","${c.termCost.toFixed(2)}","${c.fixCost.toFixed(2)}","${c.layCost.toFixed(2)}","${c.starterCost.toFixed(2)}","${c.total.toFixed(2)}","${sale}"\n`;
+  });
+  const grand=rows.reduce((s,r)=>s+calcRow(r).total,0);
+  csv+=`"","TOTAL","","","","","","","","","","","","","${grand.toFixed(2)}","${(grand/(1-profit)).toFixed(2)}"\n`;
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=(proj.replace(/\s+/g,'_')+'_Electrical_BOQ.csv');a.click();
+}
+
+// Helpers
+function fmtN(n){return(n||0).toLocaleString('en-AE',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// Init
+document.addEventListener('DOMContentLoaded',()=>{
+  renderTable();
+  startTimer();
+  checkExistingSave();
+});
+
+// Ctrl+S to save
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.key==='s'){e.preventDefault();saveProject();}
+});
+</script>
+</body>
+</html>
