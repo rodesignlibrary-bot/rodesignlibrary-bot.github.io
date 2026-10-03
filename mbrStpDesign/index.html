@@ -1,0 +1,3389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RODESIGNLIBRARY — STP Design Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0d1117;
+  --ink2: #1e2530;
+  --ink3: #2d3748;
+  --muted: #6b7280;
+  --muted2: #9ca3af;
+  --border: #e5e7eb;
+  --border2: #d1d5db;
+  --surface: #f9fafb;
+  --surface2: #f3f4f6;
+  --white: #ffffff;
+  --blue: #1e40af;
+  --blue2: #3b82f6;
+  --blue-light: #eff6ff;
+  --blue-mid: #dbeafe;
+  --teal: #0f766e;
+  --teal-light: #f0fdfa;
+  --amber: #b45309;
+  --amber-light: #fffbeb;
+  --red: #dc2626;
+  --red-light: #fef2f2;
+  --green: #15803d;
+  --green-light: #f0fdf4;
+  --accent: #0ea5e9;
+  --accent2: #7c3aed;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+}
+
+.hl-row-aer td { background: #dcfce7 !important; color: #15803d !important; font-weight: 600; }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--surface);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ── NAV ── */
+.nav {
+  background: var(--ink);
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  height: 56px;
+  gap: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.nav-brand {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  color: white;
+  letter-spacing: -.3px;
+  margin-right: 32px;
+  white-space: nowrap;
+}
+.nav-brand span { color: var(--accent); }
+
+.nav-tabs { display: flex; height: 100%; gap: 0; }
+
+.nav-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 0 18px;
+  color: rgba(255,255,255,.55);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .2s;
+  white-space: nowrap;
+  user-select: none;
+}
+.nav-tab:hover { color: rgba(255,255,255,.85); }
+.nav-tab.active { color: white; border-bottom-color: var(--accent); }
+.nav-tab svg { width: 15px; height: 15px; }
+
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.nav-badge {
+  background: rgba(14,165,233,.2); color: var(--accent);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; font-weight: 500;
+  padding: 2px 8px; border-radius: 20px;
+  letter-spacing: .04em;
+}
+
+/* ── PAGES ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── MBR DESIGN PAGE ── */
+.mbr-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: calc(100vh - 56px);
+}
+
+.mbr-sidebar {
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  padding: 0;
+  overflow-y: auto;
+  position: sticky;
+  top: 56px;
+  height: calc(100vh - 56px);
+}
+
+.sidebar-header {
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.sidebar-header h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px; color: var(--ink);
+  margin-bottom: 4px;
+}
+.sidebar-header p { font-size: 11px; color: var(--muted); }
+
+.sidebar-section {
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-section-title {
+  padding: 12px 20px 8px;
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted);
+  background: var(--surface);
+}
+
+.input-row {
+  display: flex; align-items: center;
+  padding: 5px 20px;
+  gap: 8px;
+}
+.input-row label {
+  flex: 1;
+  font-size: 12px; color: var(--ink3);
+  line-height: 1.3;
+}
+.input-row .unit {
+  font-size: 10px; color: var(--muted2);
+  font-family: 'DM Mono', monospace;
+  min-width: 46px; text-align: right;
+}
+/* ── USER INPUT: red border = must fill, green = filled ── */
+.input-row input.user-input {
+  width: 80px; padding: 4px 7px;
+  border: 1.5px solid #ef4444;
+  border-radius: 5px;
+  font-size: 12px; font-family: 'DM Mono', monospace;
+  color: #b91c1c; background: #fff5f5;
+  text-align: right;
+  transition: border-color .2s, color .2s, background .2s, box-shadow .2s;
+}
+.input-row input.user-input:focus {
+  outline: none; box-shadow: 0 0 0 2px rgba(239,68,68,.2);
+}
+.input-row input.user-input.filled {
+  border-color: #16a34a; color: #15803d; background: #f0fdf4;
+}
+.input-row input.user-input.filled:focus {
+  box-shadow: 0 0 0 2px rgba(22,163,74,.2);
+}
+
+/* ── REFERENCE DATA: grey, read-only display ── */
+.ref-val {
+  width: 80px; padding: 4px 7px;
+  border: 1px solid #e5e7eb;
+  border-radius: 5px;
+  font-size: 12px; font-family: 'DM Mono', monospace;
+  color: #6b7280; background: #f3f4f6;
+  text-align: right; font-weight: 400;
+  display: flex; align-items: center; justify-content: flex-end;
+  min-height: 26px; cursor: default;
+}
+
+/* ── COMPUTED: blue, auto-calculated display ── */
+.computed-val {
+  width: 80px; padding: 4px 7px;
+  border: 1.5px solid #93c5fd;
+  border-radius: 5px;
+  font-size: 12px; font-family: 'DM Mono', monospace;
+  color: #1e40af; background: #eff6ff;
+  text-align: right; font-weight: 600;
+  display: flex; align-items: center; justify-content: flex-end;
+  min-height: 26px;
+}
+
+.calc-btn {
+  margin: 16px 20px;
+  width: calc(100% - 40px);
+  padding: 10px;
+  background: var(--blue);
+  color: white;
+  border: none; border-radius: var(--radius);
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+  letter-spacing: .01em;
+}
+.calc-btn:hover { background: #1d3a9e; }
+
+/* ── RESULTS MAIN ── */
+.mbr-main {
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.mbr-main-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.mbr-main-header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px; color: var(--ink);
+}
+.mbr-main-header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.export-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: white; color: var(--ink3);
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: all .2s;
+}
+.export-btn:hover { background: var(--surface2); border-color: var(--ink3); }
+
+/* KPI cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.kpi-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow);
+}
+.kpi-card .kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 500; }
+.kpi-card .kpi-value { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--ink); margin: 2px 0; line-height: 1; }
+.kpi-card .kpi-unit { font-size: 11px; color: var(--muted2); font-family: 'DM Mono', monospace; }
+.kpi-card.blue { border-left: 3px solid var(--blue2); }
+.kpi-card.teal { border-left: 3px solid var(--teal); }
+.kpi-card.amber { border-left: 3px solid var(--amber); }
+.kpi-card.red { border-left: 3px solid var(--red); }
+.kpi-card.green { border-left: 3px solid var(--green); }
+.kpi-card.purple { border-left: 3px solid var(--accent2); }
+
+/* Results sections */
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 900px) { .results-grid { grid-template-columns: 1fr; } }
+
+.result-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.result-card-header {
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.result-card-header h3 { font-size: 13px; font-weight: 600; color: var(--ink); }
+.result-card-header .tag {
+  font-size: 10px; padding: 1px 7px;
+  border-radius: 10px; font-weight: 500;
+  font-family: 'DM Mono', monospace;
+}
+.tag-blue { background: var(--blue-mid); color: var(--blue); }
+.tag-teal { background: #ccfbf1; color: var(--teal); }
+.tag-amber { background: #fef3c7; color: var(--amber); }
+.tag-green { background: #dcfce7; color: var(--green); }
+.tag-purple { background: #ede9fe; color: var(--accent2); }
+
+.result-table { width: 100%; border-collapse: collapse; }
+.result-table tr { border-bottom: 1px solid var(--border); }
+.result-table tr:last-child { border-bottom: none; }
+.result-table td { padding: 7px 16px; font-size: 12px; }
+.result-table td:first-child { color: var(--muted); width: 50%; }
+.result-table td:last-child { font-family: 'DM Mono', monospace; color: var(--ink); text-align: right; font-weight: 500; }
+.result-table tr:hover td { background: var(--surface); }
+.result-table .highlight td { background: var(--blue-light); }
+.result-table .highlight td:first-child { color: var(--blue); font-weight: 500; }
+.result-table .highlight td:last-child { color: var(--blue); }
+
+/* Raw / Treated sewage */
+.quality-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin-bottom: 16px;
+}
+.quality-card { background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
+.quality-header { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.quality-header h3 { font-size: 13px; font-weight: 600; color: var(--ink); }
+.quality-header p { font-size: 11px; color: var(--muted); }
+
+.param-list { padding: 8px 0; }
+.param-row {
+  display: flex; align-items: center; padding: 5px 16px; gap: 8px;
+}
+.param-row:hover { background: var(--surface); }
+.param-name { flex: 1; font-size: 12px; color: var(--ink3); }
+.param-bar-wrap { width: 80px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.param-bar { height: 100%; border-radius: 3px; }
+.param-value { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink); min-width: 60px; text-align: right; }
+.param-unit { font-size: 10px; color: var(--muted2); min-width: 48px; }
+
+/* Flow diagram */
+.flow-diagram {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+.flow-diagram h3 { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 16px; }
+.flow-nodes {
+  display: flex; align-items: center; gap: 0;
+  overflow-x: auto; padding-bottom: 8px;
+}
+.flow-node {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 90px;
+}
+.flow-box {
+  width: 78px; height: 54px;
+  border-radius: 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 600; text-align: center;
+  line-height: 1.2;
+  border: 1.5px solid;
+  padding: 4px;
+}
+.flow-box.raw { background: #fff7ed; border-color: #fb923c; color: #c2410c; }
+.flow-box.screen { background: #fef9c3; border-color: #facc15; color: #854d0e; }
+.flow-box.eqt { background: #e0f2fe; border-color: #38bdf8; color: #0369a1; }
+.flow-box.anoxic { background: #f3e8ff; border-color: #a855f7; color: #7e22ce; }
+.flow-box.aeration { background: #dcfce7; border-color: #4ade80; color: #166534; }
+.flow-box.mbr { background: #dbeafe; border-color: #60a5fa; color: #1e40af; }
+.flow-box.disinfect { background: #fce7f3; border-color: #f472b6; color: #9d174d; }
+.flow-box.treated { background: #f0fdf4; border-color: #86efac; color: #14532d; }
+.flow-box.sludge { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+.flow-label { font-size: 9px; color: var(--muted); margin-top: 5px; text-align: center; }
+.flow-arrow {
+  width: 28px; min-width: 28px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted2); font-size: 14px;
+  margin-top: -20px;
+}
+
+/* ── ADMIN / DATABASE ── */
+.admin-layout { padding: 24px; }
+.admin-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.admin-header h1 { font-family: 'DM Serif Display', serif; font-size: 22px; }
+.admin-header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.db-toolbar {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.toolbar-row1 {
+  display: flex; gap: 10px; margin-bottom: 12px; align-items: center;
+}
+.search-wrap { position: relative; flex: 1; }
+.search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted2); width: 14px; height: 14px; }
+.db-search {
+  width: 100%; padding: 8px 12px 8px 32px;
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  font-size: 13px; color: var(--ink);
+  background: var(--surface);
+}
+.db-search:focus { outline: none; border-color: var(--blue2); background: white; box-shadow: 0 0 0 2px rgba(59,130,246,.12); }
+
+.toolbar-row2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+.filter-sel {
+  padding: 7px 10px;
+  border: 1px solid var(--border2); border-radius: var(--radius);
+  font-size: 12px; color: var(--ink);
+  background: var(--surface);
+  cursor: pointer;
+}
+.filter-sel:focus { outline: none; border-color: var(--blue2); }
+
+.db-stats { display: flex; gap: 16px; align-items: center; }
+.db-stat { font-size: 12px; color: var(--muted); }
+.db-stat strong { color: var(--ink); }
+
+.active-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.filter-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  background: var(--blue-mid); color: var(--blue);
+  font-size: 11px; font-weight: 500;
+}
+.filter-tag button { background: none; border: none; cursor: pointer; color: var(--blue); font-size: 13px; line-height: 1; padding: 0; }
+
+.reset-all {
+  padding: 7px 14px; border: 1px solid var(--border2);
+  border-radius: var(--radius); background: white; color: var(--muted);
+  font-size: 12px; cursor: pointer; white-space: nowrap;
+}
+.reset-all:hover { color: var(--ink); border-color: var(--ink3); }
+
+/* Table */
+.db-table-wrap {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.db-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.db-table thead { background: var(--surface); }
+.db-table th {
+  padding: 10px 14px; text-align: left;
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; user-select: none; white-space: nowrap;
+  position: sticky; top: 0; background: var(--surface);
+}
+.db-table th:hover { color: var(--ink); }
+.db-table th.sort-asc::after { content: ' ↑'; color: var(--blue2); }
+.db-table th.sort-desc::after { content: ' ↓'; color: var(--blue2); }
+.db-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--ink);
+  max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.db-table tr:last-child td { border-bottom: none; }
+.db-table tr:hover td { background: var(--surface); }
+.db-table .num { text-align: right; font-family: 'DM Mono', monospace; font-weight: 500; }
+
+.cat-pill {
+  display: inline-block; padding: 2px 8px;
+  border-radius: 10px; font-size: 10px; font-weight: 600;
+  white-space: nowrap;
+}
+.cat-blower { background: #dbeafe; color: #1e40af; }
+.cat-pump { background: #dcfce7; color: #15803d; }
+.cat-inst { background: #ede9fe; color: #6d28d9; }
+.cat-screen { background: #fef3c7; color: #b45309; }
+.cat-mbr { background: #fee2e2; color: #991b1b; }
+.cat-ocu { background: #fce7f3; color: #9d174d; }
+.cat-dew { background: #ccfbf1; color: #0f766e; }
+
+.no-results { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+
+/* ── DB EDIT ACTIONS ── */
+.db-table td.td-actions { white-space: nowrap; text-align: center; padding: 6px 8px; }
+.btn-edit {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 9px; border-radius: 5px; font-size: 11px; font-weight: 500;
+  border: 1px solid #93c5fd; background: #eff6ff; color: #1e40af; cursor: pointer;
+  transition: all .15s;
+}
+.btn-edit:hover { background: #dbeafe; border-color: #60a5fa; }
+.btn-del {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 3px 9px; border-radius: 5px; font-size: 11px; font-weight: 500;
+  border: 1px solid #fca5a5; background: #fef2f2; color: #dc2626; cursor: pointer;
+  margin-left: 4px; transition: all .15s;
+}
+.btn-del:hover { background: #fee2e2; border-color: #f87171; }
+.btn-add-equip {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px; background: var(--blue); color: white;
+  border: none; border-radius: var(--radius); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .2s; white-space: nowrap;
+}
+.btn-add-equip:hover { background: #1d3a9e; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.45); z-index: 500;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: white; border-radius: var(--radius-lg);
+  width: 640px; max-width: 95vw; max-height: 90vh;
+  overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  display: flex; flex-direction: column;
+}
+.modal-header {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: white; z-index: 1;
+}
+.modal-header h2 { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--ink); }
+.modal-close { background: none; border: none; font-size: 22px; color: var(--muted); cursor: pointer; line-height: 1; padding: 0 4px; }
+.modal-close:hover { color: var(--ink); }
+.modal-body { padding: 20px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.modal-field { display: flex; flex-direction: column; gap: 5px; }
+.modal-field.full { grid-column: 1 / -1; }
+.modal-field label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.modal-field input, .modal-field select {
+  padding: 8px 10px; border: 1.5px solid var(--border2); border-radius: var(--radius);
+  font-size: 13px; font-family: 'Outfit', sans-serif; color: var(--ink);
+  background: white; transition: border-color .15s;
+}
+.modal-field input:focus, .modal-field select:focus {
+  outline: none; border-color: var(--blue2); box-shadow: 0 0 0 2px rgba(59,130,246,.12);
+}
+.modal-footer {
+  padding: 14px 24px 18px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 10px;
+  position: sticky; bottom: 0; background: white;
+}
+.btn-cancel {
+  padding: 9px 18px; border: 1px solid var(--border2); border-radius: var(--radius);
+  background: white; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer;
+}
+.btn-cancel:hover { color: var(--ink); border-color: var(--ink3); }
+.btn-save {
+  padding: 9px 22px; background: var(--blue); color: white;
+  border: none; border-radius: var(--radius);
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: background .2s;
+}
+.btn-save:hover { background: #1d3a9e; }
+.modal-field input.err { border-color: #ef4444; background: #fff5f5; }
+
+/* ── GENERAL UTIL ── */
+.full-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* Diffuser select */
+.input-row select.user-input {
+  width: 80px; padding: 4px 4px;
+  border: 1.5px solid #ef4444; border-radius: 5px;
+  font-size: 11px; font-family: 'Outfit', sans-serif;
+  color: #b91c1c; background: #fff5f5; cursor: pointer;
+  transition: border-color .2s, color .2s, background .2s;
+}
+.input-row select.user-input.filled { border-color: #16a34a; color: #15803d; background: #f0fdf4; }
+.input-row select.user-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(239,68,68,.2); }
+.input-row select.user-input.filled:focus { box-shadow: 0 0 0 2px rgba(22,163,74,.2); }
+
+/* Design guidelines */
+.guidelines-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius-lg); margin-bottom: 16px;
+  box-shadow: var(--shadow); overflow: hidden;
+}
+.guidelines-header {
+  padding: 12px 16px; background: #0d1117;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.guidelines-header h3 { font-size: 13px; font-weight: 600; color: white; }
+.guidelines-header span { font-size: 10px; color: rgba(255,255,255,.45); font-family: 'DM Mono', monospace; }
+.guidelines-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.guide-table-wrap { border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+.guide-table-title {
+  padding: 7px 12px; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em; color: white;
+  display: flex; align-items: center; gap: 6px;
+}
+.guide-table-title.coarse { background: #1e40af; }
+.guide-table-title.fine   { background: #0f766e; }
+.guide-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.guide-tbl th {
+  padding: 6px 12px; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .04em;
+  background: var(--surface); color: var(--muted);
+  border-bottom: 1px solid var(--border); text-align: left;
+}
+.guide-tbl td { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+.guide-tbl tr:last-child td { border-bottom: none; }
+.guide-tbl tr.hl-row td { background: #fef9c3; }
+.guide-tbl tr.hl-row td:first-child { color: #92400e; font-weight: 600; }
+.guide-tbl .num { text-align: right; font-family: 'DM Mono', monospace; font-weight: 500; }
+.diff-summary {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px 16px;
+  display: flex; flex-wrap: wrap;
+}
+.ds-item { flex: 1; min-width: 90px; text-align: center; padding: 6px 12px; }
+.ds-item + .ds-item { border-left: 1px solid var(--border); }
+.ds-val { font-family: 'DM Serif Display', serif; font-size: 22px; line-height: 1; color: var(--ink); }
+.ds-val.blue  { color: #1e40af; }
+.ds-val.teal  { color: #0f766e; }
+.ds-val.amber { color: #b45309; }
+.ds-label { font-size: 10px; color: var(--muted); margin-top: 3px; }
+/* ── ESTIMATED PRICES PAGE ── */
+.prices-layout { padding: 28px 32px; max-width: 1200px; margin: 0 auto; }
+.prices-header { margin-bottom: 24px; }
+.prices-header h1 { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--ink); }
+.prices-header p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.prices-note {
+  background: #fffbeb; border: 1px solid #fde68a; border-radius: var(--radius);
+  padding: 10px 14px; font-size: 11px; color: #92400e;
+  margin-bottom: 24px; display: flex; align-items: center; gap: 8px;
+}
+.price-section { margin-bottom: 28px; }
+.price-section-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted); padding: 0 0 8px 0;
+  border-bottom: 2px solid var(--border); margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.price-section-title span { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted2); font-weight: 400; text-transform: none; letter-spacing: 0; }
+.price-table { width: 100%; border-collapse: collapse; background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow); }
+.price-table thead tr { background: var(--surface); }
+.price-table th { padding: 9px 14px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); text-align: left; border-bottom: 1px solid var(--border); }
+.price-table th.num { text-align: right; }
+.price-table td { padding: 9px 14px; font-size: 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.price-table tr:last-child td { border-bottom: none; }
+.price-table tr:hover td { background: var(--surface); }
+.price-table td.num { text-align: right; font-family: 'DM Mono', monospace; font-weight: 500; }
+.price-table td.aed { text-align: right; font-family: 'DM Mono', monospace; font-weight: 700; color: var(--blue); }
+.price-table td.subtotal { text-align: right; font-family: 'DM Mono', monospace; font-weight: 700; color: var(--ink); background: var(--surface); }
+.price-table .qty-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--blue-mid); color: var(--blue);
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 700;
+  border-radius: 4px; padding: 1px 7px; min-width: 28px;
+}
+.price-table .match-tag {
+  display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 10px;
+  font-weight: 600; margin-left: 4px; vertical-align: middle;
+}
+.match-best  { background: #dcfce7; color: #15803d; }
+.match-alt   { background: #fef9c3; color: #92400e; }
+.match-none  { background: #f3f4f6; color: #6b7280; }
+.price-totals-card {
+  background: var(--ink); color: white; border-radius: var(--radius-lg);
+  padding: 24px 28px; margin-top: 28px; box-shadow: var(--shadow-md);
+}
+.price-totals-card h2 { font-family: 'DM Serif Display', serif; font-size: 18px; margin-bottom: 16px; }
+.totals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.totals-item { border-left: 2px solid rgba(255,255,255,.15); padding-left: 14px; }
+.totals-label { font-size: 10px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+.totals-value { font-family: 'DM Serif Display', serif; font-size: 22px; color: white; line-height: 1; }
+.totals-value.accent { color: var(--accent); }
+.totals-sub { font-size: 10px; color: rgba(255,255,255,.4); font-family: 'DM Mono', monospace; margin-top: 2px; }
+.refresh-prices-btn {
+  padding: 8px 16px; background: var(--blue); color: white;
+  border: none; border-radius: var(--radius);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; transition: background .2s;
+}
+.refresh-prices-btn:hover { background: #1d3a9e; }
+.no-match-row td { color: var(--muted2); font-style: italic; }
+/* Control Panel option cards */
+.cp-option {
+  display:flex; align-items:flex-start; gap:10px; padding:10px 12px;
+  border:1.5px solid var(--border); border-radius:8px; background:white;
+  cursor:pointer; transition:all .15s; user-select:none;
+}
+.cp-option:hover { border-color:#c4b5fd; background:#faf5ff; }
+.cp-option:has(input:checked) { border-color:#7c3aed; background:#f5f3ff; }
+.cp-fixed { border-color:#7c3aed !important; background:#f5f3ff !important; opacity:.85; }
+.cp-opt-body { flex:1; }
+.cp-opt-name { font-size:12px; font-weight:600; color:var(--ink); margin-bottom:2px; }
+.cp-opt-price { font-family:'DM Mono',monospace; font-size:13px; font-weight:700; color:#7c3aed; margin-bottom:2px; }
+.cp-opt-desc { font-size:10px; color:var(--muted); line-height:1.4; }
+</style>
+<style>
+#dew-type-radios label:hover { border-color: #93c5fd !important; background: #f0f9ff !important; }
+.hidden { display: none !important; }
+
+/* ── Inline editable cost rows ── */
+.price-table td.editable { padding: 3px 8px !important; }
+.price-table td.editable span[contenteditable] {
+  display: inline-block; min-width: 52px; max-width: 120px;
+  padding: 2px 6px; border: 1.5px solid transparent; border-radius: 5px;
+  font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600;
+  outline: none; cursor: text; text-align: right; background: transparent;
+  transition: border-color .15s, background .15s;
+}
+.price-table td.editable span[contenteditable]:hover { border-color: #bfdbfe; background: #eff6ff; }
+.price-table td.editable span[contenteditable]:focus { border-color: #3b82f6; background: #eff6ff; box-shadow: 0 0 0 2px #bfdbfe; }
+.price-table tr.custom-row td { background: #f0fdf4; }
+.price-table tr.custom-row td.desc-cell span[contenteditable] { text-align:left; min-width:140px; max-width:260px; font-family:'Outfit',sans-serif; font-weight:500; color:var(--ink); }
+.del-row-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:20px; height:20px; border-radius:4px; border:none;
+  background:#fee2e2; color:#dc2626; cursor:pointer; font-size:14px;
+  line-height:1; transition:background .15s; vertical-align:middle; margin-left:4px;
+}
+.del-row-btn:hover { background:#dc2626; color:white; }
+.add-row-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  margin-top:7px; padding:5px 12px; border:1.5px dashed #93c5fd;
+  border-radius:6px; background:#f0f9ff; color:#1d4ed8;
+  font-size:11px; font-weight:600; cursor:pointer; transition:all .15s;
+}
+.add-row-btn:hover { background:#dbeafe; border-color:#3b82f6; }
+.price-table td.subtotal-cell { text-align:right; font-family:'DM Mono',monospace; font-weight:700; color:var(--blue); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">RODESIGN<span>LIBRARY</span></div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('mbr')" id="tab-mbr">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>
+      MBR Design
+    </div>
+    <div class="nav-tab" onclick="showPage('prices')" id="tab-prices">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Estimated Prices
+    </div>
+    <div class="nav-tab" onclick="showPage('admin')" id="tab-admin">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Equipment Database
+    </div>
+  </div>
+  <div class="nav-right">
+    <span class="nav-badge">STP SUITE v2.0</span>
+  </div>
+</nav>
+
+<!-- ════ MBR DESIGN PAGE ════ -->
+<div id="page-mbr" class="page active">
+<div class="mbr-layout">
+
+  <!-- SIDEBAR: INPUTS -->
+  <aside class="mbr-sidebar">
+    <div class="sidebar-header">
+      <h2>Design Parameters</h2>
+      <p>Fill in the red fields — reference data shown in grey</p>
+      <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#b91c1c">
+          <span style="width:10px;height:10px;border-radius:2px;background:#fff5f5;border:1.5px solid #ef4444;display:inline-block"></span>Required input
+        </span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#15803d">
+          <span style="width:10px;height:10px;border-radius:2px;background:#f0fdf4;border:1.5px solid #16a34a;display:inline-block"></span>Filled
+        </span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#6b7280">
+          <span style="width:10px;height:10px;border-radius:2px;background:#f3f4f6;border:1px solid #e5e7eb;display:inline-block"></span>Reference
+        </span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:10px;color:#1e40af">
+          <span style="width:10px;height:10px;border-radius:2px;background:#eff6ff;border:1.5px solid #93c5fd;display:inline-block"></span>Computed
+        </span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Flow Data</div>
+      <div class="input-row"><label>Average Daily Flow</label><input type="number" id="i_adf" class="user-input" placeholder="e.g. 300"><div class="unit">m³/day</div></div>
+      <div class="input-row"><label>No. of Streams</label><input type="number" id="i_streams" class="user-input" placeholder="1" min="1" max="6"></div>
+      <div class="input-row"><label>Avg Flow per Stream</label><div class="computed-val" id="c_adf_stream">—</div><div class="unit">m³/day</div></div>
+      <div class="input-row"><label>Hourly Flow per Stream</label><div class="computed-val" id="c_q_hr">—</div><div class="unit">m³/hr</div></div>
+      <div class="input-row"><label>Min Design Temp</label><input type="number" id="i_temp_min" class="user-input" placeholder="15"><div class="unit">°C</div></div>
+      <div class="input-row"><label>Max Design Temp</label><input type="number" id="i_temp_max" class="user-input" placeholder="40"><div class="unit">°C</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Raw Sewage Quality — <span style="color:#6b7280;font-weight:400;text-transform:none;font-size:10px">fill actual site values</span></div>
+      <div class="input-row"><label>BOD₅</label><input type="number" id="i_bod_in" class="user-input" placeholder="350"><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>COD</label><input type="number" id="i_cod_in" class="user-input" placeholder="500"><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>TSS</label><input type="number" id="i_tss_in" class="user-input" placeholder="500"><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>NH₃-N</label><input type="number" id="i_nh3_in" class="user-input" placeholder="40"><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>TKN</label><input type="number" id="i_tkn_in" class="user-input" placeholder="70"><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>Phosphorous</label><input type="number" id="i_phos_in" class="user-input" placeholder="8"><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>pH range</label><div class="ref-val">6 – 8</div><div class="unit">—</div></div>
+      <div class="input-row"><label>Free Oil &amp; Grease</label><div class="ref-val">10</div><div class="unit">mg/L</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Treated Effluent Targets — <span style="color:#6b7280;font-weight:400;text-transform:none;font-size:10px">regulatory standards</span></div>
+      <div class="input-row"><label>BOD₅ out</label><input type="number" id="i_bod_out" class="user-input" placeholder="15"><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>COD out</label><div class="ref-val">50</div><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>TSS out</label><input type="number" id="i_tss_out" class="user-input" placeholder="15"><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>NH₃-N out</label><input type="number" id="i_nh3_out" class="user-input" placeholder="5"><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>TN out</label><div class="ref-val">&lt; 5</div><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>Turbidity (max)</label><div class="ref-val">5</div><div class="unit">NTU</div></div>
+      <div class="input-row"><label>Residual Cl₂</label><div class="ref-val">0.5</div><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>DO out</label><div class="ref-val">1</div><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>Pathogens</label><div class="ref-val">100</div><div class="unit">MPN/100mL</div></div>
+      <div class="input-row"><label>pH out</label><div class="ref-val">6.5–8.5</div><div class="unit">—</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Biological Parameters — <span style="color:#6b7280;font-weight:400;text-transform:none;font-size:10px">design constants</span></div>
+      <div class="input-row"><label>MLSS</label><input type="number" id="i_mlss" class="user-input" placeholder="2800"><div class="unit">mg/L</div></div>
+      <div class="input-row"><label>MLVSS/MLSS Ratio</label><div class="ref-val">0.90</div><div class="unit">—</div></div>
+      <div class="input-row"><label>F/M Ratio</label><div class="ref-val">0.16</div><div class="unit">d⁻¹</div></div>
+      <div class="input-row"><label>O₂ req. for BOD</label><div class="ref-val">1.5</div><div class="unit">mg/mg</div></div>
+      <div class="input-row"><label>O₂ req. for NH₃-N</label><div class="ref-val">4.0</div><div class="unit">mg/mg</div></div>
+      <div class="input-row"><label>Alpha Factor</label><div class="ref-val">0.65</div><div class="unit">—</div></div>
+      <div class="input-row"><label>Beta Factor</label><div class="ref-val">0.95</div><div class="unit">—</div></div>
+      <div class="input-row"><label>OTE (diffuser)</label><div class="ref-val">0.18</div><div class="unit">—</div></div>
+      <div class="input-row"><label>Air density</label><div class="ref-val">1.2</div><div class="unit">kg/m³</div></div>
+      <div class="input-row"><label>O₂ in air (wt%)</label><div class="ref-val">23%</div><div class="unit">—</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">EQ Tank</div>
+      <div class="input-row"><label>Retention Time</label><input type="number" id="i_eqt_rt" class="user-input" placeholder="8"><div class="unit">hr</div></div>
+      <div class="input-row"><label>EQT Volume <em style="font-size:10px;color:#1e40af">(auto)</em></label><div class="computed-val" id="i_eqt_vol_display">—</div><div class="unit">m³</div></div>
+      <div class="input-row"><label>Air for agitation</label><div class="ref-val">0.6</div><div class="unit">m³/m³/hr</div></div>
+      <div class="input-row"><label>Air required / hr</label><div class="computed-val" id="c_eqt_air_hr">—</div><div class="unit">m³/hr</div></div>
+      <div class="input-row"><label>Diffuser Type</label>
+        <select id="i_eqt_diff_type" class="user-input" onchange="updateInputState(this);calculate()">
+          <option value="">— select —</option>
+          <option value="coarse_simplex">Coarse Simplex</option>
+          <option value="coarse_duplex">Coarse Duplex</option>
+          <option value="fine_7">Fine Disc 7″</option>
+          <option value="fine_9">Fine Disc 9″</option>
+          <option value="fine_12">Fine Disc 12″</option>
+        </select>
+      </div>
+      <div class="input-row"><label>Rate per diffuser</label><div class="computed-val" id="c_eqt_diff_rate">—</div><div class="unit">m³/hr</div></div>
+      <div class="input-row"><label>No. of diffusers calc.</label><div class="computed-val" id="c_eqt_diff_n">—</div><div class="unit">nos</div></div>
+      <div class="input-row"><label>No. of diffusers prov.</label><div class="computed-val" id="c_eqt_diff_prov">—</div><div class="unit">nos</div></div>
+      <div class="input-row"><label>Pump Head</label><input type="number" id="i_eqt_pump_head" class="user-input" placeholder="10"><div class="unit">mwc</div></div>
+      <div style="padding:6px 20px 4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;background:#f9fafb;">Pump Configuration</div>
+      <div class="input-row">
+        <label>No. of Duty Pumps</label>
+        <select id="i_eqt_duty" class="user-input" onchange="updateInputState(this);calculate()">
+          <option value="">—</option>
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+      <div class="input-row">
+        <label>No. of Standby Pumps</label>
+        <select id="i_eqt_standby" class="user-input" onchange="updateInputState(this);calculate()">
+          <option value="">—</option>
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+        </select>
+      </div>
+      <div class="input-row"><label>Total Pumps</label><div class="computed-val" id="c_eqt_pumps_total">—</div></div>
+      <div class="input-row"><label>Pump Flow (each)</label><div class="computed-val" id="c_eqt_pump_flow">—</div><div class="unit">m³/hr</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Anoxic Tank</div>
+      <div class="input-row"><label>Min Retention Time</label><input type="number" id="i_anox_rt" class="user-input" placeholder="1.5" step="0.1"><div class="unit">hr</div></div>
+      <div class="input-row"><label>Width</label><input type="number" id="i_anox_w" class="user-input" placeholder="3.0" step="0.1"><div class="unit">m</div></div>
+      <div class="input-row"><label>Effective Depth</label><input type="number" id="i_anox_d" class="user-input" placeholder="3.2" step="0.1"><div class="unit">m</div></div>
+      <div class="input-row"><label>Total Height (w/ FB)</label><input type="number" id="i_anox_h" class="user-input" placeholder="3.5" step="0.1"><div class="unit">m</div></div>
+      <div class="input-row"><label>Volume Required</label><div class="computed-val" id="c_anox_vol">—</div><div class="unit">m³</div></div>
+      <div class="input-row"><label>Min Length Required</label><div class="computed-val" id="c_anox_l_min">—</div><div class="unit">m</div></div>
+      <div class="input-row" style="align-items:flex-start;padding-top:7px">
+        <label style="padding-top:4px">Length Provided<br><em style="font-size:9px;color:#1e40af;font-style:normal">≥ min length</em></label>
+        <select id="i_anox_l_prov" class="user-input" onchange="updateInputState(this);calculate()">
+          <option value="">— calc first —</option>
+        </select>
+        <div class="unit" style="padding-top:4px">m</div>
+      </div>
+      <div class="input-row"><label>Actual HRT</label><div class="computed-val" id="c_anox_hrt">—</div><div class="unit">hr</div></div>
+      <div class="input-row"><label>Tank Dimensions</label><div class="computed-val" id="c_anox_dim" style="font-size:10px;width:80px">—</div><div class="unit">m</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Aeration Tank</div>
+      <div class="input-row"><label>F/M Ratio (governing)</label><input type="number" id="i_fm_ratio" class="user-input" placeholder="0.16" step="0.01"><div class="unit">d⁻¹</div></div>
+      <div class="input-row"><label>Volume Required</label><div class="computed-val" id="c_aer_vol">—</div><div class="unit">m³</div></div>
+      <div class="input-row"><label>HRT</label><div class="computed-val" id="c_aer_hrt">—</div><div class="unit">hr</div></div>
+      <div class="input-row"><label>Width</label><input type="number" id="i_aer_w" class="user-input" placeholder="3.0" step="0.1"><div class="unit">m</div></div>
+      <div class="input-row"><label>Effective Depth</label><input type="number" id="i_aer_d" class="user-input" placeholder="3.1" step="0.1"><div class="unit">m</div></div>
+      <div class="input-row"><label>Total Height (w/ FB)</label><input type="number" id="i_aer_h" class="user-input" placeholder="3.5" step="0.1"><div class="unit">m</div></div>
+      <div class="input-row"><label>Min Length Required</label><input type="number" id="i_aer_l_min" class="user-input" placeholder="auto" step="0.1"><div class="unit">m</div></div>
+      <div class="input-row" style="align-items:flex-start;padding-top:7px">
+        <label style="padding-top:4px">Length Provided<br><em style="font-size:9px;color:#1e40af;font-style:normal">≥ min length</em></label>
+        <select id="i_aer_l_prov" class="user-input" onchange="updateInputState(this);calculate()">
+          <option value="">— calc first —</option>
+        </select>
+        <div class="unit" style="padding-top:4px">m</div>
+      </div>
+      <div class="input-row"><label>Actual HRT</label><div class="computed-val" id="c_aer_hrt_act">—</div><div class="unit">hr</div></div>
+      <div class="input-row"><label>Tank Dimensions</label><div class="computed-val" id="c_aer_dim" style="font-size:10px;width:80px">—</div><div class="unit">m</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Air Blower — Diffuser Selection</div>
+      <div class="input-row"><label>Diffuser Type</label>
+        <select id="i_aer_diff_type" class="user-input" onchange="updateInputState(this);calculate()">
+          <option value="fine_7">Fine Disc 7″ (12 m³/hr)</option>
+          <option value="fine_9" selected>Fine Disc 9″ (16 m³/hr)</option>
+          <option value="fine_12">Fine Disc 12″ (29 m³/hr)</option>
+          <option value="coarse_simplex">Coarse Simplex (48 m³/hr)</option>
+          <option value="coarse_duplex">Coarse Duplex (87 m³/hr)</option>
+        </select>
+      </div>
+      <div class="input-row"><label>Rate per diffuser</label><div class="computed-val" id="c_aer_diff_rate">—</div><div class="unit">m³/hr</div></div>
+      <div class="input-row"><label>Air for Aeration/hr</label><div class="computed-val" id="c_aer_air_hr">—</div><div class="unit">m³/hr</div></div>
+      <div class="input-row"><label>Diffusers calc.</label><div class="computed-val" id="c_aer_diff_n">—</div><div class="unit">nos</div></div>
+      <div class="input-row"><label>Diffusers provided</label><input type="number" id="i_aer_diff_prov" class="user-input" placeholder="auto" step="1"><div class="unit">nos</div></div>
+      <div class="input-row"><label>MBR Air (inbuilt)</label><div class="computed-val" id="c_mbr_air_blower">—</div><div class="unit">Nm³/hr</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">MBR Membrane</div>
+      <div class="input-row"><label>Select Membrane</label>
+        <select id="i_mem_model" class="user-input" style="width:80px;font-size:10px" onchange="updateInputState(this);onMembraneSelect();calculate()">
+          <option value="">— select —</option>
+          <option value="hydra_125">Hydranautics HSM-125 (125 m²)</option>
+          <option value="hydra_500">Hydranautics HSM-500 (500 m²)</option>
+          <option value="hydra_1000">Hydranautics HSM-1000 (1000 m²)</option>
+          <option value="microdyn_416">Microdyn BIO-CEL 416F (416 m²)</option>
+          <option value="martin_400">Martin SiClaro FM (400 m²)</option>
+          <option value="alfalaval_100">Alfa Laval MFM 100 (100 m²)</option>
+          <option value="koch_330" selected>KOCH PSH 330-8 (330 m²)</option>
+          <option value="koch_575">KOCH PSH 660-14 (575 m²)</option>
+          <option value="kubota_160">KUBOTA ES200R3 (160 m²)</option>
+        </select>
+      </div>
+      <div class="input-row"><label>Module Area</label><div class="computed-val" id="c_mem_module_area">—</div><div class="unit">m²</div></div>
+      <div class="input-row"><label>Membrane Type</label><div class="computed-val" id="c_mem_type" style="font-size:10px;width:80px">—</div><div class="unit"></div></div>
+      <div class="input-row"><label>Net Flux Rate</label><input type="number" id="i_flux" class="user-input" placeholder="18"><div class="unit">LMH</div></div>
+      <div class="input-row"><label>Membrane Area Req.</label><div class="computed-val" id="c_mem_area_req">—</div><div class="unit">m²</div></div>
+      <div class="input-row"><label>Modules Required</label><div class="computed-val" id="c_modules_req">—</div><div class="unit">nos</div></div>
+      <div class="input-row"><label>Modules Provided <em style="font-size:9px;color:#1e40af;font-style:normal">↳ editable</em></label><input type="number" id="i_modules_prov" class="user-input" placeholder="auto" step="1" min="1"><div class="unit">nos</div></div>
+      <div class="input-row"><label>Area Provided <em style="font-size:9px;color:#1e40af;font-style:normal">(auto)</em></label><div class="computed-val" id="c_mem_area_prov">—</div><div class="unit">m²</div></div>
+      <div class="input-row"><label>Actual Flux <em style="font-size:9px;color:#15803d;font-style:normal">← live</em></label><div class="computed-val" id="c_actual_flux" style="border-color:#4ade80;background:#f0fdf4;color:#15803d">—</div><div class="unit">LMH</div></div>
+      <div class="input-row"><label>MBR Air (calc)</label><div class="computed-val" id="c_mbr_air_calc">—</div><div class="unit">Nm³/hr</div></div>
+      <div class="input-row"><label>Recirculation Ratio</label><div class="ref-val">4.0</div><div class="unit">×</div></div>
+      <div class="input-row"><label>Air scouring rate</label><div class="ref-val">0.2434</div><div class="unit">Nm³/m²</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Sludge &amp; Dewatering</div>
+
+      <!-- Sludge computed values for reference -->
+      <div class="input-row"><label>SS Generated/Day</label><div class="computed-val" id="c_ss_gen">—</div><div class="unit">kg/day</div></div>
+      <div class="input-row"><label>Sludge @ 1% vol.</label><div class="computed-val" id="c_sludge_1pct">—</div><div class="unit">m³/day</div></div>
+      <div class="input-row"><label>Sludge Flow Rate</label><div class="computed-val" id="c_sludge_hr">—</div><div class="unit">m³/hr</div></div>
+
+      <!-- Dewatering type selector -->
+      <div style="padding:8px 20px 4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;background:#f9fafb;">Dewatering Type</div>
+      <div style="padding:6px 20px 10px;display:flex;flex-direction:column;gap:4px;" id="dew-type-radios">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:5px 8px;border-radius:6px;border:1.5px solid var(--border);background:white;transition:all .15s" id="dew-lbl-centrifuge">
+          <input type="radio" name="dew_type" value="Decanter Centrifuge" onchange="onSidebarDewTypeChange()" style="accent-color:#1e40af">
+          <span style="font-size:12px;font-weight:500;color:var(--ink)">Decanter Centrifuge</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:5px 8px;border-radius:6px;border:1.5px solid var(--border);background:white;transition:all .15s" id="dew-lbl-beltpress">
+          <input type="radio" name="dew_type" value="Belt Filter Press" onchange="onSidebarDewTypeChange()" style="accent-color:#1e40af">
+          <span style="font-size:12px;font-weight:500;color:var(--ink)">Belt Filter Press</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:5px 8px;border-radius:6px;border:1.5px solid var(--border);background:white;transition:all .15s" id="dew-lbl-thickener">
+          <input type="radio" name="dew_type" value="Belt Thickener" onchange="onSidebarDewTypeChange()" style="accent-color:#1e40af">
+          <span style="font-size:12px;font-weight:500;color:var(--ink)">Belt Thickener</span>
+        </label>
+      </div>
+
+      <!-- Model selector — populated dynamically -->
+      <div class="input-row" style="align-items:flex-start;padding-top:4px">
+        <label style="padding-top:4px">Select Model<br><em style="font-size:9px;color:#1e40af;font-style:normal">by capacity</em></label>
+        <select id="i_dew_model" class="user-input" style="width:80px;font-size:10px" onchange="updateInputState(this);onSidebarDewModelChange()">
+          <option value="">— select type —</option>
+        </select>
+      </div>
+
+      <!-- Selected equipment summary -->
+      <div class="input-row"><label>Selected Make</label><div class="computed-val" id="c_dew_make" style="font-size:10px;width:80px">—</div></div>
+      <div class="input-row"><label>Capacity</label><div class="computed-val" id="c_dew_cap" style="font-size:10px;width:80px">—</div></div>
+      <div class="input-row"><label>Power</label><div class="computed-val" id="c_dew_kw">—</div><div class="unit">kW</div></div>
+      <div class="input-row"><label>Price (AED)</label><div class="computed-val" id="c_dew_aed" style="border-color:#4ade80;background:#f0fdf4;color:#15803d">—</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Disinfection</div>
+      <div class="input-row"><label>Dose Rate</label><input type="number" id="i_dose_ppm" class="user-input" placeholder="5.0" step="0.1" min="0.1"><div class="unit">ppm</div></div>
+      <div class="input-row"><label>Chemical Conc.</label><input type="number" id="i_dose_conc" class="user-input" placeholder="10" step="1" min="1" max="100"><div class="unit">%</div></div>
+      <div class="input-row"><label>Dosing Tank (provided)</label><div class="ref-val">100</div><div class="unit">L</div></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">OCU — Freeboard Heights &amp; Air Changes</div>
+      <div class="input-row"><label>EQT Freeboard</label><input type="number" id="i_ocu_fb_eqt" class="user-input" value="0.5" placeholder="0.5" step="0.1" min="0"><div class="unit">m</div></div>
+      <div class="input-row"><label>Anoxic Freeboard</label><input type="number" id="i_ocu_fb_anox" class="user-input" value="0.5" placeholder="0.5" step="0.1" min="0"><div class="unit">m</div></div>
+      <div class="input-row"><label>Sludge Tank Freeboard</label><input type="number" id="i_ocu_fb_sht" class="user-input" value="1.0" placeholder="1.0" step="0.1" min="0"><div class="unit">m</div></div>
+      <div class="input-row"><label>Air Changes (all tanks)</label><input type="number" id="i_ocu_air_changes" class="user-input" value="10" placeholder="10" step="1" min="1"><div class="unit">ACH</div></div>
+    </div>
+
+    <button class="calc-btn" onclick="calculate()">⟳ Recalculate Design</button>
+  </aside>
+
+  <!-- MAIN: RESULTS -->
+  <main class="mbr-main">
+    <div class="mbr-main-header">
+      <div>
+        <h1>MBR Plant Design Report</h1>
+        <p id="report-subtitle">300 m³/day · 1 Stream · Calculated results below</p>
+      </div>
+      <button class="export-btn" onclick="exportReport()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export Report
+      </button>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi-card blue"><div class="kpi-label">Total Daily Flow</div><div class="kpi-value" id="k_adf">300</div><div class="kpi-unit">m³/day</div></div>
+      <div class="kpi-card teal"><div class="kpi-label">Hourly Flow/Stream</div><div class="kpi-value" id="k_qhr">12.5</div><div class="kpi-unit">m³/hr</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">Aeration Tank Vol.</div><div class="kpi-value" id="k_aer_vol">—</div><div class="kpi-unit">m³</div></div>
+      <div class="kpi-card red"><div class="kpi-label">O₂ Required</div><div class="kpi-value" id="k_o2">—</div><div class="kpi-unit">kg/day</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Membrane Area Prov.</div><div class="kpi-value" id="k_mem">—</div><div class="kpi-unit">m²</div></div>
+      <div class="kpi-card purple"><div class="kpi-label">Total OCU Required</div><div class="kpi-value" id="k_ocu">—</div><div class="kpi-unit">m³/hr</div></div>
+    </div>
+
+    <!-- Flow Diagram -->
+    <div class="flow-diagram">
+      <h3>Process Flow Diagram</h3>
+      <div class="flow-nodes">
+        <div class="flow-node"><div class="flow-box raw">RAW SEWAGE INLET</div><div class="flow-label">Raw</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="flow-box screen">SCREEN &amp; PRE-TREATMENT</div><div class="flow-label">Screening</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="flow-box eqt">EQUALISATION TANK</div><div class="flow-label">EQT</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="flow-box anoxic">ANOXIC TANK</div><div class="flow-label">Denitrification</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="flow-box aeration">AERATION TANK</div><div class="flow-label">Nitrification</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="flow-box mbr">MBR TANK &amp; MEMBRANE</div><div class="flow-label">Filtration</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="flow-box disinfect">DISINFECTION</div><div class="flow-label">Chlorination</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="flow-box treated">TREATED EFFLUENT</div><div class="flow-label">Outlet</div></div>
+      </div>
+    </div>
+
+    <!-- Design Guidelines -->
+    <div class="guidelines-card" id="diffuserGuidelines">
+      <div class="guidelines-header">
+        <div>
+          <h3>Diffuser Design Guidelines</h3>
+          <p style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">Air flow capacity per diffuser unit — use for sizing EQ, Anoxic &amp; Aeration tanks</p>
+        </div>
+        <span>DESIGN REFERENCE</span>
+      </div>
+      <div class="guidelines-body">
+
+        <div class="guide-grid">
+          <!-- Coarse bubble -->
+          <div class="guide-table-wrap">
+            <div class="guide-table-title coarse">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+              Coarse Bubble Diffusers
+            </div>
+            <table class="guide-tbl" id="coarseGuideTable">
+              <thead><tr><th>Type</th><th>Configuration</th><th class="num">Air Flow (m³/hr)</th><th>Application</th><th>Selected For</th></tr></thead>
+              <tbody>
+                <tr id="diff-coarse_simplex"><td>Simplex</td><td>Single pipe</td><td class="num">48</td><td>EQ / Mixing</td><td id="sel-coarse_simplex" style="font-size:10px;font-weight:600;color:var(--muted)">—</td></tr>
+                <tr id="diff-coarse_duplex"><td>Duplex</td><td>Dual pipe</td><td class="num">87</td><td>EQ / Large tanks</td><td id="sel-coarse_duplex" style="font-size:10px;font-weight:600;color:var(--muted)">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Fine bubble -->
+          <div class="guide-table-wrap">
+            <div class="guide-table-title fine">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/></svg>
+              Fine Bubble Disc Diffusers
+            </div>
+            <table class="guide-tbl" id="fineGuideTable">
+              <thead><tr><th>Size</th><th>Disc Dia.</th><th class="num">Air Flow (m³/hr)</th><th>Application</th><th>Selected For</th></tr></thead>
+              <tbody>
+                <tr id="diff-fine_7"><td>7-inch disc</td><td>178 mm</td><td class="num">12</td><td>Aeration / MBR</td><td id="sel-fine_7" style="font-size:10px;font-weight:600;color:var(--muted)">—</td></tr>
+                <tr id="diff-fine_9"><td>9-inch disc</td><td>229 mm</td><td class="num">16</td><td>Aeration / MBR</td><td id="sel-fine_9" style="font-size:10px;font-weight:600;color:var(--muted)">—</td></tr>
+                <tr id="diff-fine_12"><td>12-inch disc</td><td>305 mm</td><td class="num">29</td><td>Aeration / MBR</td><td id="sel-fine_12" style="font-size:10px;font-weight:600;color:var(--muted)">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Selection notes -->
+        <div style="background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;">
+          <div style="font-size:11px;font-weight:600;color:var(--ink);margin-bottom:6px;">Selection Guidelines</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div style="font-size:11px;color:var(--muted);line-height:1.5;padding:6px 10px;background:white;border-radius:6px;border:1px solid var(--border)">
+              <span style="color:#1e40af;font-weight:600">Coarse bubble</span> — preferred for EQ tanks &amp; sludge holding. Provides mixing &amp; agitation. Lower oxygen transfer efficiency but clog-resistant. Suitable where mixing is primary goal.
+            </div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.5;padding:6px 10px;background:white;border-radius:6px;border:1px solid var(--border)">
+              <span style="color:#0f766e;font-weight:600">Fine bubble</span> — preferred for aeration tanks. Higher OTE (18–35%), smaller bubbles = greater surface area. Disc diffusers: 7″ &amp; 9″ for normal aeration; 12″ for high-demand zones. Requires clean air &amp; periodic maintenance.
+            </div>
+          </div>
+        </div>
+
+        <!-- EQT Diffuser selection result -->
+        <div style="background:#f8fafc;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:12px;">
+          <div style="padding:9px 14px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;font-weight:600;color:var(--ink)">EQ Tank — Diffuser Selection Result</span>
+            <span id="eqt_diff_badge" style="font-size:10px;padding:2px 8px;border-radius:10px;background:#dbeafe;color:#1e40af;font-weight:600">Select a type →</span>
+          </div>
+          <div class="diff-summary" id="eqtDiffSummary">
+            <div class="ds-item"><div class="ds-val blue" id="ds_air_req">—</div><div class="ds-label">Air Required (m³/hr)</div></div>
+            <div class="ds-item"><div class="ds-val amber" id="ds_diff_type">—</div><div class="ds-label">Diffuser Type</div></div>
+            <div class="ds-item"><div class="ds-val teal" id="ds_rate">—</div><div class="ds-label">Rate / Diffuser (m³/hr)</div></div>
+            <div class="ds-item"><div class="ds-val blue" id="ds_diff_calc">—</div><div class="ds-label">No. Calculated</div></div>
+            <div class="ds-item"><div class="ds-val" id="ds_diff_prov">—</div><div class="ds-label">No. Provided</div></div>
+          </div>
+        </div>
+
+        <!-- Aeration Tank Diffuser selection result -->
+        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:var(--radius-lg);overflow:hidden;">
+          <div style="padding:9px 14px;background:#dcfce7;border-bottom:1px solid #86efac;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:12px;font-weight:600;color:#166534">Aeration Tank — Diffuser Selection Result</span>
+            <span id="aer_diff_badge" style="font-size:10px;padding:2px 8px;border-radius:10px;background:#bbf7d0;color:#15803d;font-weight:600">Select a type →</span>
+          </div>
+          <div class="diff-summary" id="aerDiffSummary" style="background:#f0fdf4;">
+            <div class="ds-item"><div class="ds-val teal" id="ads_air_req">—</div><div class="ds-label">Air Required (m³/hr)</div></div>
+            <div class="ds-item"><div class="ds-val amber" id="ads_diff_type">—</div><div class="ds-label">Diffuser Type</div></div>
+            <div class="ds-item"><div class="ds-val teal" id="ads_rate">—</div><div class="ds-label">Rate / Diffuser (m³/hr)</div></div>
+            <div class="ds-item"><div class="ds-val blue" id="ads_diff_calc">—</div><div class="ds-label">No. Calculated</div></div>
+            <div class="ds-item"><div class="ds-val" id="ads_diff_prov">—</div><div class="ds-label">No. Provided</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Water Quality -->
+    <div class="quality-grid">
+      <div class="quality-card">
+        <div class="quality-header"><h3>Raw Sewage Characteristics</h3><p>Inlet parameters</p></div>
+        <div class="param-list" id="rawQuality"></div>
+      </div>
+      <div class="quality-card">
+        <div class="quality-header"><h3>Treated Effluent Targets</h3><p>Outlet quality standards</p></div>
+        <div class="param-list" id="treatedQuality"></div>
+      </div>
+    </div>
+
+    <!-- Results: EQT + Anoxic -->
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-card-header">
+          <h3>Equalisation Tank</h3><span class="tag tag-blue">EQT</span>
+        </div>
+        <table class="result-table" id="eqtTable"></table>
+      </div>
+      <div class="result-card">
+        <div class="result-card-header">
+          <h3>Anoxic Tank</h3><span class="tag tag-purple">Per Stream</span>
+        </div>
+        <table class="result-table" id="anoxicTable"></table>
+      </div>
+    </div>
+
+    <!-- EQT Pump Configuration Card -->
+    <div class="full-card" style="overflow:hidden;margin-bottom:16px;">
+      <div style="padding:11px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <h3 style="font-size:13px;font-weight:600;color:var(--ink)">EQ Tank — Raw Sewage Pump Configuration</h3>
+          <span class="tag tag-blue">Selectable</span>
+        </div>
+        <span id="eqt_pump_config_label" style="font-size:11px;font-family:'DM Mono',monospace;color:var(--muted)"></span>
+      </div>
+      <div style="padding:16px;">
+        <!-- Pump visual diagram -->
+        <div id="pumpDiagram" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;"></div>
+        <!-- Pump specs -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600">Flow per Pump</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#1e40af;line-height:1.1;margin-top:2px" id="pk_flow">—</div>
+            <div style="font-size:10px;color:var(--muted2);font-family:'DM Mono',monospace">m³/hr</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600">Pump Head</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#0f766e;line-height:1.1;margin-top:2px" id="pk_head">—</div>
+            <div style="font-size:10px;color:var(--muted2);font-family:'DM Mono',monospace">mwc</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600">Duty Pumps</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#1e40af;line-height:1.1;margin-top:2px" id="pk_duty">—</div>
+            <div style="font-size:10px;color:var(--muted2);font-family:'DM Mono',monospace">operating</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600">Standby Pumps</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#b45309;line-height:1.1;margin-top:2px" id="pk_standby">—</div>
+            <div style="font-size:10px;color:var(--muted2);font-family:'DM Mono',monospace">reserve</div>
+          </div>
+          <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:var(--radius);padding:10px 14px;">
+            <div style="font-size:10px;color:#15803d;text-transform:uppercase;letter-spacing:.05em;font-weight:600">Total Pumps</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#15803d;line-height:1.1;margin-top:2px" id="pk_total">—</div>
+            <div style="font-size:10px;color:#86efac;font-family:'DM Mono',monospace">installed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results: Aeration + Blower -->
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-card-header">
+          <h3>Aeration Tank</h3><span class="tag tag-teal">Per Stream</span>
+        </div>
+        <table class="result-table" id="aerationTable"></table>
+      </div>
+      <div class="result-card">
+        <div class="result-card-header">
+          <h3>Air Blower Sizing</h3><span class="tag tag-amber">Aeration + MBR</span>
+        </div>
+        <table class="result-table" id="blowerTable"></table>
+      </div>
+    </div>
+
+    <!-- Results: MBR + Sludge -->
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-card-header">
+          <h3>MBR Membrane Sizing</h3><span class="tag tag-blue">Per Stream</span>
+        </div>
+        <table class="result-table" id="mbrTable"></table>
+      </div>
+      <div class="result-card">
+        <div class="result-card-header">
+          <h3>Sludge System</h3><span class="tag tag-amber">Both Streams</span>
+        </div>
+        <table class="result-table" id="sludgeTable"></table>
+      </div>
+    </div>
+
+    <!-- Results: OCU + Dosing -->
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-card-header">
+          <h3>OCU Capacity</h3><span class="tag tag-purple">Odour Control</span>
+        </div>
+        <table class="result-table" id="ocuTable"></table>
+      </div>
+      <div class="result-card">
+        <div class="result-card-header">
+          <h3>Disinfection Dosing</h3><span class="tag tag-green">Chlorination</span>
+        </div>
+        <table class="result-table" id="dosingTable"></table>
+      </div>
+    </div>
+
+    <!-- Pump Summary -->
+    <div class="full-card">
+      <div class="result-card-header" style="padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+        <h3 style="font-size:13px;font-weight:600;">Pump Summary</h3>
+        <span class="tag tag-teal">All Streams</span>
+      </div>
+      <table class="result-table" id="pumpTable"></table>
+    </div>
+
+  </main>
+</div>
+</div><!-- end mbr page -->
+
+<!-- ════ ESTIMATED PRICES PAGE ════ -->
+<div id="page-prices" class="page">
+<div class="prices-layout">
+  <div class="prices-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1>Estimated Equipment Prices</h1>
+      <p id="prices-subtitle">Based on current design parameters — prices sourced from Equipment Database</p>
+    </div>
+    <button class="refresh-prices-btn" onclick="renderPrices()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Refresh Prices
+    </button>
+  </div>
+
+  <div class="prices-note">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Prices are indicative estimates only — sourced from the Equipment Database. Quantities are derived from the current MBR Design. Run your design first, then refresh here.
+  </div>
+
+  <!-- Screens & Pre-Treatment -->
+  <div class="price-section">
+    <div class="price-section-title">Screens &amp; Pre-Treatment <span id="pt-subtotal-label"></span></div>
+    <table class="price-table"><thead><tr><th>Item</th><th>Make / Model</th><th>Specs</th><th class="num">Qty ✏</th><th class="num">Unit Price (AED) ✏</th><th class="num">Subtotal (AED)</th><th style="width:32px"></th></tr></thead><tbody id="pt-rows"></tbody></table>
+    <button class="add-row-btn" onclick="addCustomRow('pt')">＋ Add Row</button>
+  </div>
+
+  <!-- MBR Membranes -->
+  <div class="price-section">
+    <div class="price-section-title">MBR Membranes <span id="mem-subtotal-label"></span></div>
+    <table class="price-table"><thead><tr><th>Item</th><th>Make / Model</th><th>Specs</th><th class="num">Qty ✏</th><th class="num">Unit Price (AED) ✏</th><th class="num">Subtotal (AED)</th><th style="width:32px"></th></tr></thead><tbody id="mem-rows"></tbody></table>
+    <button class="add-row-btn" onclick="addCustomRow('mem')">＋ Add Row</button>
+  </div>
+
+  <!-- Blowers -->
+  <div class="price-section">
+    <div class="price-section-title">Air Blowers <span id="bl-subtotal-label"></span></div>
+    <!-- Blower selectors -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+
+      <!-- Aeration blower -->
+      <div style="padding:10px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Aeration Blower <span style="color:var(--blue);font-weight:400;text-transform:none;letter-spacing:0">1 Duty + 1 Standby</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <label style="font-size:11px;color:var(--muted);width:40px;flex-shrink:0">Make</label>
+            <select id="sel-aer-blower-make" onchange="onBlowerMakeChange('aer')" style="flex:1;padding:4px 7px;border:1.5px solid var(--blue2);border-radius:6px;font-size:11px;color:var(--blue);background:var(--blue-light);cursor:pointer">
+              <option value="">Auto (lowest price)</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <label style="font-size:11px;color:var(--muted);width:40px;flex-shrink:0">Model</label>
+            <select id="sel-aer-blower-model" onchange="renderPrices()" style="flex:1;padding:4px 7px;border:1.5px solid var(--border2);border-radius:6px;font-size:11px;color:var(--ink);background:white;cursor:pointer">
+              <option value="">Auto (best fit)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- MBR blower -->
+      <div style="padding:10px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">MBR Scouring Blower <span style="color:var(--blue);font-weight:400;text-transform:none;letter-spacing:0">1 Duty + 1 Standby</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <label style="font-size:11px;color:var(--muted);width:40px;flex-shrink:0">Make</label>
+            <select id="sel-mbr-blower-make" onchange="onBlowerMakeChange('mbr')" style="flex:1;padding:4px 7px;border:1.5px solid var(--blue2);border-radius:6px;font-size:11px;color:var(--blue);background:var(--blue-light);cursor:pointer">
+              <option value="">Auto (lowest price)</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <label style="font-size:11px;color:var(--muted);width:40px;flex-shrink:0">Model</label>
+            <select id="sel-mbr-blower-model" onchange="renderPrices()" style="flex:1;padding:4px 7px;border:1.5px solid var(--border2);border-radius:6px;font-size:11px;color:var(--ink);background:white;cursor:pointer">
+              <option value="">Auto (best fit)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <table class="price-table"><thead><tr><th>Item</th><th>Make / Model</th><th>Specs</th><th class="num">Qty ✏</th><th class="num">Unit Price (AED) ✏</th><th class="num">Subtotal (AED)</th><th style="width:32px"></th></tr></thead><tbody id="bl-rows"></tbody></table>
+    <button class="add-row-btn" onclick="addCustomRow('bl')">＋ Add Row</button>
+  </div>
+
+  <!-- Sewage Pumps -->
+  <div class="price-section">
+    <div class="price-section-title">Sewage Pumps <span id="sp-subtotal-label"></span></div>
+    <table class="price-table"><thead><tr><th>Item</th><th>Make / Model</th><th>Specs</th><th class="num">Qty ✏</th><th class="num">Unit Price (AED) ✏</th><th class="num">Subtotal (AED)</th><th style="width:32px"></th></tr></thead><tbody id="sp-rows"></tbody></table>
+    <button class="add-row-btn" onclick="addCustomRow('sp')">＋ Add Row</button>
+  </div>
+
+  <!-- OCU -->
+  <div class="price-section">
+    <div class="price-section-title">Odour Control Unit <span id="ocu-subtotal-label"></span></div>
+    <table class="price-table"><thead><tr><th>Item</th><th>Make / Model</th><th>Specs</th><th class="num">Qty ✏</th><th class="num">Unit Price (AED) ✏</th><th class="num">Subtotal (AED)</th><th style="width:32px"></th></tr></thead><tbody id="ocu-rows"></tbody></table>
+    <button class="add-row-btn" onclick="addCustomRow('ocu')">＋ Add Row</button>
+  </div>
+
+  <!-- Instrumentation -->
+  <div class="price-section">
+    <div class="price-section-title">Instrumentation <span id="inst-subtotal-label"></span></div>
+    <table class="price-table"><thead><tr><th>Item</th><th>Make / Model</th><th>Specs</th><th class="num">Qty ✏</th><th class="num">Unit Price (AED) ✏</th><th class="num">Subtotal (AED)</th><th style="width:32px"></th></tr></thead><tbody id="inst-rows"></tbody></table>
+    <button class="add-row-btn" onclick="addCustomRow('inst')">＋ Add Row</button>
+  </div>
+
+  <!-- Dewatering -->
+  <div class="price-section">
+    <div class="price-section-title">
+      Sludge Dewatering
+      <span id="dew-subtotal-label"></span>
+    </div>
+    <!-- Dewatering type + capacity selectors -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Dewatering Type</label>
+        <select id="dew-type-sel" onchange="onDewTypeChange()" style="padding:5px 8px;border:1.5px solid var(--blue2);border-radius:6px;font-size:12px;font-family:'Outfit',sans-serif;color:var(--blue);background:var(--blue-light);cursor:pointer">
+          <option value="">— select type —</option>
+          <option value="Decanter Centrifuge">Decanter Centrifuge</option>
+          <option value="Belt Filter Press">Belt Filter Press</option>
+          <option value="Belt Thickener">Belt Thickener</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;" id="dew-model-wrap">
+        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">Select Model</label>
+        <select id="dew-model-sel" onchange="renderPrices()" style="padding:5px 8px;border:1.5px solid var(--border2);border-radius:6px;font-size:12px;font-family:'Outfit',sans-serif;color:var(--ink);background:white;cursor:pointer">
+          <option value="">— choose type first —</option>
+        </select>
+      </div>
+    </div>
+    <table class="price-table"><thead><tr><th>Item</th><th>Make / Model</th><th>Specs</th><th class="num">Qty ✏</th><th class="num">Unit Price (AED) ✏</th><th class="num">Subtotal (AED)</th><th style="width:32px"></th></tr></thead><tbody id="dew-rows"></tbody></table>
+    <button class="add-row-btn" onclick="addCustomRow('dew')">＋ Add Row</button>
+  </div>
+
+  <!-- Control Panel -->
+  <div class="price-section">
+    <div class="price-section-title">MBR Control Panel &amp; Automation <span id="cp-subtotal-label"></span></div>
+    <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:10px 14px;font-size:11px;color:#4c1d95;margin-bottom:12px;line-height:1.6">
+      <strong>Base (fixed):</strong> PLC Control Panel with HMI in Form 2 enclosure — included in all estimates.<br>
+      <strong>Optional add-ons:</strong> check items to include in the estimate.
+    </div>
+
+    <!-- Options grid -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;margin-bottom:12px;" id="cp-options-grid">
+
+      <!-- Fixed: Form 2 base panel -->
+      <label class="cp-option cp-fixed" style="cursor:default">
+        <input type="checkbox" checked disabled style="accent-color:#7c3aed">
+        <div class="cp-opt-body">
+          <div class="cp-opt-name">PLC Panel + HMI — Form 2 <span class="match-tag match-best">Fixed</span></div>
+          <div class="cp-opt-price">AED 120,000</div>
+          <div class="cp-opt-desc">Form 2 MS enclosure · PLC control panel · base HMI included</div>
+        </div>
+      </label>
+
+      <!-- Optional: HMI 12" -->
+      <label class="cp-option" id="cp-opt-hmi">
+        <input type="checkbox" id="cp-hmi" onchange="renderPrices()" style="accent-color:#7c3aed">
+        <div class="cp-opt-body">
+          <div class="cp-opt-name">HMI 12″ Touchscreen <span class="match-tag match-alt">Optional</span></div>
+          <div class="cp-opt-price">AED 8,500</div>
+          <div class="cp-opt-desc">12-inch colour touchscreen HMI upgrade</div>
+        </div>
+      </label>
+
+      <!-- Optional: Form 4 upgrade -->
+      <label class="cp-option" id="cp-opt-form4">
+        <input type="checkbox" id="cp-form4" onchange="renderPrices()" style="accent-color:#7c3aed">
+        <div class="cp-opt-body">
+          <div class="cp-opt-name">Form 4 Enclosure Upgrade <span class="match-tag match-alt">Optional</span></div>
+          <div class="cp-opt-price">AED 120,000</div>
+          <div class="cp-opt-desc">Upgrade from Form 2 to Form 4 fully segregated enclosure</div>
+        </div>
+      </label>
+
+      <!-- Optional: Hot redundant PLC -->
+      <label class="cp-option" id="cp-opt-redplc">
+        <input type="checkbox" id="cp-redplc" onchange="renderPrices()" style="accent-color:#7c3aed">
+        <div class="cp-opt-body">
+          <div class="cp-opt-name">Hot Redundant PLC &amp; Power Supply <span class="match-tag match-alt">Optional</span></div>
+          <div class="cp-opt-price">AED 110,000</div>
+          <div class="cp-opt-desc">Redundant CPU + redundant 24V DC power supply module</div>
+        </div>
+      </label>
+
+      <!-- Optional: SCADA -->
+      <label class="cp-option" id="cp-opt-scada">
+        <input type="checkbox" id="cp-scada" onchange="renderPrices()" style="accent-color:#7c3aed">
+        <div class="cp-opt-body">
+          <div class="cp-opt-name">SCADA System — Data Recording <span class="match-tag match-alt">Optional</span></div>
+          <div class="cp-opt-price">AED 120,000</div>
+          <div class="cp-opt-desc">SCADA software licence · historian server · remote monitoring</div>
+        </div>
+      </label>
+
+    </div>
+
+    <table class="price-table">
+      <thead><tr><th>Item</th><th>Description</th><th class="num">Qty</th><th class="num">Unit Price (AED)</th><th class="num">Subtotal (AED)</th></tr></thead>
+      <tbody id="cp-rows"></tbody>
+    </table>
+  </div>
+
+  <!-- Steel Tanks -->
+  <div class="price-section">
+    <div class="price-section-title">Mild Steel Epoxy-Coated Tanks <span id="tank-subtotal-label"></span></div>
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px;font-size:11px;color:#0c4a6e;margin-bottom:10px;line-height:1.6">
+      <strong>Structural basis:</strong> 6mm MS plate · 150mm C-channel (17.9 kg/m) base frame @ 1m c/c · 100mm C-channel (10.2 kg/m) vertical &amp; horizontal stiffeners @ 1m×1m grid · Steel density 7850 kg/m³ · Unit rate <strong>AED 10/kg</strong><br>
+      <strong>MBR tank rule:</strong> Length = ½ × Aeration tank length · Height = Aeration tank height + 0.75 m · Width = same as Aeration tank
+    </div>
+    <table class="price-table">
+      <thead><tr>
+        <th>Tank</th><th>Dimensions (L×W×H)</th>
+        <th class="num">Plate kg</th><th class="num">Stiffener kg</th>
+        <th class="num">Total kg</th><th class="num">Unit Rate</th>
+        <th class="num">Qty</th><th class="num">Total (AED)</th>
+      </tr></thead>
+      <tbody id="tank-rows"></tbody>
+      <tfoot id="tank-foot"></tfoot>
+    </table>
+    <!-- Weight breakdown toggle -->
+    <div style="margin-top:8px">
+      <button onclick="document.getElementById('tank-breakdown').classList.toggle('hidden')"
+        style="font-size:11px;color:var(--blue);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline">
+        ▾ Show / hide weight breakdown
+      </button>
+      <div id="tank-breakdown" class="hidden">
+        <table class="price-table" style="margin-top:8px;font-size:11px">
+          <thead><tr><th>Tank</th><th>Component</th><th class="num">Qty / Length</th><th class="num">kg/m or kg</th><th class="num">Subtotal kg</th></tr></thead>
+          <tbody id="tank-breakdown-rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="price-totals-card">
+    <h2>Cost Summary</h2>
+    <div class="totals-grid">
+      <div class="totals-item"><div class="totals-label">Screens &amp; Pre-Treatment</div><div class="totals-value" id="t-pt">—</div><div class="totals-sub">AED</div></div>
+      <div class="totals-item"><div class="totals-label">MBR Membranes</div><div class="totals-value" id="t-mem">—</div><div class="totals-sub">AED</div></div>
+      <div class="totals-item"><div class="totals-label">Blowers</div><div class="totals-value" id="t-bl">—</div><div class="totals-sub">AED</div></div>
+      <div class="totals-item"><div class="totals-label">Sewage Pumps</div><div class="totals-value" id="t-sp">—</div><div class="totals-sub">AED</div></div>
+      <div class="totals-item"><div class="totals-label">OCU</div><div class="totals-value" id="t-ocu">—</div><div class="totals-sub">AED</div></div>
+      <div class="totals-item"><div class="totals-label">Instrumentation</div><div class="totals-value" id="t-inst">—</div><div class="totals-sub">AED</div></div>
+      <div class="totals-item"><div class="totals-label">Dewatering</div><div class="totals-value" id="t-dew">—</div><div class="totals-sub">AED</div></div>
+      <div class="totals-item"><div class="totals-label">Control Panel</div><div class="totals-value" id="t-cp">—</div><div class="totals-sub">AED</div></div>
+      <div class="totals-item"><div class="totals-label">MS Epoxy Tanks</div><div class="totals-value" id="t-tank">—</div><div class="totals-sub">AED</div></div>
+      <div class="totals-item" style="border-left-color:var(--accent)"><div class="totals-label">Grand Total (Equipment)</div><div class="totals-value accent" id="t-grand">—</div><div class="totals-sub">AED — indicative only</div></div>
+    </div>
+  </div>
+
+</div>
+</div><!-- end prices page -->
+
+<!-- ════ ADMIN / DATABASE PAGE ════ -->
+<div id="page-admin" class="page">
+<div class="admin-layout">
+  <div class="admin-header">
+    <div>
+      <h1>STP Equipment Database</h1>
+      <p>RoDesignLibrary Equipment — price reference with multi-filter search</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="db-stats">
+        <span class="db-stat">Showing <strong id="dbCount">—</strong> of <strong id="dbTotal">—</strong> items</span>
+      </div>
+      <button class="btn-add-equip" onclick="dbOpenModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Equipment
+      </button>
+    </div>
+  </div>
+
+  <div class="db-toolbar">
+    <div class="toolbar-row1">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="db-search" id="dbSearch" placeholder="Search make, model, capacity, specifications…" oninput="dbRender()">
+      </div>
+      <button class="reset-all" onclick="dbReset()">Reset all</button>
+    </div>
+    <div class="toolbar-row2">
+      <select class="filter-sel" id="dbCat" onchange="dbRender()"><option value="">All Categories</option></select>
+      <select class="filter-sel" id="dbMake" onchange="dbRender()"><option value="">All Makes</option></select>
+      <select class="filter-sel" id="dbType" onchange="dbRender()"><option value="">All Types</option></select>
+      <select class="filter-sel" id="dbKW" onchange="dbRender()"><option value="">Any Power</option></select>
+      <select class="filter-sel" id="dbCurr" onchange="dbRender()"><option value="">Any Currency</option></select>
+      <select class="filter-sel" id="dbPrice" onchange="dbRender()"><option value="">Any Price</option></select>
+    </div>
+    <div class="active-filters" id="dbTags"></div>
+  </div>
+
+  <div class="db-table-wrap">
+    <table class="db-table">
+      <thead>
+        <tr>
+          <th onclick="dbSort('category')" id="dh-category">Category</th>
+          <th onclick="dbSort('make')" id="dh-make">Make</th>
+          <th onclick="dbSort('model')" id="dh-model">Model</th>
+          <th onclick="dbSort('capacity')" id="dh-capacity">Capacity / Range</th>
+          <th onclick="dbSort('type')" id="dh-type">Type</th>
+          <th onclick="dbSort('kw')" id="dh-kw" style="width:70px">kW</th>
+          <th onclick="dbSort('specs')" id="dh-specs">Specifications</th>
+          <th onclick="dbSort('curr')" id="dh-curr" style="width:60px">Curr.</th>
+          <th onclick="dbSort('exworks')" id="dh-exworks" style="width:90px">Ex Works</th>
+          <th onclick="dbSort('aed')" id="dh-aed" style="width:100px">Price (AED)</th>
+          <th style="width:90px;text-align:center">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="dbBody"></tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('tab-'+p).classList.add('active');
+  if(p === 'prices') renderPrices();
+}
+
+// ══════════════════════════════════════════════════════════
+// ESTIMATED PRICES
+// ══════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════
+// COST ESTIMATION — CUSTOM ROW MANAGEMENT
+// ══════════════════════════════════════════════════════════
+
+// Persists custom rows across renderPrices() calls
+const CUSTOM_ROWS = { pt:[], mem:[], bl:[], sp:[], ocu:[], inst:[], dew:[] };
+
+function addCustomRow(secId){
+  if(!CUSTOM_ROWS[secId]) CUSTOM_ROWS[secId] = [];
+  CUSTOM_ROWS[secId].push({ desc: 'New item', qty: 1, price: 0 });
+  renderPrices();
+  // Focus the new row's description cell
+  requestAnimationFrame(() => {
+    const rows = document.querySelectorAll(`tr.custom-row[data-sec="${secId}"]`);
+    const last = rows[rows.length - 1];
+    if(last){ const span = last.querySelector('.desc-cell span'); if(span){ span.focus(); selectAll(span); } }
+  });
+}
+
+function deleteCustomRow(secId, idx){
+  if(CUSTOM_ROWS[secId]) CUSTOM_ROWS[secId].splice(idx, 1);
+  renderPrices();
+}
+
+function deleteAutoRow(btn){
+  const tr = btn.closest('tr');
+  if(!tr) return;
+  // Hide the row and zero its subtotal contribution
+  tr.style.display = 'none';
+  // Mark as deleted so renderPrices skips its subtotal
+  tr.dataset.deleted = '1';
+  recalcGrandTotal();
+}
+
+function onCustomEdit(span, field, secId, idx){
+  if(!CUSTOM_ROWS[secId] || !CUSTOM_ROWS[secId][idx]) return;
+  const raw = span.textContent.replace(/,/g,'').trim();
+  if(field === 'desc')  CUSTOM_ROWS[secId][idx].desc  = raw || 'New item';
+  if(field === 'qty')   CUSTOM_ROWS[secId][idx].qty   = parseFloat(raw) || 0;
+  if(field === 'price') CUSTOM_ROWS[secId][idx].price = parseFloat(raw) || 0;
+  // Update subtotal cell in the same row
+  const tr = span.closest('tr');
+  if(tr){
+    const subEl = tr.querySelector('.subtotal-cell');
+    const sub   = (CUSTOM_ROWS[secId][idx].qty) * (CUSTOM_ROWS[secId][idx].price);
+    if(subEl) subEl.textContent = Math.round(sub).toLocaleString();
+  }
+  recalcGrandTotal();
+}
+
+function onCellEdit(span){
+  // Auto-row qty or price edited — update subtotal cell
+  const tr = span.closest('tr');
+  if(!tr) return;
+  const qtyEl   = tr.querySelector('.edit-qty');
+  const priceEl = tr.querySelector('.edit-price');
+  const subEl   = tr.querySelector('.subtotal-cell');
+  if(!qtyEl || !priceEl || !subEl) return;
+  const qty   = parseFloat(qtyEl.textContent.replace(/,/g,''))   || 0;
+  const price = parseFloat(priceEl.textContent.replace(/,/g,'')) || 0;
+  subEl.textContent = Math.round(qty * price).toLocaleString();
+  recalcGrandTotal();
+}
+
+function recalcGrandTotal(){
+  // Sum all visible subtotal cells across the prices page
+  let total = 0;
+  document.querySelectorAll('#page-prices .subtotal-cell').forEach(el => {
+    const tr = el.closest('tr');
+    if(tr && tr.dataset.deleted !== '1' && tr.style.display !== 'none'){
+      total += parseFloat(el.textContent.replace(/,/g,'')) || 0;
+    }
+  });
+  // Add control panel total
+  const cpVal = parseFloat((document.getElementById('t-cp')?.textContent||'').replace(/,/g,'')) || 0;
+  // t-cp is already in totals-value, not in a subtotal-cell, so add separately
+  // Actually it's already summed in renderSection for cp-rows — skip double count
+  document.getElementById('t-grand').textContent = total > 0 ? Math.round(total).toLocaleString() : '—';
+}
+
+function selectAll(el){
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function onBlowerMakeChange(type){
+  // type = 'aer' or 'mbr'
+  const makeSelId  = `sel-${type}-blower-make`;
+  const modelSelId = `sel-${type}-blower-model`;
+  const airEl      = type === 'aer' ? document.getElementById('c_aer_air_hr') : document.getElementById('c_mbr_air_blower');
+  const minCap     = parseFloat(airEl?.textContent) || 0;
+
+  const makeSel  = document.getElementById(makeSelId);
+  const modelSel = document.getElementById(modelSelId);
+  if(!makeSel || !modelSel) return;
+
+  const makeFilter = makeSel.value;
+  const blowerPool = DB_DATA.filter(d => d.category === 'Blowers' && d.aed > 0);
+  function parseBlowerCapLocal(d){
+    const m = d.capacity.match(/([\d.]+)\s*(?:Nm³|m³)\/hr/);
+    return m ? parseFloat(m[1]) : null;
+  }
+  const pool = blowerPool.filter(d => {
+    const c = parseBlowerCapLocal(d);
+    return c !== null && c >= minCap && (makeFilter ? d.make === makeFilter : true);
+  }).sort((a,b) => a.aed - b.aed);
+
+  modelSel.innerHTML = `<option value="">Auto (best fit)</option>` +
+    pool.map(d => `<option value="${d.model}">${d.make} ${d.model} — ${d.capacity} — AED ${d.aed.toLocaleString()}</option>`).join('');
+
+  renderPrices();
+}
+
+function onDewTypeChange(){
+  const typeSel  = document.getElementById('dew-type-sel');
+  const modelSel = document.getElementById('dew-model-sel');
+  if(!typeSel || !modelSel) return;
+  const type = typeSel.value;
+  modelSel.innerHTML = type
+    ? `<option value="">— auto select (best fit) —</option>` +
+      DB_DATA
+        .filter(d => d.category === 'Dewatering' && d.type === type && d.aed > 0)
+        .sort((a,b) => a.aed - b.aed)
+        .map(d => `<option value="${d.model}">${d.make} ${d.model} — AED ${d.aed.toLocaleString()} (${d.capacity})</option>`)
+        .join('')
+    : `<option value="">— choose type first —</option>`;
+  renderPrices();
+}
+
+// ── Sidebar dewatering type/model handlers ──
+function onSidebarDewTypeChange(){
+  const radio = document.querySelector('input[name="dew_type"]:checked');
+  const type  = radio ? radio.value : '';
+  const modelSel = document.getElementById('i_dew_model');
+  if(!modelSel) return;
+
+  // Highlight selected radio label
+  ['dew-lbl-centrifuge','dew-lbl-beltpress','dew-lbl-thickener'].forEach(id => {
+    const lbl = document.getElementById(id);
+    if(lbl){
+      const isSelected = lbl.querySelector('input')?.value === type;
+      lbl.style.borderColor  = isSelected ? '#3b82f6' : 'var(--border)';
+      lbl.style.background   = isSelected ? '#eff6ff' : 'white';
+    }
+  });
+
+  // Get sludge flow for capacity matching
+  const sludgeHrEl = document.getElementById('c_sludge_hr');
+  const sludge_hr  = parseFloat(sludgeHrEl?.textContent) || 0;
+
+  if(type){
+    const pool = DB_DATA.filter(d => d.category === 'Dewatering' && d.type === type && d.aed > 0);
+
+    function parseDewCapSidebar(d){
+      let m = d.capacity.match(/([\d.]+)\s*m³\/hr/);
+      if(m) return parseFloat(m[1]);
+      m = d.capacity.match(/([\d.]+)\s*m³\/day/);
+      if(m) return parseFloat(m[1]) / 24;
+      m = d.capacity.match(/([\d.]+)\s*–\s*([\d.]+)\s*m³\/hr/);
+      if(m) return parseFloat(m[1]);
+      return null;
+    }
+
+    // Auto-select best fit based on sludge flow
+    const fits = pool.filter(d => { const c = parseDewCapSidebar(d); return c === null || c >= sludge_hr; });
+    fits.sort((a,b) => a.aed - b.aed);
+    const autoModel = fits.length ? fits[0] : (pool.sort((a,b)=>a.aed-b.aed)[0] || null);
+
+    // Build model options
+    modelSel.innerHTML = `<option value="">— auto (best fit) —</option>` +
+      pool.sort((a,b)=>a.aed-b.aed).map(d =>
+        `<option value="${d.model}" ${autoModel && d.model === autoModel.model ? 'selected' : ''}>${d.make} ${d.model} (${d.capacity})</option>`
+      ).join('');
+
+    updateInputState(modelSel);
+    updateSidebarDewSummary(type, modelSel.value);
+  } else {
+    modelSel.innerHTML = `<option value="">— select type first —</option>`;
+    clearDewSummary();
+  }
+
+  // Sync prices page type dropdown if visible
+  const priceTypeSel = document.getElementById('dew-type-sel');
+  if(priceTypeSel && type) { priceTypeSel.value = type; onDewTypeChange(); }
+}
+
+function onSidebarDewModelChange(){
+  const radio = document.querySelector('input[name="dew_type"]:checked');
+  const type  = radio ? radio.value : '';
+  const model = document.getElementById('i_dew_model')?.value || '';
+  updateSidebarDewSummary(type, model);
+
+  // Sync prices page model dropdown
+  const priceModelSel = document.getElementById('dew-model-sel');
+  if(priceModelSel && model){
+    priceModelSel.value = model;
+  }
+}
+
+function updateSidebarDewSummary(type, model){
+  if(!type){ clearDewSummary(); return; }
+  const pool = DB_DATA.filter(d => d.category === 'Dewatering' && d.type === type && d.aed > 0);
+  const item = model ? pool.find(d => d.model === model) : pool.sort((a,b)=>a.aed-b.aed)[0];
+  if(item){
+    setComp('c_dew_make', `${item.make}`);
+    setComp('c_dew_cap',  item.capacity || '—');
+    setComp('c_dew_kw',   item.kw != null ? item.kw : '—');
+    setComp('c_dew_aed',  item.aed.toLocaleString());
+  } else {
+    clearDewSummary();
+  }
+}
+
+function clearDewSummary(){
+  ['c_dew_make','c_dew_cap','c_dew_kw','c_dew_aed'].forEach(id => setComp(id, '—'));
+}
+
+function renderPrices(){
+  // ── Read current design state from DOM ──
+  const adf      = parseFloat(document.getElementById('i_adf')?.value)     || 0;
+  const streams  = Math.max(1, parseFloat(document.getElementById('i_streams')?.value) || 1);
+  const adf_stream = adf / streams;
+  const q_hr     = adf_stream / 24;
+
+  // Membrane selection
+  const memKey   = document.getElementById('i_mem_model')?.value || 'koch_330';
+  const memData  = MEMBRANE_DB[memKey] || MEMBRANE_DB['koch_330'];
+  const mod_area = memData.area;
+  const flux     = parseFloat(document.getElementById('i_flux')?.value) || 18;
+  const mem_area_req  = (adf_stream * 1000) / (flux * 24);
+  const modules_req_ceil = mod_area > 0 ? Math.ceil(mem_area_req / mod_area) : 1;
+  const modProvInp = parseFloat(document.getElementById('i_modules_prov')?.value) || 0;
+  const modules_prov = modProvInp > 0 ? modProvInp : modules_req_ceil;
+  const mem_area_prov = modules_prov * mod_area;
+
+  // Blower air total
+  const blowerAirEl = document.getElementById('c_aer_air_hr');
+  const mbrAirEl    = document.getElementById('c_mbr_air_blower');
+  const aer_air_hr  = parseFloat(blowerAirEl?.textContent) || 0;
+  const mbr_air_hr  = parseFloat(mbrAirEl?.textContent)    || 0;
+  const total_air   = aer_air_hr + mbr_air_hr;
+
+  // OCU required
+  const ocuEl   = document.getElementById('k_ocu');
+  const ocu_req = parseFloat(ocuEl?.textContent) || 0;
+
+  // Pumps
+  const eqt_duty    = parseInt(document.getElementById('i_eqt_duty')?.value)    || 2;
+  const eqt_standby = parseInt(document.getElementById('i_eqt_standby')?.value) || 1;
+  const total_pumps = eqt_duty + eqt_standby;
+
+  // ── Helper: find best-match item from DB by category & numeric capacity ──
+  function bestMatch(category, minCapacity, capacityFn){
+    const pool = DB_DATA.filter(d => d.category === category && d.aed > 0);
+    const fits = pool.filter(d => {
+      const cap = capacityFn ? capacityFn(d) : null;
+      return cap === null || cap >= minCapacity;
+    });
+    fits.sort((a,b) => a.aed - b.aed);
+    return fits.length ? fits[0] : (pool.sort((a,b)=>a.aed-b.aed)[0] || null);
+  }
+
+  function priceRow(label, item, qty, matchClass, secId, rowIdx){
+    if(!item) return `<tr class="no-match-row auto-row" data-sec="${secId}" data-idx="${rowIdx}">
+      <td>${label}</td><td colspan="3">No matching item in database</td>
+      <td class="aed">—</td><td class="aed">—</td><td></td></tr>`;
+    const unitPrice = item.aed;
+    const subtotal  = unitPrice * qty;
+    return `<tr class="auto-row" data-sec="${secId}" data-idx="${rowIdx}" data-base-price="${unitPrice}" data-base-qty="${qty}">
+      <td>${label} <span class="match-tag ${matchClass}">${matchClass==='match-best'?'Best fit':'Alt'}</span></td>
+      <td style="font-size:11px">${item.make} <strong>${item.model}</strong></td>
+      <td style="font-size:11px;color:var(--muted)">${item.specs||item.capacity||'—'}</td>
+      <td class="editable num"><span contenteditable="true" class="edit-qty" onblur="onCellEdit(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${qty}</span></td>
+      <td class="editable num"><span contenteditable="true" class="edit-price" onblur="onCellEdit(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${unitPrice.toLocaleString()}</span></td>
+      <td class="subtotal-cell">${subtotal.toLocaleString()}</td>
+      <td style="text-align:center;padding:4px 6px"><button class="del-row-btn" onclick="deleteAutoRow(this)" title="Remove row">×</button></td>
+    </tr>`;
+  }
+
+  let grand = 0;
+
+  // Read any user-edited overrides for auto rows (stored on the DOM elements themselves)
+  function getRowOverrides(secId, idx){
+    const row = document.querySelector(`tr.auto-row[data-sec="${secId}"][data-idx="${idx}"]`);
+    if(!row) return null;
+    const qtyEl   = row.querySelector('.edit-qty');
+    const priceEl = row.querySelector('.edit-price');
+    const qty   = qtyEl   ? parseFloat(qtyEl.textContent.replace(/,/g,''))   || 0 : null;
+    const price = priceEl ? parseFloat(priceEl.textContent.replace(/,/g,'')) || 0 : null;
+    return { qty, price };
+  }
+
+  function renderSection(tbodyId, labelId, rows){
+    const tbody = document.getElementById(tbodyId);
+    const secId = tbodyId.replace('-rows','');
+
+    // Merge auto rows with any existing edits
+    let sectionTotal = 0;
+    const autoHtml = rows.map((r, idx) => {
+      // Check if row was previously rendered with edits
+      const overrides = getRowOverrides(secId, idx);
+      if(overrides && overrides.qty !== null && overrides.price !== null){
+        // Re-inject edited values into the new HTML
+        const div = document.createElement('div');
+        div.innerHTML = r.html;
+        const qtyEl   = div.querySelector('.edit-qty');
+        const priceEl = div.querySelector('.edit-price');
+        const subEl   = div.querySelector('.subtotal-cell');
+        if(qtyEl)   qtyEl.textContent   = overrides.qty;
+        if(priceEl) priceEl.textContent = overrides.price.toLocaleString();
+        const sub = overrides.qty * overrides.price;
+        if(subEl)   subEl.textContent   = sub.toLocaleString();
+        sectionTotal += sub;
+        return div.innerHTML;
+      }
+      sectionTotal += r.subtotal || 0;
+      return r.html;
+    }).join('');
+
+    // Append custom rows (stored in CUSTOM_ROWS[secId])
+    const customRows = CUSTOM_ROWS[secId] || [];
+    const customHtml = customRows.map((cr, ci) => {
+      const sub = (cr.qty||0) * (cr.price||0);
+      sectionTotal += sub;
+      return `<tr class="custom-row" data-sec="${secId}" data-cidx="${ci}">
+        <td class="desc-cell" colspan="2"><span contenteditable="true" onblur="onCustomEdit(this,'desc','${secId}',${ci})" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${cr.desc||'New item'}</span>
+          <button class="del-row-btn" onclick="deleteCustomRow('${secId}',${ci})" title="Delete">×</button></td>
+        <td style="font-size:10px;color:var(--muted)">Custom</td>
+        <td class="editable num"><span contenteditable="true" onblur="onCustomEdit(this,'qty','${secId}',${ci})" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${cr.qty||1}</span></td>
+        <td class="editable num"><span contenteditable="true" onblur="onCustomEdit(this,'price','${secId}',${ci})" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}">${(cr.price||0).toLocaleString()}</span></td>
+        <td class="subtotal-cell">${sub.toLocaleString()}</td>
+        <td style="text-align:center;padding:4px 6px"><button class="del-row-btn" onclick="deleteCustomRow('${secId}',${ci})" title="Delete">×</button></td>
+      </tr>`;
+    }).join('');
+
+    tbody.innerHTML = autoHtml + customHtml;
+    grand += sectionTotal;
+    document.getElementById(labelId).textContent = sectionTotal > 0 ? `AED ${Math.round(sectionTotal).toLocaleString()}` : '';
+    return sectionTotal;
+  }
+
+  // ── 1. Screens & Pre-Treatment ──
+  // Find a unit with capacity ≥ q_hr (m³/hr)
+  function parseScreenCap(d){
+    const m = d.capacity.match(/([\d.]+)\s*m³\/hr/);
+    return m ? parseFloat(m[1]) : null;
+  }
+  const screenItem = bestMatch('Screens & Pre-Treatment', q_hr, parseScreenCap);
+  const ptRows = [{ html: priceRow('Screening & Pre-Treatment Unit', screenItem, 1, 'match-best', 'pt', 0), subtotal: screenItem ? screenItem.aed : 0 }];
+  const tPT = renderSection('pt-rows', 'pt-subtotal-label', ptRows);
+
+  // ── 2. MBR Membranes ──
+  // Match exact model from design selection
+  const memDbItem = DB_DATA.find(d => d.category === 'MBR Membranes' && d.make.toLowerCase().includes(memData.make.toLowerCase()) && d.model === memData.model);
+  const memFallback = DB_DATA.filter(d=>d.category==='MBR Membranes'&&d.aed>0).sort((a,b)=>a.aed-b.aed)[0];
+  const memItem = memDbItem || memFallback;
+  const memRows = [{ html: priceRow(`MBR Membrane Module (${memData.make} ${memData.model})`, memItem, modules_prov, memDbItem?'match-best':'match-alt', 'mem', 0), subtotal: memItem ? memItem.aed * modules_prov : 0 }];
+  const tMem = renderSection('mem-rows', 'mem-subtotal-label', memRows);
+
+  // ── 3. Blowers ──
+  function parseBlowerCap(d){
+    const m = d.capacity.match(/([\d.]+)\s*(?:Nm³|m³)\/hr/);
+    return m ? parseFloat(m[1]) : null;
+  }
+
+  const blowerPool = DB_DATA.filter(d => d.category === 'Blowers' && d.aed > 0);
+
+  // Populate make dropdown with makes that have at least one model ≥ minCap
+  function populateBlowerMakeSel(selId, minCap){
+    const sel = document.getElementById(selId);
+    if(!sel) return;
+    const prevVal = sel.value;
+    const qualifyingMakes = [...new Set(
+      blowerPool.filter(d => { const c = parseBlowerCap(d); return c !== null && c >= minCap; })
+               .map(d => d.make)
+    )].sort();
+    sel.innerHTML = `<option value="">Auto (lowest price)</option>` +
+      qualifyingMakes.map(m => `<option value="${m}" ${m === prevVal ? 'selected' : ''}>${m}</option>`).join('');
+  }
+
+  // Populate model dropdown filtered by make and minCap
+  function populateBlowerModelSel(modelSelId, makeSelId, minCap){
+    const modelSel = document.getElementById(modelSelId);
+    const makeSel  = document.getElementById(makeSelId);
+    if(!modelSel || !makeSel) return;
+    const makeFilter = makeSel.value;
+    const prevModel  = modelSel.value;
+    const pool = blowerPool.filter(d => {
+      const c = parseBlowerCap(d);
+      return c !== null && c >= minCap && (makeFilter ? d.make === makeFilter : true);
+    }).sort((a,b) => a.aed - b.aed);
+    modelSel.innerHTML = `<option value="">Auto (best fit)</option>` +
+      pool.map(d => `<option value="${d.model}" ${d.model === prevModel ? 'selected' : ''}>${d.make} ${d.model} — ${d.capacity} — AED ${d.aed.toLocaleString()}</option>`).join('');
+  }
+
+  if(aer_air_hr > 0){
+    populateBlowerMakeSel('sel-aer-blower-make', aer_air_hr);
+    populateBlowerModelSel('sel-aer-blower-model', 'sel-aer-blower-make', aer_air_hr);
+  }
+  if(mbr_air_hr > 0){
+    populateBlowerMakeSel('sel-mbr-blower-make', mbr_air_hr);
+    populateBlowerModelSel('sel-mbr-blower-model', 'sel-mbr-blower-make', mbr_air_hr);
+  }
+
+  const aerMakeFilter  = document.getElementById('sel-aer-blower-make')?.value  || '';
+  const aerModelFilter = document.getElementById('sel-aer-blower-model')?.value || '';
+  const mbrMakeFilter  = document.getElementById('sel-mbr-blower-make')?.value  || '';
+  const mbrModelFilter = document.getElementById('sel-mbr-blower-model')?.value || '';
+
+  function pickBlower(minCap, makeFilter, modelFilter){
+    const pool = blowerPool.filter(d => {
+      const c = parseBlowerCap(d);
+      const capOk   = c !== null && c >= minCap;
+      const makeOk  = makeFilter  ? d.make  === makeFilter  : true;
+      const modelOk = modelFilter ? d.model === modelFilter : true;
+      return capOk && makeOk && modelOk;
+    });
+    pool.sort((a,b) => a.aed - b.aed);
+    return pool[0] || null;
+  }
+
+  const aerBlower = pickBlower(aer_air_hr, aerMakeFilter, aerModelFilter);
+  const mbrBlower = pickBlower(mbr_air_hr, mbrMakeFilter, mbrModelFilter);
+  const blRows = [
+    { html: priceRow(`Aeration Blower — 1 Duty + 1 Standby (≥ ${aer_air_hr.toFixed(0)} m³/hr ea.)`, aerBlower, 2, 'match-best', 'bl', 0), subtotal: aerBlower ? aerBlower.aed * 2 : 0 },
+    { html: priceRow(`MBR Scouring Blower — 1 Duty + 1 Standby (≥ ${mbr_air_hr.toFixed(0)} m³/hr ea.)`, mbrBlower, 2, 'match-best', 'bl', 1), subtotal: mbrBlower ? mbrBlower.aed * 2 : 0 },
+  ];
+  const tBl = renderSection('bl-rows', 'bl-subtotal-label', blRows);
+
+  // ── 4. Sewage Pumps ──
+  function parsePumpCap(d){
+    const m = d.capacity.match(/([\d.]+)\s*m³\/hr/);
+    return m ? parseFloat(m[1]) : null;
+  }
+  const pumpItem = bestMatch('Sewage Pumps', q_hr, parsePumpCap);
+  const spRows = [
+    { html: priceRow(`Raw Sewage Submersible Pump (≥ ${q_hr.toFixed(1)} m³/hr)`, pumpItem, total_pumps, 'match-best', 'sp', 0), subtotal: pumpItem ? pumpItem.aed * total_pumps : 0 },
+  ];
+  const tSP = renderSection('sp-rows', 'sp-subtotal-label', spRows);
+
+  // ── 5. OCU ──
+  function parseOcuCap(d){
+    const m = d.capacity.match(/([\d,]+)\s*m³\/hr/);
+    return m ? parseFloat(m[1].replace(',','')) : null;
+  }
+  const ocuItem = bestMatch('OCU', ocu_req * 1.1, parseOcuCap);
+  const ocuRows = [{ html: priceRow(`Odour Control Unit (≥ ${(ocu_req*1.1).toFixed(0)} m³/hr)`, ocuItem, 1, 'match-best', 'ocu', 0), subtotal: ocuItem ? ocuItem.aed : 0 }];
+  const tOCU = renderSection('ocu-rows', 'ocu-subtotal-label', ocuRows);
+
+  // ── 6. Instrumentation (standard STP set) ──
+  const instItems = [
+    { label:'pH Meter (inlet)', cat:'Instrumentation', type:'pH Meter' },
+    { label:'DO Meter (aeration)', cat:'Instrumentation', type:'DO Meter' },
+    { label:'Turbidity Meter (effluent)', cat:'Instrumentation', type:'Turbidity Meter' },
+    { label:'Flow Meter', cat:'Instrumentation', type:'Flow Meter' },
+    { label:'Pressure Transmitter', cat:'Instrumentation', type:'Pressure Transmitter' },
+  ];
+  let instSubtotal = 0;
+  const instRowsHtml = instItems.map(({label, cat, type}, idx) => {
+    const item = DB_DATA.find(d => d.category === cat && d.type === type && d.aed > 0)
+               || DB_DATA.filter(d => d.category === cat && d.aed > 0).sort((a,b)=>a.aed-b.aed)[0];
+    const sub = item ? item.aed : 0;
+    instSubtotal += sub;
+    return { html: priceRow(label, item, 1, 'match-best', 'inst', idx), subtotal: sub };
+  });
+  const tInst = renderSection('inst-rows', 'inst-subtotal-label', instRowsHtml);
+
+  // ── 7. Dewatering ──
+  // sludge_1pct m³/day is the design sludge volume at 1% consistency
+  const ss_gen_pr    = 150;                        // kg/day SS generated (matches design)
+  const sludge_1pct_pr = ss_gen_pr / 10;           // m³/day at 1%
+  const sludge_hr_pr   = sludge_1pct_pr / 24;      // m³/hr at 1%
+
+  const dewTypeSel  = document.getElementById('dew-type-sel')?.value  || '';
+  const dewModelSel = document.getElementById('dew-model-sel')?.value || '';
+
+  let dewItem = null;
+  let dewLabel = 'Sludge Dewatering Unit';
+
+  if(dewTypeSel){
+    const pool = DB_DATA.filter(d => d.category === 'Dewatering' && d.type === dewTypeSel && d.aed > 0);
+    if(dewModelSel){
+      dewItem = pool.find(d => d.model === dewModelSel) || pool[0] || null;
+    } else {
+      // Auto-select: smallest unit whose capacity string implies it can handle sludge_hr_pr
+      // Try to parse m³/hr or m³/day from capacity
+      function parseDewCap(d){
+        let m = d.capacity.match(/([\d.]+)\s*m³\/hr/);
+        if(m) return parseFloat(m[1]);
+        m = d.capacity.match(/([\d.]+)\s*m³\/day/);
+        if(m) return parseFloat(m[1]) / 24;
+        m = d.capacity.match(/([\d.]+)\s*–\s*([\d.]+)\s*m³\/hr/);
+        if(m) return parseFloat(m[1]);
+        return null;
+      }
+      const fits = pool.filter(d => { const c = parseDewCap(d); return c === null || c >= sludge_hr_pr; });
+      fits.sort((a,b) => a.aed - b.aed);
+      dewItem = fits.length ? fits[0] : (pool.sort((a,b)=>a.aed-b.aed)[0] || null);
+    }
+    dewLabel = `${dewTypeSel} — sludge ${sludge_1pct_pr.toFixed(1)} m³/day @ 1%`;
+  } else {
+    // No type selected: show placeholder row asking user to select
+    document.getElementById('dew-rows').innerHTML = `<tr class="no-match-row"><td colspan="6" style="text-align:center;padding:16px;color:var(--muted)">
+      ↑ Select a dewatering type above to see matched equipment and pricing
+    </td></tr>`;
+    const tDew = 0;
+    grand += tDew;
+    document.getElementById('dew-subtotal-label').textContent = '';
+    document.getElementById('t-dew').textContent = '—';
+    // still render totals below — tank calc will run after this block is exited only on normal path
+    // so here just update what we have
+    const fmt2 = n => n > 0 ? n.toLocaleString() : '—';
+    document.getElementById('t-pt').textContent   = fmt2(tPT);
+    document.getElementById('t-mem').textContent  = fmt2(tMem);
+    document.getElementById('t-bl').textContent   = fmt2(tBl);
+    document.getElementById('t-sp').textContent   = fmt2(tSP);
+    document.getElementById('t-ocu').textContent  = fmt2(tOCU);
+    document.getElementById('t-inst').textContent = fmt2(tInst);
+    document.getElementById('t-tank').textContent = '—';
+    document.getElementById('t-grand').textContent = grand > 0 ? Math.round(grand).toLocaleString() : '—';
+    document.getElementById('prices-subtitle').textContent =
+      `${adf} m³/day · ${streams} stream${streams>1?'s':''} · ${modules_prov} membrane module${modules_prov!==1?'s':''} · prices from Equipment Database`;
+    return;
+  }
+
+  const dewRows = [{ html: priceRow(dewLabel, dewItem, 1, dewItem ? 'match-best' : 'match-none', 'dew', 0), subtotal: dewItem ? dewItem.aed : 0 }];
+  const tDew = renderSection('dew-rows', 'dew-subtotal-label', dewRows);
+
+  // ── Control Panel ──
+  const CP_ITEMS = [
+    { id: null,        label: 'PLC Control Panel + HMI — Form 2 Enclosure', desc: 'Form 2 MS enclosure · base PLC + HMI', price: 120000, fixed: true },
+    { id: 'cp-hmi',   label: 'HMI 12″ Touchscreen Upgrade',                desc: '12-inch colour touchscreen HMI',         price: 8500,   fixed: false },
+    { id: 'cp-form4', label: 'Form 4 Enclosure Upgrade',                    desc: 'Fully segregated Form 4 enclosure',      price: 120000, fixed: false },
+    { id: 'cp-redplc',label: 'Hot Redundant PLC & Power Supply',            desc: 'Redundant CPU + 24V DC PSU module',      price: 110000, fixed: false },
+    { id: 'cp-scada', label: 'SCADA System — Data Recording',               desc: 'SCADA licence · historian · remote mon.',price: 120000, fixed: false },
+  ];
+
+  let cpSubtotal = 0;
+  const cpRowsHtml = CP_ITEMS.filter(item => {
+    if(item.fixed) return true;
+    return document.getElementById(item.id)?.checked;
+  }).map(item => {
+    cpSubtotal += item.price;
+    return `<tr>
+      <td>${item.label}${item.fixed ? ' <span class="match-tag match-best">Fixed</span>' : ' <span class="match-tag match-alt">Optional</span>'}</td>
+      <td style="font-size:11px;color:var(--muted)">${item.desc}</td>
+      <td class="num"><span class="qty-badge">1</span></td>
+      <td class="aed">${item.price.toLocaleString()}</td>
+      <td class="aed"><strong>${item.price.toLocaleString()}</strong></td>
+    </tr>`;
+  });
+
+  document.getElementById('cp-rows').innerHTML = cpRowsHtml.join('');
+  document.getElementById('cp-subtotal-label').textContent = `AED ${cpSubtotal.toLocaleString()}`;
+  document.getElementById('t-cp').textContent = cpSubtotal.toLocaleString();
+  grand += cpSubtotal;
+
+  // ── Steel Tank Weight Calculation ──
+  // Reads tank dims from sidebar inputs
+  const anox_w_pr  = parseFloat(document.getElementById('i_anox_w')?.value)  || 3.0;
+  const anox_d_pr  = parseFloat(document.getElementById('i_anox_d')?.value)  || 3.2;
+  const anox_h_pr  = parseFloat(document.getElementById('i_anox_h')?.value)  || 3.5;
+  const aer_w_pr   = parseFloat(document.getElementById('i_aer_w')?.value)   || 3.0;
+  const aer_d_pr   = parseFloat(document.getElementById('i_aer_d')?.value)   || 3.1;
+  const aer_h_pr   = parseFloat(document.getElementById('i_aer_h')?.value)   || 3.5;
+
+  // Aeration tank: L×W×H from design (per stream)
+  const aerLProv = parseFloat(document.getElementById('i_aer_l_prov')?.value) || 0;
+  const aerTankL = aerLProv > 0 ? aerLProv : 0;
+  const aerTankW = aer_w_pr, aerTankH = aer_h_pr;
+
+  // Anoxic tank: L×W×H from design (per stream)
+  const anoxLProv = parseFloat(document.getElementById('i_anox_l_prov')?.value) || 0;
+  const anoxTankL = anoxLProv > 0 ? anoxLProv : 0;
+  const anoxTankW = anox_w_pr, anoxTankH = anox_h_pr;
+
+  // MBR tank: L = half of aeration tank length, W = same, H = aeration H + 0.75m
+  const mbrTankL = aerTankL > 0 ? aerTankL / 2 : 0;
+  const mbrTankW = aer_w_pr;
+  const mbrTankH = aer_h_pr + 0.75;
+
+  // Steel material constants
+  const PLATE_T    = 0.006;   // 6mm plate thickness (m)
+  const DENSITY    = 7850;    // kg/m³ steel density
+  const C150_KGM   = 17.9;   // 150mm C-channel kg/m
+  const C100_KGM   = 10.2;   // 100mm C-channel kg/m
+  const UNIT_RATE  = 10;      // AED per kg
+
+  function calcTankWeight(L, W, H, label){
+    if(L <= 0 || W <= 0 || H <= 0) return null;
+
+    // ── Plate weight ──
+    // 6 faces: bottom(L×W), top(L×W), 2 long sides(L×H), 2 short ends(W×H)
+    const plate_area   = 2*(L*W) + 2*(L*H) + 2*(W*H);
+    const plate_vol    = plate_area * PLATE_T;
+    const plate_kg     = plate_vol * DENSITY;
+
+    // ── Bottom frame: 150mm C-channel ──
+    // Runs across width (W) at 1m c/c spacing along length
+    const bot_runs     = Math.floor(L / 1) + 1;   // number of cross-members
+    const bot_len_each = W;                        // each run spans full width
+    const bot_total_m  = bot_runs * bot_len_each;
+    const bot_kg       = bot_total_m * C150_KGM;
+
+    // ── Vertical stiffeners: 100mm C-channel ──
+    // On all 4 walls, spaced 1m apart horizontally, full height H
+    // Long walls (×2): Math.floor(L/1)+1 verticals per wall
+    // Short walls (×2): Math.floor(W/1)+1 verticals per wall
+    const vert_cols_long  = Math.floor(L / 1) + 1;
+    const vert_cols_short = Math.floor(W / 1) + 1;
+    const vert_total_m    = 2*(vert_cols_long * H) + 2*(vert_cols_short * H);
+    const vert_kg         = vert_total_m * C100_KGM;
+
+    // ── Horizontal stiffeners: 100mm C-channel ──
+    // Rings at every 1m of height (excluding top & bottom which are covered by plate/base)
+    const horiz_rows   = Math.floor(H / 1);        // number of horizontal ring levels
+    const perimeter    = 2*(L + W);                // full perimeter
+    const horiz_total_m = horiz_rows * perimeter;
+    const horiz_kg     = horiz_total_m * C100_KGM;
+
+    const stiff_kg     = bot_kg + vert_kg + horiz_kg;
+    const total_kg     = plate_kg + stiff_kg;
+
+    return {
+      L, W, H, label,
+      plate_kg, bot_kg, bot_runs, bot_total_m,
+      vert_kg, vert_cols_long, vert_cols_short, vert_total_m,
+      horiz_kg, horiz_rows, perimeter, horiz_total_m,
+      stiff_kg, total_kg,
+      cost: total_kg * UNIT_RATE
+    };
+  }
+
+  const tanks = [
+    calcTankWeight(aerTankL,  aerTankW,  aerTankH,  'Aeration Tank'),
+    calcTankWeight(anoxTankL, anoxTankW, anoxTankH, 'Anoxic Tank'),
+    calcTankWeight(mbrTankL,  mbrTankW,  mbrTankH,  'MBR Tank'),
+  ].filter(Boolean);
+
+  // Render tank table (1 row per tank type, qty = streams)
+  let tankSubtotal = 0;
+  const tankRowsHtml = tanks.map(t => {
+    const totalCostStreams = t.cost * streams;
+    tankSubtotal += totalCostStreams;
+    return `<tr>
+      <td><strong>${t.label}</strong></td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px">${t.L.toFixed(1)} × ${t.W.toFixed(1)} × ${t.H.toFixed(1)} m</td>
+      <td class="num">${Math.round(t.plate_kg).toLocaleString()}</td>
+      <td class="num">${Math.round(t.stiff_kg).toLocaleString()}</td>
+      <td class="num"><strong>${Math.round(t.total_kg).toLocaleString()}</strong></td>
+      <td class="aed">AED ${UNIT_RATE}/kg</td>
+      <td class="num"><span class="qty-badge">${streams}</span></td>
+      <td class="aed"><strong>${Math.round(totalCostStreams).toLocaleString()}</strong></td>
+    </tr>`;
+  });
+
+  if(tanks.length === 0){
+    document.getElementById('tank-rows').innerHTML = `<tr class="no-match-row"><td colspan="8" style="text-align:center;padding:14px;color:var(--muted)">Run design first — tank dimensions needed to calculate steel weight</td></tr>`;
+  } else {
+    document.getElementById('tank-rows').innerHTML = tankRowsHtml.join('');
+  }
+  document.getElementById('tank-foot').innerHTML = tanks.length
+    ? `<tr style="background:var(--surface)">
+        <td colspan="6" style="padding:8px 14px;font-size:11px;font-weight:600;text-align:right;color:var(--ink)">All ${streams} stream(s) tank total</td>
+        <td class="num" style="font-size:12px;font-weight:700">${streams}</td>
+        <td class="aed" style="font-size:13px;font-weight:700;color:var(--blue)">${Math.round(tankSubtotal).toLocaleString()}</td>
+      </tr>` : '';
+  document.getElementById('tank-subtotal-label').textContent = tankSubtotal > 0 ? `AED ${Math.round(tankSubtotal).toLocaleString()}` : '';
+  grand += tankSubtotal;
+
+  // Breakdown table
+  const bdRows = tanks.flatMap(t => [
+    `<tr><td rowspan="5" style="font-weight:600;vertical-align:top;padding-top:6px">${t.label}<br><small style="font-weight:400;color:var(--muted)">${t.L.toFixed(1)}×${t.W.toFixed(1)}×${t.H.toFixed(1)}</small></td>
+      <td>6mm plate (all 6 faces)</td>
+      <td class="num">${(2*(t.L*t.W)+2*(t.L*t.H)+2*(t.W*t.H)).toFixed(1)} m²</td>
+      <td class="num">× ${PLATE_T*1000}mm × ${DENSITY} kg/m³</td>
+      <td class="num">${Math.round(t.plate_kg)}</td></tr>`,
+    `<tr><td>150mm C-ch base frame (${t.bot_runs} runs × ${t.W.toFixed(1)}m)</td>
+      <td class="num">${t.bot_total_m.toFixed(1)} m</td>
+      <td class="num">${C150_KGM} kg/m</td>
+      <td class="num">${Math.round(t.bot_kg)}</td></tr>`,
+    `<tr><td>100mm C-ch verticals (${2*t.vert_cols_long + 2*t.vert_cols_short} cols × ${t.H.toFixed(1)}m)</td>
+      <td class="num">${t.vert_total_m.toFixed(1)} m</td>
+      <td class="num">${C100_KGM} kg/m</td>
+      <td class="num">${Math.round(t.vert_kg)}</td></tr>`,
+    `<tr><td>100mm C-ch horizontals (${t.horiz_rows} levels × ${t.perimeter.toFixed(1)}m perimeter)</td>
+      <td class="num">${t.horiz_total_m.toFixed(1)} m</td>
+      <td class="num">${C100_KGM} kg/m</td>
+      <td class="num">${Math.round(t.horiz_kg)}</td></tr>`,
+    `<tr style="background:var(--surface)"><td colspan="3" style="text-align:right;font-weight:600">Total per tank</td>
+      <td class="num" style="font-weight:700">${Math.round(t.total_kg)} kg → AED ${Math.round(t.cost).toLocaleString()}</td></tr>`,
+  ]);
+  document.getElementById('tank-breakdown-rows').innerHTML = bdRows.join('');
+  document.getElementById('t-tank').textContent = tankSubtotal > 0 ? Math.round(tankSubtotal).toLocaleString() : '—';
+  const fmt2 = n => n > 0 ? n.toLocaleString() : '—';
+  document.getElementById('t-pt').textContent   = fmt2(tPT);
+  document.getElementById('t-mem').textContent  = fmt2(tMem);
+  document.getElementById('t-bl').textContent   = fmt2(tBl);
+  document.getElementById('t-sp').textContent   = fmt2(tSP);
+  document.getElementById('t-ocu').textContent  = fmt2(tOCU);
+  document.getElementById('t-inst').textContent = fmt2(tInst);
+  document.getElementById('t-dew').textContent  = fmt2(tDew);
+  document.getElementById('t-grand').textContent = grand > 0 ? Math.round(grand).toLocaleString() : '—';
+  document.getElementById('prices-subtitle').textContent =
+    `${adf} m³/day · ${streams} stream${streams>1?'s':''} · ${modules_prov} membrane module${modules_prov!==1?'s':''} · prices from Equipment Database`;
+}
+
+// ══════════════════════════════════════════════════════════
+// MBR CALCULATIONS
+// ══════════════════════════════════════════════════════════
+function v(id){ return parseFloat(document.getElementById(id).value)||0; }
+
+// ── GLOBAL: diffuser rate lookup (shared by EQT + Aeration calculations) ──
+const DIFFUSER_RATES = {
+  coarse_simplex: { rate: 48,  label: 'Coarse Simplex', color: '#1e40af' },
+  coarse_duplex:  { rate: 87,  label: 'Coarse Duplex',  color: '#1e40af' },
+  fine_7:         { rate: 12,  label: 'Fine Disc 7″',   color: '#0f766e' },
+  fine_9:         { rate: 16,  label: 'Fine Disc 9″',   color: '#0f766e' },
+  fine_12:        { rate: 29,  label: 'Fine Disc 12″',  color: '#0f766e' },
+};
+
+// ── GLOBAL: membrane module database ──
+const MEMBRANE_DB = {
+  hydra_125:    { make:'Hydranautics', model:'HSM-125-ES',     area:125,  type:'Hollow Fiber',        pore:'0.4µm', material:'PVDF' },
+  hydra_500:    { make:'Hydranautics', model:'HSM-500-ES',     area:500,  type:'Hollow Fiber',        pore:'0.4µm', material:'PVDF' },
+  hydra_1000:   { make:'Hydranautics', model:'HSM-1000-ES',    area:1000, type:'Hollow Fiber',        pore:'0.4µm', material:'PVDF' },
+  microdyn_416: { make:'Microdyn Nadir',model:'BIO-CEL® BC 416F',area:416,type:'Flat Sheet Cassette', pore:'0.04µm',material:'PES'  },
+  martin_400:   { make:'Martin Systems',model:'SiClaro FM',    area:400,  type:'Flat Sheet',          pore:'0.1µm', material:'PES'  },
+  alfalaval_100:{ make:'Alfa Laval',   model:'MFM 100-100',    area:100,  type:'Hollow Sheet',        pore:'0.2µm', material:'PVDF' },
+  koch_330:     { make:'KOCH',         model:'PSH 330-8',      area:330,  type:'Hollow Fibre',        pore:'0.03µm',material:'PVDF' },
+  koch_575:     { make:'KOCH',         model:'PSH 660-14',     area:575,  type:'Hollow Fibre',        pore:'0.03µm',material:'PVDF' },
+  kubota_160:   { make:'KUBOTA',       model:'ES200R3',        area:160,  type:'Flat Sheet',          pore:'0.2µm', material:'C-PE' },
+};
+
+// When membrane is selected from dropdown, auto-fill area if not manually overridden
+function onMembraneSelect(){
+  const key = document.getElementById('i_mem_model')?.value;
+  const mem = MEMBRANE_DB[key];
+  if(!mem) return;
+  // Update display fields
+  const areaEl = document.getElementById('i_mem_area');
+  const moduleAreaEl = document.getElementById('c_mem_module_area');
+  const typeEl = document.getElementById('c_mem_type');
+  if(moduleAreaEl) moduleAreaEl.textContent = mem.area;
+  if(typeEl) typeEl.textContent = `${mem.type} · ${mem.pore} · ${mem.material}`;
+  // Only auto-fill area if user has not manually entered a value
+  if(areaEl && (!areaEl.value || areaEl.dataset.autoFilled === 'true')){
+    areaEl.value = mem.area;
+    areaEl.dataset.autoFilled = 'true';
+    updateInputState(areaEl);
+  }
+}
+
+/* ── INPUT STATE: red = unfilled, green = filled ── */
+function initInputStates(){
+  const inputs = document.querySelectorAll('.mbr-sidebar input.user-input, .mbr-sidebar select.user-input');
+  inputs.forEach(inp => {
+    updateInputState(inp);
+    const ev = inp.tagName === 'SELECT' ? 'change' : 'input';
+    inp.addEventListener(ev, () => {
+      updateInputState(inp);
+      calculate();
+    });
+  });
+}
+
+function updateInputState(inp){
+  const val = inp.value.trim();
+  const isSelect = inp.tagName === 'SELECT';
+  const filled = isSelect ? (val !== '') : (val !== '' && !isNaN(parseFloat(val)) && parseFloat(val) > 0);
+  inp.classList.toggle('filled', filled);
+}
+
+function makeRows(rows, tableId){
+  const t = document.getElementById(tableId);
+  t.innerHTML = rows.map(([label,val,unit,hl])=>`
+    <tr class="${hl?'highlight':''}">
+      <td>${label}</td>
+      <td>${val}${unit?` <span style="font-size:10px;color:var(--muted2);font-weight:400">${unit}</span>`:''}` + `</td>
+    </tr>`).join('');
+}
+
+function fmt(n, d=2){ return typeof n==='number'? n.toFixed(d) : n; }
+
+function setComp(id, val){
+  const el = document.getElementById(id);
+  if(el) el.textContent = val;
+}
+
+function calculate(){
+  const adf = v('i_adf');
+  const streams = Math.max(1, v('i_streams') || 1);
+  const adf_stream = adf / streams;
+  const q_hr = adf_stream / 24;
+
+  // Update computed sidebar displays
+  setComp('c_adf_stream', adf_stream > 0 ? adf_stream.toFixed(2) : '—');
+  setComp('c_q_hr',       q_hr > 0 ? q_hr.toFixed(2) : '—');
+
+  // Raw quality — user inputs
+  const bod_in  = v('i_bod_in')  || 350;
+  const cod_in  = v('i_cod_in')  || 500;
+  const tss_in  = v('i_tss_in')  || 500;
+  const nh3_in  = v('i_nh3_in')  || 40;
+  const tkn_in  = v('i_tkn_in')  || 70;
+  const phos_in = v('i_phos_in') || 8;
+  const bod_out = v('i_bod_out') || 15;
+  const tss_out = v('i_tss_out') || 15;
+  const nh3_out = v('i_nh3_out') || 5;
+
+  // MLSS — user input
+  const mlss    = v('i_mlss') || 2800;
+
+  // Reference constants (not editable)
+  const mlvss_r = 0.90;
+  const fm      = 0.16;
+  const alpha   = 0.65;
+  const beta    = 0.95;
+  const ote     = 0.18;
+  const eqt_air_rate  = 0.6;
+  const eqt_diff_rate = 48;
+  const anox_rt = parseFloat(document.getElementById('i_anox_rt')?.value) || 1.5;
+  const anox_w  = parseFloat(document.getElementById('i_anox_w')?.value)  || 3.0;
+  const anox_d  = parseFloat(document.getElementById('i_anox_d')?.value)  || 3.2;
+  const anox_h  = parseFloat(document.getElementById('i_anox_h')?.value)  || 3.5;
+  const aer_w          = parseFloat(document.getElementById('i_aer_w')?.value)          || 3.0;
+  const aer_d          = parseFloat(document.getElementById('i_aer_d')?.value)          || 3.1;
+  const aer_h          = parseFloat(document.getElementById('i_aer_h')?.value)          || 3.5;
+  let mbr_air_hr = 0;  // set in MBR section: area_prov × 0.2434
+  // Aeration diffuser selector - reads from guideline table
+  const aerDiffSelVal  = document.getElementById('i_aer_diff_type')?.value || 'fine_9';
+  const aerDiffInfo    = DIFFUSER_RATES[aerDiffSelVal] || DIFFUSER_RATES['fine_9'];
+  const fine_diff_rate = aerDiffInfo.rate;
+  const recirc  = 4.0;
+  const dose_ppm  = parseFloat(document.getElementById('i_dose_ppm')?.value)  || 5.0;
+  const dose_conc = parseFloat(document.getElementById('i_dose_conc')?.value) || 10;  // %
+  const air_changes = parseFloat(document.getElementById('i_ocu_air_changes')?.value) || 10;
+
+  // EQT — volume = hourly flow × retention time
+  const eqt_rt  = v('i_eqt_rt') || 8;
+  const eqt_vol_req = q_hr * eqt_rt;
+  const eqt_vol = eqt_vol_req;
+  setComp('i_eqt_vol_display', eqt_vol_req > 0 ? eqt_vol_req.toFixed(2) : '—');
+
+  const eqt_air_hr  = eqt_vol * eqt_air_rate;
+
+  // Diffuser selection for EQT
+  const diffSelEl  = document.getElementById('i_eqt_diff_type');
+  const diffSelVal = diffSelEl ? diffSelEl.value : '';
+  const diffInfo   = DIFFUSER_RATES[diffSelVal] || { rate: 48, label: '—', color: '#6b7280' };
+  const eqt_diff_rate_sel = diffInfo.rate;
+  const eqt_diff_n  = eqt_air_hr / eqt_diff_rate_sel;
+  const eqt_diff_prov = Math.ceil(eqt_diff_n);
+
+  // Update sidebar computed diffuser fields
+  setComp('c_eqt_air_hr',   eqt_air_hr > 0  ? eqt_air_hr.toFixed(2)   : '—');
+  setComp('c_eqt_diff_rate', diffSelVal ? eqt_diff_rate_sel : '—');
+  setComp('c_eqt_diff_n',   eqt_diff_n > 0  ? eqt_diff_n.toFixed(2)   : '—');
+  setComp('c_eqt_diff_prov', eqt_diff_prov > 0 ? eqt_diff_prov : '—');
+
+  // Update EQT diffuser summary box
+  setComp('ds_air_req',   eqt_air_hr > 0 ? eqt_air_hr.toFixed(1) : '—');
+  setComp('ds_diff_type', diffInfo.label);
+  setComp('ds_rate',      diffSelVal ? eqt_diff_rate_sel : '—');
+  setComp('ds_diff_calc', eqt_diff_n > 0 ? eqt_diff_n.toFixed(1) : '—');
+  setComp('ds_diff_prov', eqt_diff_prov > 0 ? eqt_diff_prov : '—');
+  const badgeEl = document.getElementById('eqt_diff_badge');
+  if(badgeEl){
+    badgeEl.textContent = diffSelVal ? diffInfo.label : 'Select a type →';
+    badgeEl.style.background = diffSelVal ? (diffSelVal.startsWith('fine') ? '#ccfbf1' : '#dbeafe') : '#dbeafe';
+    badgeEl.style.color = diffInfo.color;
+  }
+
+  // EQT Pump configuration
+  const eqt_duty      = parseInt(document.getElementById('i_eqt_duty')?.value)    || 2;
+  const eqt_standby   = parseInt(document.getElementById('i_eqt_standby')?.value) || 1;
+  const eqt_pump_head = parseFloat(document.getElementById('i_eqt_pump_head')?.value) || 10;
+  const eqt_pump_flow = q_hr; // each pump sized for full stream flow
+
+  setComp('c_eqt_pumps_total', eqt_duty + eqt_standby);
+  setComp('c_eqt_pump_flow',   fmt(eqt_pump_flow, 2));
+
+  makeRows([
+    ['Total Average Hourly Flow', fmt(q_hr,2), 'm³/hr'],
+    ['Retention Time (design)', eqt_rt, 'hr'],
+    ['EQT Volume = Flow × RT', fmt(eqt_vol_req,2), 'm³', true],
+    ['Air for agitation', eqt_air_rate, 'm³/m³/hr'],
+    ['Air Required per Hour', fmt(eqt_air_hr,2), 'm³/hr'],
+    ['Diffuser Type Selected', diffInfo.label || '—', ''],
+    ['Air Flow Rate per Diffuser', eqt_diff_rate_sel, 'm³/hr'],
+    ['No. of Diffusers Calc.', fmt(eqt_diff_n,2), 'nos'],
+    ['No. of Diffusers Provided', eqt_diff_prov, 'nos', true],
+    ['Raw Sewage Pump Flow/Stream', fmt(q_hr,2), 'm³/hr'],
+    ['Raw Sewage Pump Head', eqt_pump_head, 'mwc'],
+    ['No. of Duty Pumps', eqt_duty, 'nos'],
+    ['No. of Standby Pumps', eqt_standby, 'nos'],
+    ['Total Pumps', eqt_duty + eqt_standby, 'nos', true],
+  ], 'eqtTable');
+
+  // Anoxic
+  const anox_vol_req = q_hr * anox_rt;
+  const anox_l_min   = anox_vol_req / (anox_w * anox_d);
+
+  // Populate length dropdown with sensible options ≥ min length
+  const lProvSel = document.getElementById('i_anox_l_prov');
+  if(lProvSel && anox_l_min > 0){
+    const currentVal = parseFloat(lProvSel.value) || 0;
+    // Generate options: round up to next 0.5 m increment, then offer several steps above
+    const base = Math.ceil(anox_l_min * 2) / 2;  // round up to nearest 0.5
+    const opts = [];
+    for(let i = 0; i < 8; i++){
+      const l = parseFloat((base + i * 0.5).toFixed(1));
+      opts.push(l);
+    }
+    // Rebuild options preserving current selection if still valid
+    const prevVal = parseFloat(lProvSel.value);
+    lProvSel.innerHTML = `<option value="">— select —</option>`;
+    opts.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l;
+      opt.textContent = `${l.toFixed(1)} m  (HRT ${((l * anox_w * anox_d) / q_hr).toFixed(2)} hr)`;
+      if(Math.abs(l - prevVal) < 0.01) opt.selected = true;
+      lProvSel.appendChild(opt);
+    });
+    // Auto-select first valid option if nothing chosen yet
+    if(!lProvSel.value) { lProvSel.value = opts[0]; updateInputState(lProvSel); }
+  }
+
+  const anox_l_prov  = parseFloat(lProvSel?.value) || Math.ceil(anox_l_min * 2) / 2;
+  const anox_rt_act  = (anox_l_prov * anox_w * anox_d) / q_hr;
+
+  setComp('c_anox_vol',   fmt(anox_vol_req, 2));
+  setComp('c_anox_l_min', fmt(anox_l_min,   2));
+  setComp('c_anox_hrt',   fmt(anox_rt_act,  2));
+  setComp('c_anox_dim',   `${anox_l_prov}×${anox_w}×${anox_h}`);
+
+  makeRows([
+    ['Average Hourly Flow/Stream', fmt(q_hr,2), 'm³/hr'],
+    ['Retention Time (min)', anox_rt, 'hr'],
+    ['Volume Required', fmt(anox_vol_req,2), 'm³'],
+    ['Width', anox_w, 'm'],
+    ['Effective Liquid Depth', anox_d, 'm'],
+    ['Min. Length Required', fmt(anox_l_min,2), 'm'],
+    ['Length Provided', fmt(anox_l_prov,1), 'm', true],
+    ['Actual HRT', fmt(anox_rt_act,2), 'hr'],
+    ['Dimension (L×W×H)', `${anox_l_prov.toFixed(1)} × ${anox_w} × ${anox_h}`, 'm', true],
+  ], 'anoxicTable');
+
+  // ── AERATION TANK ──
+  // F/M ratio — editable by user, default 0.16
+  const fm_aer = parseFloat(document.getElementById('i_fm_ratio')?.value) || 0.16;
+
+  // BOD reduction in EQT (10% of inlet)
+  const bod_eqt_red = bod_in * 0.10;
+  // BOD removed by aeration = inlet − outlet target − EQT reduction
+  const bod_aer     = bod_in - bod_out - bod_eqt_red;
+
+  // NH3-N reduction in EQT (10% of inlet)
+  const nh3_eqt_red = nh3_in * 0.10;
+  // NH3-N removed by aeration = inlet − outlet target − EQT reduction
+  const nh3_aer     = nh3_in - nh3_out - nh3_eqt_red;
+
+  // Daily loads = concentration removed × daily flow ÷ 1000
+  const bod_load    = (bod_aer  * adf_stream) / 1000;   // kg/day
+  const nh3_load    = (nh3_aer  * adf_stream) / 1000;   // kg/day
+
+  // Volume = BOD_load / MLSS / F/M × 1000
+  const aer_vol_req = (bod_load / mlss / fm_aer) * 1000;
+
+  // HRT = Total Volume / Flow per stream (m³/hr)
+  const aer_hrt     = q_hr > 0 ? aer_vol_req / q_hr : 0;
+
+  // Geometry
+  const aer_l_min_calc = (aer_w * aer_d) > 0 ? aer_vol_req / (aer_w * aer_d) : 0;
+  // Min length: use user-entered value if provided, else use calculated
+  const aer_l_min_inp  = parseFloat(document.getElementById('i_aer_l_min')?.value) || 0;
+  const aer_l_min      = aer_l_min_inp > 0 ? aer_l_min_inp : aer_l_min_calc;
+
+  // Update sidebar — set placeholder to calculated value so user sees the auto result
+  const lMinEl = document.getElementById('i_aer_l_min');
+  if(lMinEl && aer_l_min_calc > 0) lMinEl.placeholder = aer_l_min_calc.toFixed(2);
+
+  // Update sidebar computed fields
+  setComp('c_aer_vol',  aer_vol_req > 0 ? fmt(aer_vol_req, 2) : '—');
+  setComp('c_aer_hrt',  aer_hrt     > 0 ? fmt(aer_hrt,     2) : '—');
+
+  // Populate length dropdown from min length (user-overridable)
+  const aerLSel = document.getElementById('i_aer_l_prov');
+  if(aerLSel && aer_l_min > 0){
+    const prevAerL = parseFloat(aerLSel.value);
+    const base = Math.ceil(aer_l_min * 2) / 2;
+    const aopts = [];
+    for(let i = 0; i < 10; i++) aopts.push(parseFloat((base + i * 0.5).toFixed(1)));
+    aerLSel.innerHTML = `<option value="">— select —</option>`;
+    aopts.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l;
+      opt.textContent = `${l.toFixed(1)} m  (HRT ${((l * aer_w * aer_d) / q_hr).toFixed(2)} hr)`;
+      if(Math.abs(l - prevAerL) < 0.01) opt.selected = true;
+      aerLSel.appendChild(opt);
+    });
+    if(!aerLSel.value){ aerLSel.value = aopts[0]; updateInputState(aerLSel); }
+  }
+
+  const aer_l_prov  = parseFloat(aerLSel?.value) || (aer_l_min > 0 ? Math.ceil(aer_l_min * 2) / 2 : 0);
+  const aer_hrt_act = q_hr > 0 ? (aer_l_prov * aer_w * aer_d) / q_hr : 0;
+
+  setComp('c_aer_hrt_act', aer_hrt_act > 0 ? fmt(aer_hrt_act, 2) : '—');
+  setComp('c_aer_dim',     aer_l_prov  > 0 ? `${aer_l_prov.toFixed(1)}×${aer_w}×${aer_h}` : '—');
+
+  makeRows([
+    ['Flow per Stream', fmt(q_hr,2), 'm³/hr'],
+    ['BOD at Inlet', bod_in, 'mg/L'],
+    ['BOD at Outlet (target)', bod_out, 'mg/L'],
+    ['BOD Reduction in EQT (10%)', fmt(bod_eqt_red,2), 'mg/L'],
+    ['BOD Removed by Aeration (in−out−EQT)', fmt(bod_aer,2), 'mg/L'],
+    ['Inlet NH₃-N', nh3_in, 'mg/L'],
+    ['Outlet NH₃-N (target)', nh3_out, 'mg/L'],
+    ['NH₃-N Reduction in EQT (10%)', fmt(nh3_eqt_red,2), 'mg/L'],
+    ['NH₃-N Removed by Aeration (in−out−EQT)', fmt(nh3_aer,2), 'mg/L'],
+    ['BOD Load', fmt(bod_load,2), 'kg/day'],
+    ['NH₃-N Load', fmt(nh3_load,2), 'kg/day'],
+    ['MLSS', mlss, 'mg/L'],
+    ['F/M Ratio (governing)', fm_aer, 'd⁻¹'],
+    ['Tank Volume Required', fmt(aer_vol_req,2), 'm³', true],
+    ['HRT = Volume / Flow', fmt(aer_hrt,2), 'hr', true],
+    ['Width', aer_w, 'm'],
+    ['Effective Liquid Depth', aer_d, 'm'],
+    ['Min. Length (calc)', fmt(aer_l_min_calc,4), 'm'],
+    ['Min. Length (used)', fmt(aer_l_min,4), 'm', aer_l_min_inp > 0],
+    ['Length Provided', fmt(aer_l_prov,1), 'm', true],
+    ['Actual HRT', fmt(aer_hrt_act,2), 'hr'],
+    ['Dimension (L×W×H)', `${aer_l_prov.toFixed(1)} × ${aer_w} × ${aer_h}`, 'm', true],
+  ], 'aerationTable');
+
+  // ── AERATION BLOWER (matches reference sheet exactly) ──
+  // Row 25–27: O2 requirements
+  const o2_bod    = bod_load * 1.5;                          // kg/day  (1.5 mg O2/mg BOD)
+  const o2_nh3    = nh3_load * 4.0;                         // kg/day  (4.0 mg O2/mg NH3-N)
+  const o2_total  = o2_bod + o2_nh3;                        // kg/day  total
+
+  // Row 30: Theoretical O2 required as air mass = O2_total / 0.23 (O2 is 23% of air by weight)
+  const air_theor_kg = o2_total / 0.23;                     // kg/day air (mass)
+
+  // Row 34: Actual air volume = (air_mass / density) / (alpha × beta × OTE)
+  // air_theor_m3 = air_theor_kg / 1.2  → convert mass to volume
+  // then divide by transfer efficiency correction
+  const air_theor_m3 = air_theor_kg / 1.2;                  // m³/day theoretical volume
+  const air_eff      = air_theor_m3 / (alpha * beta * ote); // m³/day actual required
+
+  // Row 35: Add 10% safety margin
+  const air_margin   = air_eff * 1.10;                      // m³/day
+
+  // Row 36: Per hour for aeration tank
+  const air_hr       = air_margin / 24;                     // m³/hr
+
+  // Diffuser count (using selected diffuser rate from dropdown)
+  const diff_n       = fine_diff_rate > 0 ? air_hr / fine_diff_rate : 0;
+  const diff_auto    = Math.max(40, Math.ceil(diff_n / 5) * 5);
+  // Use user-entered value if provided, else auto
+  const diffProvInp  = parseFloat(document.getElementById('i_aer_diff_prov')?.value) || 0;
+  const diff_prov    = diffProvInp > 0 ? diffProvInp : diff_auto;
+  // Update placeholder so user sees auto value
+  const diffProvEl   = document.getElementById('i_aer_diff_prov');
+  if(diffProvEl) diffProvEl.placeholder = diff_auto;
+
+  // Update aeration tank sidebar computed fields
+  setComp('c_aer_diff_rate', aerDiffInfo.rate);
+  setComp('c_aer_air_hr',   air_hr > 0 ? air_hr.toFixed(2) : '—');
+  setComp('c_aer_diff_n',   diff_n  > 0 ? diff_n.toFixed(2)  : '—');
+
+  // Highlight selected diffuser rows in guideline table + update "Selected For" column
+  Object.keys(DIFFUSER_RATES).forEach(k => {
+    const row  = document.getElementById('diff-'+k);
+    const selCell = document.getElementById('sel-'+k);
+    if(row){
+      row.classList.remove('hl-row','hl-row-aer');
+      if(k === diffSelVal && k === aerDiffSelVal){
+        row.classList.add('hl-row');
+        row.classList.add('hl-row-aer');
+        if(selCell){ selCell.textContent = 'EQT + Aeration'; selCell.style.color='#166534'; }
+      } else if(k === diffSelVal){
+        row.classList.add('hl-row');
+        if(selCell){ selCell.textContent = 'EQ Tank'; selCell.style.color='#1e40af'; }
+      } else if(k === aerDiffSelVal){
+        row.classList.add('hl-row-aer');
+        if(selCell){ selCell.textContent = 'Aeration Tank'; selCell.style.color='#15803d'; }
+      } else {
+        if(selCell){ selCell.textContent = '—'; selCell.style.color='var(--muted)'; }
+      }
+    }
+  });
+
+  // Update Aeration diffuser summary card
+  setComp('ads_air_req',   air_hr > 0 ? air_hr.toFixed(1) : '—');
+  setComp('ads_diff_type', aerDiffInfo.label);
+  setComp('ads_rate',      aerDiffInfo.rate);
+  setComp('ads_diff_calc', diff_n > 0 ? diff_n.toFixed(1) : '—');
+  setComp('ads_diff_prov', diff_prov > 0 ? diff_prov : '—');
+  const aerBadgeEl = document.getElementById('aer_diff_badge');
+  if(aerBadgeEl){
+    aerBadgeEl.textContent = aerDiffSelVal ? aerDiffInfo.label : 'Select a type →';
+    aerBadgeEl.style.background = aerDiffSelVal ? (aerDiffSelVal.startsWith('fine') ? '#bbf7d0' : '#dbeafe') : '#bbf7d0';
+    aerBadgeEl.style.color      = aerDiffInfo.color;
+  }
+
+  // (blower table rendered after MBR section so mbr_air_hr is available)
+
+  // MBR — read selected membrane from DB
+  const memKey     = document.getElementById('i_mem_model')?.value || 'koch_330';
+  const memData    = MEMBRANE_DB[memKey] || MEMBRANE_DB['koch_330'];
+  const mod_area   = memData.area;  // area per module/cassette from DB
+
+  // Update sidebar computed membrane info fields
+  const moduleAreaEl = document.getElementById('c_mem_module_area');
+  const typeEl       = document.getElementById('c_mem_type');
+  if(moduleAreaEl) moduleAreaEl.textContent = mod_area;
+  if(typeEl) typeEl.textContent = `${memData.type} · ${memData.pore} · ${memData.material}`;
+
+  const flux = v('i_flux') || 18;
+
+  const mbr_flow_hr   = q_hr / 2;
+  const mem_area_req  = (adf_stream * 1000) / (flux * 24);
+  const modules_req   = mod_area > 0 ? mem_area_req / mod_area : 0;
+  const modules_req_ceil = Math.ceil(modules_req);
+
+  // Modules Provided — user-editable; defaults to ceil of required
+  const modProvInp   = parseFloat(document.getElementById('i_modules_prov')?.value) || 0;
+  const modules_prov = modProvInp > 0 ? modProvInp : modules_req_ceil;
+  // Update placeholder so user sees auto value
+  const modProvEl = document.getElementById('i_modules_prov');
+  if(modProvEl) modProvEl.placeholder = modules_req_ceil;
+
+  // Area provided = modules provided × area per module
+  const mem_area_prov = modules_prov * mod_area;
+
+  const recirc_flow   = q_hr * recirc;
+
+  // Actual Flux = (daily flow m³/day × 1000 L/m³) / (area provided m² × 24 hr/day)
+  const actual_flux   = mem_area_prov > 0 ? (adf_stream * 1000) / (mem_area_prov * 24) : 0;
+
+  // MBR Air = membrane area provided × air scouring rate (0.2434 Nm³/m²/hr)
+  mbr_air_hr = mem_area_prov * 0.2434;
+
+  // Update MBR sidebar computed fields
+  setComp('c_mem_area_req',  mem_area_req  > 0 ? mem_area_req.toFixed(1)   : '—');
+  setComp('c_modules_req',   modules_req   > 0 ? modules_req.toFixed(2)    : '—');
+  setComp('c_mem_area_prov', mem_area_prov > 0 ? mem_area_prov.toFixed(1)  : '—');
+  setComp('c_actual_flux',   actual_flux   > 0 ? actual_flux.toFixed(2)    : '—');
+  setComp('c_mbr_air_calc',  mbr_air_hr    > 0 ? mbr_air_hr.toFixed(2)    : '—');
+
+  // Push MBR air to blower sidebar display
+  setComp('c_mbr_air_blower', mbr_air_hr > 0 ? mbr_air_hr.toFixed(2) : '—');
+
+  // ── BLOWER TABLE (rendered here so mbr_air_hr from MBR section is available) ──
+  makeRows([
+    ['BOD Load removed by system', fmt(bod_load,2), 'kg/day'],
+    ['NH₃-N Load removed by system', fmt(nh3_load,2), 'kg/day'],
+    ['O₂ Requirement for BOD (×1.5)', fmt(o2_bod,2), 'kg/day'],
+    ['O₂ Requirement for NH₃-N (×4.0)', fmt(o2_nh3,2), 'kg/day'],
+    ['Total O₂ Requirement', fmt(o2_total,2), 'kg/day', true],
+    ['Density of Air', '1.2', 'kg/m³'],
+    ['O₂ in Air by Weight', '23%', '—'],
+    ['Theoretical Air Required (mass)', fmt(air_theor_kg,2), 'kg/day'],
+    ['Theoretical Air (volume)', fmt(air_theor_m3,2), 'm³/day'],
+    ['Alpha Factor', alpha, '—'],
+    ['Beta Factor', beta, '—'],
+    ['OTE (diffuser @ 18%)', ote, '—'],
+    ['Actual Air Required', fmt(air_eff,2), 'm³/day', true],
+    ['With 10% Safety Margin', fmt(air_margin,2), 'm³/day'],
+    ['Air for Aeration Tank / hr', fmt(air_hr,2), 'm³/hr', true],
+    ['Air for MBR (area × 0.2434 Nm³/m²/hr)', fmt(mbr_air_hr,2), 'Nm³/hr', true],
+    ['— Fine Bubble Diffusers —', '', ''],
+    ['Aeration Tank Air Flow', fmt(air_hr,2), 'm³/hr'],
+    ['Diffuser Type Selected', aerDiffInfo.label, ''],
+    ['Air Flow Rate per Diffuser', aerDiffInfo.rate, 'm³/hr'],
+    ['No. of Diffusers Calculated', fmt(diff_n,2), 'nos'],
+    ['No. of Diffusers Provided', diff_prov, 'nos', true],
+    ['MBR Aeration', 'Inbuilt — no diffusers', ''],
+  ], 'blowerTable');
+
+  makeRows([
+    ['MBR Average Flow/Stream', fmt(adf_stream,1), 'm³/day'],
+    ['Flow Rate', fmt(mbr_flow_hr,2), 'm³/hr'],
+    ['Design Flux Rate', flux, 'LMH'],
+    ['Membrane Area Required', fmt(mem_area_req,1), 'm²', true],
+    [`${memData.make} ${memData.model}`, `${memData.type} · ${memData.pore}`, ''],
+    [`Area per Module (${memData.model})`, mod_area, 'm²'],
+    ['Modules Required (calc)', fmt(modules_req,2), 'no.'],
+    ['Modules Provided ✎', modules_prov, 'no.', true],
+    ['Membrane Area Provided (modules × area/module)', fmt(mem_area_prov,1), 'm²', true],
+    ['Actual Flux (flow ÷ area prov. ÷ 24)', fmt(actual_flux,2), 'LMH', actual_flux > 0],
+    ['Air Scouring Rate', '0.2434', 'Nm³/m²/hr'],
+    ['MBR Air Required (area prov. × 0.2434)', fmt(mbr_air_hr,2), 'Nm³/hr', true],
+    ['Recirculation Ratio', recirc, '×'],
+    ['Sludge Recirc. Pump Flow', fmt(recirc_flow,1), 'm³/hr', true],
+    ['Recirc. Pump Head', 6, 'mwc'],
+  ], 'mbrTable');
+
+  // Sludge
+  const ss_gen = 150;
+  const sludge_1pct = ss_gen / 10;
+  const sludge_2pct = sludge_1pct / 2;
+  const sludge_pump = 1.25;
+  const sludge_10min = sludge_pump * 6;
+  const sludge_hr_rate = sludge_1pct / 24;  // m³/hr for dewatering capacity matching
+  const pipe_vel = 0.6;
+  const pipe_d_calc = Math.sqrt((sludge_10min/3600) / (Math.PI/4 * pipe_vel)) * 1000;
+
+  // Push sludge values to sidebar dewatering section
+  setComp('c_ss_gen',     ss_gen);
+  setComp('c_sludge_1pct', fmt(sludge_1pct,1));
+  setComp('c_sludge_hr',   fmt(sludge_hr_rate,3));
+
+  makeRows([
+    ['Average Flow per Day', fmt(adf,1), 'm³/day'],
+    ['SS Generated per Day', ss_gen, 'kg/day'],
+    ['Sludge @ 1% Consistency', fmt(sludge_1pct,1), 'm³/day'],
+    ['Sludge Withdrawal Interval (1%)', 12, 'times/day'],
+    ['Sludge Transfer Rate', fmt(sludge_pump,3), 'm³/hr'],
+    ['Sludge Transfer in 10 min', fmt(sludge_10min,2), 'm³/hr'],
+    ['Sludge @ 2% Consistency', fmt(sludge_2pct,1), 'm³/day'],
+    ['Sludge Withdrawal Interval (2%)', 6, 'times/day'],
+    ['Sludge Pump Head', 8, 'mwc'],
+    ['Pipe Velocity', pipe_vel, 'm/s'],
+    ['Pipe Diameter Calculated', fmt(pipe_d_calc,1), 'mm'],
+    ['Pipe Diameter Provided', 80, 'mm', true],
+  ], 'sludgeTable');
+
+  // OCU
+  const ocu_fb_eqt  = parseFloat(document.getElementById('i_ocu_fb_eqt')?.value)  || 0.5;
+  const ocu_fb_anox = parseFloat(document.getElementById('i_ocu_fb_anox')?.value) || 0.5;
+  const ocu_fb_sht  = parseFloat(document.getElementById('i_ocu_fb_sht')?.value)  || 1.0;
+  const eqt_ocu  = eqt_vol * ocu_fb_eqt * air_changes;
+  const anox_ocu = (anox_l_prov * anox_w * ocu_fb_anox * air_changes) * streams;
+  const sht_vol  = 63;
+  const sht_ocu  = sht_vol * (ocu_fb_sht / 3.5) * air_changes;
+  const centrifuge_ocu = 300;
+  const ocu_total  = eqt_ocu + anox_ocu + sht_ocu + centrifuge_ocu;
+  const ocu_margin = ocu_total * 1.10;
+  const ocu_prov   = 1700;
+
+  makeRows([
+    ['EQT Freeboard used', ocu_fb_eqt, 'm'],
+    ['Anoxic Freeboard used', ocu_fb_anox, 'm'],
+    ['SHT Freeboard used', ocu_fb_sht, 'm'],
+    ['Air Changes (ACH)', air_changes, 'times/hr'],
+    ['OCU for EQ Tank', fmt(eqt_ocu,1), 'm³/hr'],
+    ['OCU for Anoxic Tanks', fmt(anox_ocu,1), 'm³/hr'],
+    ['OCU for Sludge Holding Tank', fmt(sht_ocu,1), 'm³/hr'],
+    ['OCU for Centrifuge Area', fmt(centrifuge_ocu,1), 'm³/hr'],
+    ['Total OCU Required', fmt(ocu_total,1), 'm³/hr', true],
+    ['With 10% Margin', fmt(ocu_margin,1), 'm³/hr'],
+    ['OCU Provided', ocu_prov, 'm³/hr', true],
+  ], 'ocuTable');
+
+  // Dosing
+  const q_streams = q_hr * streams;
+  const dose_100  = (dose_ppm * q_streams) / 1000;
+  const dose_pump_kg = dose_100 / (dose_conc / 100);
+  const dose_day  = dose_100 * 24;
+  const tank_req  = dose_day;
+  const tank_prov = 100;
+
+  makeRows([
+    ['Average Hourly Flow (all streams)', fmt(q_streams,2), 'm³/hr'],
+    ['Dose Rate', dose_ppm, 'ppm'],
+    ['Chemical @ 100% Conc.', fmt(dose_100,3), 'kg/hr'],
+    [`Chemical @ ${dose_conc}% Conc.`, fmt(dose_pump_kg,3), 'kg/hr'],
+    ['Dosing Pump Capacity', fmt(dose_pump_kg*1000,2), 'LPH', true],
+    ['Chemical per Day (100%)', fmt(dose_day,1), 'kg/day'],
+    ['Dosing Tank Required', fmt(tank_req,1), 'L'],
+    ['Dosing Tank Provided', tank_prov, 'L', true],
+  ], 'dosingTable');
+
+  // Pump summary
+  makeRows([
+    ['EQ Tank — Raw Sewage Pumps', `${eqt_duty} Duty + ${eqt_standby} Standby  (Total: ${eqt_duty+eqt_standby})`, '', true],
+    ['Raw Sewage Pump Flow (each)', fmt(eqt_pump_flow,2), 'm³/hr'],
+    ['Raw Sewage Pump Head', eqt_pump_head, 'mwc'],
+    ['Sludge Recirculation Pump', fmt(recirc_flow,1), 'm³/hr @ 6 mwc'],
+    ['Sludge Transfer Pump', fmt(sludge_10min,2), 'm³/hr @ 8 mwc'],
+    ['Dosing Pump', fmt(dose_pump_kg*1000,2), 'LPH'],
+    ['Permeate Pump (MBR)', fmt(mbr_flow_hr,2), 'm³/hr'],
+  ], 'pumpTable');
+
+  // EQT Pump config card update
+  const pumpDiag = document.getElementById('pumpDiagram');
+  if(pumpDiag){
+    let html = '';
+    for(let i=0;i<eqt_duty;i++){
+      html += `<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="width:52px;height:52px;border-radius:50%;background:#dbeafe;border:2px solid #3b82f6;display:flex;align-items:center;justify-content:center;font-size:18px">⚙</div>
+        <div style="font-size:9px;font-weight:600;color:#1e40af;text-align:center">DUTY<br>${fmt(eqt_pump_flow,1)} m³/hr</div>
+      </div>`;
+    }
+    for(let i=0;i<eqt_standby;i++){
+      html += `<div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="width:52px;height:52px;border-radius:50%;background:#fef3c7;border:2px dashed #f59e0b;display:flex;align-items:center;justify-content:center;font-size:18px;opacity:.75">⚙</div>
+        <div style="font-size:9px;font-weight:600;color:#b45309;text-align:center">STANDBY<br>${fmt(eqt_pump_flow,1)} m³/hr</div>
+      </div>`;
+    }
+    pumpDiag.innerHTML = html;
+  }
+  setComp('pk_flow',    fmt(eqt_pump_flow,2));
+  setComp('pk_head',    eqt_pump_head);
+  setComp('pk_duty',    eqt_duty);
+  setComp('pk_standby', eqt_standby);
+  setComp('pk_total',   eqt_duty + eqt_standby);
+  setComp('eqt_pump_config_label', `${eqt_duty}D + ${eqt_standby}S — ${eqt_pump_flow.toFixed(1)} m³/hr @ ${eqt_pump_head} mwc`);
+
+  // KPIs
+  document.getElementById('k_adf').textContent = adf;
+  document.getElementById('k_qhr').textContent = fmt(q_hr,2);
+  document.getElementById('k_aer_vol').textContent = fmt(aer_vol_req,1);
+  document.getElementById('k_o2').textContent = fmt(o2_total,1);
+  document.getElementById('k_mem').textContent = fmt(mem_area_prov,1);
+  document.getElementById('k_ocu').textContent = fmt(ocu_total,1);
+  document.getElementById('report-subtitle').textContent =
+    `${adf} m³/day · ${streams} Stream${streams>1?'s':''} · Updated ${new Date().toLocaleTimeString()}`;
+
+  // Water quality bars
+  renderQuality();
+}
+
+function renderQuality(){
+  const raw = [
+    ['BOD₅', v('i_bod_in'), 500, 'mg/L', '#3b82f6'],
+    ['COD', v('i_cod_in'), 800, 'mg/L', '#8b5cf6'],
+    ['TSS', v('i_tss_in'), 600, 'mg/L', '#f59e0b'],
+    ['NH₃-N', v('i_nh3_in'), 80, 'mg/L', '#ef4444'],
+    ['TKN', v('i_tkn_in'), 100, 'mg/L', '#06b6d4'],
+    ['Phosphorous', v('i_phos_in'), 20, 'mg/L', '#10b981'],
+  ];
+  const treated = [
+    ['BOD₅', v('i_bod_out'), 30, 'mg/L', '#3b82f6'],
+    ['COD', 50, 100, 'mg/L', '#8b5cf6'],
+    ['TSS', v('i_tss_out'), 30, 'mg/L', '#f59e0b'],
+    ['NH₃-N', v('i_nh3_out'), 10, 'mg/L', '#ef4444'],
+    ['TN', 5, 10, 'mg/L', '#06b6d4'],
+    ['Turbidity', 5, 10, 'NTU', '#10b981'],
+    ['DO', 1, 5, 'mg/L', '#f97316'],
+    ['Residual Cl₂', 0.5, 2, 'mg/L', '#64748b'],
+  ];
+
+  function renderList(data, elId){
+    document.getElementById(elId).innerHTML = data.map(([n,v,max,u,col])=>`
+      <div class="param-row">
+        <div class="param-name">${n}</div>
+        <div class="param-bar-wrap"><div class="param-bar" style="width:${Math.min(100,v/max*100)}%;background:${col}"></div></div>
+        <div class="param-value">${v}</div>
+        <div class="param-unit">${u}</div>
+      </div>`).join('');
+  }
+  renderList(raw, 'rawQuality');
+  renderList(treated, 'treatedQuality');
+}
+
+function exportReport(){
+  const rows = [
+    ['RODESIGNLIBRARY — MBR DESIGN REPORT'],
+    ['Generated:', new Date().toLocaleString()],
+    [],
+    ['FLOW DATA'],
+    ['Average Daily Flow (m³/day)', v('i_adf')],
+    ['No. of Streams', v('i_streams')],
+    ['Hourly Flow per Stream (m³/hr)', (v('i_adf')/v('i_streams')/24).toFixed(2)],
+    [],
+    ['KPI SUMMARY'],
+    ['Aeration Tank Volume (m³)', document.getElementById('k_aer_vol').textContent],
+    ['O2 Required (kg/day)', document.getElementById('k_o2').textContent],
+    ['Membrane Area Required (m²)', document.getElementById('k_mem').textContent],
+    ['Total OCU Required (m³/hr)', document.getElementById('k_ocu').textContent],
+  ];
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'MBR_Design_Report.csv';
+  a.click();
+}
+
+// ══════════════════════════════════════════════════════════
+// EQUIPMENT DATABASE
+// ══════════════════════════════════════════════════════════
+const DB_DATA = [
+  {category:'Blowers',make:'Mapro-Somicon',model:'CL 12/21 D KW 2.2',capacity:'37.5 Nm³/hr @ 400 mbar',type:'Side Channel',kw:2.2,specs:'Motor ATEX',curr:'EUR',exworks:1308,aed:7220},
+  {category:'Blowers',make:'Mapro-Somicon',model:'CL 14/21 D KW 2.2',capacity:'55 Nm³/hr @ 350 mbar',type:'Side Channel',kw:2.2,specs:'Motor ATEX',curr:'EUR',exworks:1330,aed:7342},
+  {category:'Blowers',make:'Mapro-Somicon',model:'CL 17/21 D 4 KW',capacity:'75 m³/hr @ 450 mbar',type:'Side Channel',kw:4,specs:'Without Acoustic Enclosure',curr:'AED',exworks:null,aed:8618},
+  {category:'Blowers',make:'Mapro-Somicon',model:'CL 17/21 D KW 3',capacity:'84 Nm³/hr @ 400 mbar',type:'Side Channel',kw:3,specs:'Motor ATEX',curr:'EUR',exworks:1535,aed:8473},
+  {category:'Blowers',make:'Mapro-Somicon',model:'CL 30/21 D KW 5.5',capacity:'162 Nm³/hr @ 400 mbar',type:'Side Channel',kw:5.5,specs:'Motor ATEX',curr:'EUR',exworks:2085,aed:11509},
+  {category:'Blowers',make:'Mapro-Somicon',model:'CL 49/21 D KW 9.2',capacity:'320 Nm³/hr @ 400 mbar',type:'Side Channel',kw:9.2,specs:'Motor ATEX',curr:'EUR',exworks:2645,aed:14600},
+  {category:'Blowers',make:'Mapro-Somicon',model:'SEM 2 TR KW 5.5',capacity:'138 m³/hr @ 450 mbar',type:'Positive Displacement',kw:5.5,specs:'With Acoustic Enclosure',curr:'EUR',exworks:3574,aed:19728},
+  {category:'Blowers',make:'Mapro-Somicon',model:'SEM 2 TR KW 5.5',capacity:'138 m³/hr @ 450 mbar',type:'Positive Displacement',kw:5.5,specs:'Without Acoustic Enclosure',curr:'EUR',exworks:2426,aed:13392},
+  {category:'Blowers',make:'Mapro-Somicon',model:'SEM 4 TR KW 7.5',capacity:'229 m³/hr @ 500 mbar',type:'Positive Displacement',kw:7.5,specs:'With Acoustic Enclosure',curr:'EUR',exworks:3746,aed:20678},
+  {category:'Blowers',make:'Mapro-Somicon',model:'SEM 11 TR KW 18.5',capacity:'631 m³/hr @ 500 mbar',type:'Positive Displacement',kw:18.5,specs:'With Acoustic Enclosure',curr:'EUR',exworks:5372,aed:29653},
+  {category:'Blowers',make:'Mapro-Somicon',model:'SEM 11 TR KW 22',capacity:'760 m³/hr @ 500 mbar',type:'Positive Displacement',kw:22,specs:'With Acoustic Enclosure',curr:'EUR',exworks:5672,aed:31309},
+  {category:'Blowers',make:'Mapro-Somicon',model:'SEM15TR',capacity:'2100 Nm³/hr @ 450 mbar',type:'Positive Displacement',kw:55,specs:'',curr:'EUR',exworks:10486,aed:57883},
+  {category:'Blowers',make:'Mapro-Somicon',model:'SEM41-200TR',capacity:'3300 Nm³/hr @ 450 mbar',type:'Positive Displacement',kw:90,specs:'',curr:'EUR',exworks:14445,aed:79736},
+  {category:'Blowers',make:'Mapro-Somicon',model:'SEM55-200TR',capacity:'4400 Nm³/hr @ 450 mbar',type:'Positive Displacement',kw:110,specs:'',curr:'EUR',exworks:21430,aed:118294},
+  {category:'Blowers',make:'SEKO',model:'BL320002007',capacity:'20 m³/hr @ 250 mbar',type:'Side Channel',kw:0.7,specs:'Double impeller/Double stage',curr:'AED',exworks:null,aed:1545},
+  {category:'Blowers',make:'SEKO',model:'BL420002016',capacity:'75 m³/hr @ 275 mbar',type:'Side Channel',kw:1.6,specs:'',curr:'AED',exworks:null,aed:2212},
+  {category:'Blowers',make:'SEKO',model:'BL520002030',capacity:'85–110 m³/hr @ 400–350 mbar',type:'Side Channel',kw:3,specs:'',curr:'AED',exworks:null,aed:3096},
+  {category:'Blowers',make:'SEKO',model:'BL620002040',capacity:'200 m³/hr @ 400 mbar',type:'Side Channel',kw:4,specs:'',curr:'AED',exworks:null,aed:3967},
+  {category:'Blowers',make:'SEKO',model:'BL620002055',capacity:'170–220 m³/hr @ 475–350 mbar',type:'Side Channel',kw:5.5,specs:'',curr:'AED',exworks:null,aed:4971},
+  {category:'Blowers',make:'SEKO',model:'BL920002075',capacity:'360 m³/hr @ 350 mbar',type:'Side Channel',kw:7.5,specs:'',curr:'AED',exworks:null,aed:9436},
+  {category:'Blowers',make:'SEKO',model:'BL920002110',capacity:'315–360 m³/hr @ 475–350 mbar',type:'Side Channel',kw:11,specs:'',curr:'AED',exworks:null,aed:9598},
+  {category:'Blowers',make:'SEKO',model:'BL920002150',capacity:'360–270 m³/hr @ 350–600 mbar',type:'Side Channel',kw:15,specs:'',curr:'AED',exworks:null,aed:10370},
+  {category:'Blowers',make:'SEKO',model:'BL920020165',capacity:'860 m³/hr @ 350 mbar',type:'Side Channel',kw:16.5,specs:'Single stage',curr:'AED',exworks:null,aed:20176},
+  {category:'Blowers',make:'Dresser Root',model:'33 URAI',capacity:'138 Nm³/hr @ 450 mbar',type:'Root Blower',kw:5.5,specs:'',curr:'GBP',exworks:2700,aed:15525},
+  {category:'Blowers',make:'Dresser Root',model:'33 URAI',capacity:'160 Nm³/hr @ 450 mbar',type:'Root Blower',kw:5.5,specs:'',curr:'GBP',exworks:2700,aed:15525},
+  {category:'Blowers',make:'Dresser Root',model:'EA 65',capacity:'250 m³/hr @ 350 mbar',type:'Positive Displacement',kw:7.5,specs:'',curr:'USD',exworks:4928,aed:20855},
+  {category:'Blowers',make:'Dresser Root',model:'EA 80',capacity:'450 m³/hr @ 350 mbar',type:'Positive Displacement',kw:15,specs:'',curr:'USD',exworks:5584,aed:23631},
+  {category:'Blowers',make:'Dresser Root',model:'EA X2 150',capacity:'1100 m³/hr @ 450 mbar',type:'Positive Displacement',kw:37,specs:'',curr:'GBP',exworks:13300,aed:85652},
+  {category:'Blowers',make:'Dresser Root',model:'EA X2 250',capacity:'2100 m³/hr @ 450 mbar',type:'Positive Displacement',kw:55,specs:'',curr:'GBP',exworks:23300,aed:150052},
+  {category:'Blowers',make:'Dresser Root',model:'EA X2 300',capacity:'4400 m³/hr @ 450 mbar',type:'Positive Displacement',kw:132,specs:'',curr:'GBP',exworks:28200,aed:181608},
+  {category:'Blowers',make:'Aerzen',model:'GM 10S',capacity:'497 Nm³/hr @ 450 mbar',type:'PD Tri-lobe',kw:15,specs:'With Acoustic Enclosure',curr:'AED',exworks:null,aed:27330},
+  {category:'Blowers',make:'Aerzen',model:'GM 30L',capacity:'1750 m³/hr @ 400 mbar',type:'PD Tri-lobe',kw:37,specs:'',curr:'EUR',exworks:10819,aed:59721},
+  {category:'Blowers',make:'Robuschi',model:'EL 15/1P',capacity:'170 m³/hr @ 400 mbar',type:'Lobe Type',kw:4,specs:'With Acoustic Enclosure',curr:'AED',exworks:null,aed:15200},
+  {category:'Blowers',make:'Robuschi',model:'EL 15/1P',capacity:'240 m³/hr @ 350 mbar',type:'Lobe Type',kw:5.5,specs:'With Acoustic Enclosure',curr:'AED',exworks:null,aed:15750},
+  {category:'Blowers',make:'Atlas Copco',model:'BAH 30/60',capacity:'420 m³/hr @ 350 mbar',type:'Lobe Type',kw:7.5,specs:'Canopy and motor included',curr:'AED',exworks:null,aed:21000},
+  {category:'Blowers',make:'Continental',model:'K12 TD',capacity:'100 m³/hr @ 400 mbar',type:'Side Channel',kw:4,specs:'',curr:'EUR',exworks:1208,aed:6668},
+  {category:'Blowers',make:'Everest',model:'M42',capacity:'100 m³/hr @ 400 mbar',type:'Positive Displacement',kw:2.2,specs:'',curr:'USD',exworks:1229,aed:5201},
+  {category:'Blowers',make:'Everest',model:'M5075',capacity:'200 m³/hr @ 400 mbar',type:'Positive Displacement',kw:5.5,specs:'',curr:'USD',exworks:1993,aed:8434},
+  {category:'Blowers',make:'Everest',model:'M5125',capacity:'250 m³/hr @ 400 mbar',type:'Positive Displacement',kw:5.5,specs:'',curr:'USD',exworks:2132,aed:9023},
+  {category:'Blowers',make:'Everest',model:'615ET',capacity:'1350 m³/hr',type:'Positive Displacement',kw:22.5,specs:'',curr:'USD',exworks:4686,aed:19831},
+  {category:'Blowers',make:'Everest',model:'1020ET',capacity:'5000 m³/hr',type:'Positive Displacement',kw:75,specs:'',curr:'USD',exworks:13585,aed:57492},
+  {category:'Sewage Pumps',make:'ABS',model:'Piranha S12/2D',capacity:'5 m³/hr @ 15 m',type:'Submersible',kw:1.2,specs:'Grinder & Cutter',curr:'AED',exworks:null,aed:8720},
+  {category:'Sewage Pumps',make:'ABS',model:'Piranha S17/2D',capacity:'5 m³/hr @ 20 m',type:'Submersible',kw:1.7,specs:'Grinder & Cutter',curr:'AED',exworks:null,aed:8950},
+  {category:'Sewage Pumps',make:'ABS',model:'Piranha S21/2D',capacity:'10 m³/hr @ 20 m',type:'Submersible',kw:2.1,specs:'Grinder & Cutter',curr:'AED',exworks:null,aed:5795},
+  {category:'Sewage Pumps',make:'ABS',model:'AS 0530 D',capacity:'5 m³/hr @ 10 m',type:'Submersible',kw:1.7,specs:'Sub & Sewage',curr:'AED',exworks:null,aed:5030},
+  {category:'Sewage Pumps',make:'ABS',model:'XFP80C CB1 PE22/4',capacity:'22–56 m³/hr @ 10–8 m',type:'Submersible',kw:1.7,specs:'75 mm free passage',curr:'AED',exworks:null,aed:13710},
+  {category:'Sewage Pumps',make:'ABS Ireland',model:'XFP 100C PE22/4C',capacity:'65 m³/hr @ 8 m',type:'Submersible',kw:22,specs:'14 weeks lead time',curr:'AED',exworks:null,aed:23060},
+  {category:'Sewage Pumps',make:'ABS Ireland',model:'XFP 150E CB1 PE60/4',capacity:'125 m³/hr @ 8 m',type:'Submersible',kw:7.5,specs:'14 weeks lead time',curr:'AED',exworks:null,aed:37340},
+  {category:'Sewage Pumps',make:'ABS Ireland',model:'XFP 200J CH2 PE185/6',capacity:'380 m³/hr @ 8 m',type:'Submersible',kw:22,specs:'14 weeks lead time',curr:'AED',exworks:null,aed:68780},
+  {category:'Sewage Pumps',make:'Lowara',model:'COM 350/07',capacity:'7–14 m³/hr @ 12–8 m',type:'End Suction',kw:null,specs:'',curr:'AED',exworks:null,aed:1670},
+  {category:'Sewage Pumps',make:'Lowara',model:'CO 500/30',capacity:'30–42 m³/hr @ 12–8 m',type:'End Suction',kw:null,specs:'',curr:'AED',exworks:null,aed:2180},
+  {category:'Sewage Pumps',make:'Ebara',model:'50 DVS 5.4',capacity:'2.1 m³/hr @ 10 m',type:'Submersible',kw:0.4,specs:'',curr:'AED',exworks:null,aed:3108},
+  {category:'Sewage Pumps',make:'Ebara',model:'65 DL 51.5',capacity:'11 m³/hr @ 10 m',type:'Submersible / Non-Clog',kw:1.5,specs:'',curr:'AED',exworks:null,aed:4343},
+  {category:'Sewage Pumps',make:'Ebara',model:'80 DL 53.7',capacity:'18.75 m³/hr @ 15 m',type:'Submersible / Grinder',kw:3.7,specs:'',curr:'AED',exworks:null,aed:7534},
+  {category:'Sewage Pumps',make:'Ebara',model:'150 DML 55.5',capacity:'125 m³/hr @ 8 m',type:'Submersible',kw:5.5,specs:'1450 rpm / 3Ph',curr:'AED',exworks:null,aed:11353},
+  {category:'Sewage Pumps',make:'Ebara',model:'250 DL 515',capacity:'380 m³/hr @ 8 m',type:'Submersible',kw:15,specs:'1450 rpm / 3Ph',curr:'AED',exworks:null,aed:31683},
+  {category:'Sewage Pumps',make:'Ebara',model:'DWO 150',capacity:'8–20 m³/hr @ 12–8 m',type:'End Suction',kw:1.1,specs:'',curr:'AED',exworks:null,aed:2400},
+  {category:'Sewage Pumps',make:'Ebara',model:'DWO 300',capacity:'30–50 m³/hr @ 13–8 m',type:'End Suction',kw:2.2,specs:'',curr:'AED',exworks:null,aed:3900},
+  {category:'Instrumentation',make:'JUMO',model:'pH Meter Complete Set',capacity:'pH measurement',type:'pH Meter',kw:null,specs:'ecoLine electrode + dTRANS pH02',curr:'EUR',exworks:null,aed:2307},
+  {category:'Instrumentation',make:'JUMO',model:'ORP Meter Complete Set',capacity:'ORP measurement',type:'ORP Meter',kw:null,specs:'ecoLine Redox + dTRANS pH02',curr:'EUR',exworks:null,aed:2324},
+  {category:'Instrumentation',make:'JUMO',model:'Conductivity Meter 0–1000',capacity:'0–1000 µS/cm',type:'Conductivity Meter',kw:null,specs:'BlackLine Lf + dTRANS CR02',curr:'EUR',exworks:null,aed:2031},
+  {category:'Instrumentation',make:'JUMO',model:'DO Meter Complete Set',capacity:'DO measurement',type:'DO Meter',kw:null,specs:'ecoLine O-DO + AQUIS 500 RS',curr:'EUR',exworks:null,aed:6067},
+  {category:'Instrumentation',make:'JUMO',model:'Turbidity 0–4000 NTU',capacity:'0–4000 NTU',type:'Turbidity Meter',kw:null,specs:'ecoLine NTU + AQUIS 500 RS',curr:'EUR',exworks:null,aed:7832},
+  {category:'Instrumentation',make:'JUMO',model:'Pressure Transmitter 0–1.6 Bar',capacity:'0–1.6 Bar',type:'Pressure Transmitter',kw:null,specs:'JUMO MIDAS 43006707',curr:'EUR',exworks:null,aed:569},
+  {category:'Instrumentation',make:'GF Signet',model:'Conductivity Meter Complete',capacity:'10–200,000 µS/cm',type:'Conductivity Meter',kw:null,specs:'9900 + sensor + module',curr:'AED',exworks:null,aed:3113},
+  {category:'Instrumentation',make:'GF Signet',model:'pH Meter Complete',capacity:'pH measurement',type:'pH Meter',kw:null,specs:'9900 + pH sensor + pre-amp',curr:'AED',exworks:null,aed:3572},
+  {category:'Instrumentation',make:'GF Signet',model:'Flow Meter Complete',capacity:'0.5"–8"',type:'Flow Meter',kw:null,specs:'9900 + flow sensor + fittings',curr:'AED',exworks:null,aed:3051},
+  {category:'Screens & Pre-Treatment',make:'Fluiteco',model:'WAU 3 30',capacity:'126 m³/hr',type:'Combined Pre-Treatment',kw:1.65,specs:'Screening+grit+grease; SS316',curr:'EUR',exworks:29250,aed:161460},
+  {category:'Screens & Pre-Treatment',make:'Fluiteco',model:'WAU 3 110',capacity:'396 m³/hr',type:'Combined Pre-Treatment',kw:1.85,specs:'Screening+grit+grease; SS316',curr:'EUR',exworks:52530,aed:289966},
+  {category:'Screens & Pre-Treatment',make:'Fluiteco',model:'GTR C 600',capacity:'18 m³/hr',type:'Rotary Drum Screen',kw:0.55,specs:'1.5 mm; SS316',curr:'EUR',exworks:15360,aed:84787},
+  {category:'Screens & Pre-Treatment',make:'Simeco',model:'CBU3-45',capacity:'162 m³/hr',type:'Combined Pre-Treatment',kw:1.85,specs:'SS316',curr:'EUR',exworks:37300,aed:205896},
+  {category:'Screens & Pre-Treatment',make:'Simeco',model:'EFD 20',capacity:'30 m³/hr',type:'Drum Screen',kw:0.18,specs:'Externally fed 2mm; SS316',curr:'EUR',exworks:4350,aed:24012},
+  {category:'Screens & Pre-Treatment',make:'Cosmey',model:'FPCBD 100',capacity:'160 m³/hr',type:'Combined Pre-Treatment',kw:0.92,specs:'Counterflow filter; SS316',curr:'EUR',exworks:60520,aed:334070},
+  {category:'Screens & Pre-Treatment',make:'Bilfinger',model:'TOP 3 30',capacity:'125 m³/hr',type:'Combined Pre-Treatment',kw:null,specs:'SS316',curr:'EUR',exworks:33800,aed:143042},
+  {category:'Screens & Pre-Treatment',make:'Huber',model:'ROTAMAT Ro9 300/2',capacity:'24–32 m³/hr',type:'Microstrainer',kw:1.1,specs:'2 mm; SS304/304L',curr:'EUR',exworks:9904,aed:41914},
+  {category:'Screens & Pre-Treatment',make:'Ecologic',model:'RS 625-12',capacity:'86 m³/hr',type:'Rotary Drum Screen',kw:null,specs:'1 mm; SS316',curr:'EUR',exworks:6883,aed:29129},
+  {category:'MBR Membranes',make:'Hydranautics',model:'HSM-125-ES',capacity:'125 m²',type:'Hollow Fiber',kw:null,specs:'Pore 0.4µm; PVDF',curr:'AED',exworks:null,aed:33704},
+  {category:'MBR Membranes',make:'Hydranautics',model:'HSM-500-ES',capacity:'500 m²',type:'Hollow Fiber',kw:null,specs:'Pore 0.4µm; PVDF',curr:'AED',exworks:null,aed:108306},
+  {category:'MBR Membranes',make:'Hydranautics',model:'HSM-1000-ES',capacity:'1000 m²',type:'Hollow Fiber',kw:null,specs:'Pore 0.4µm; PVDF',curr:'AED',exworks:null,aed:215253},
+  {category:'MBR Membranes',make:'Microdyn Nadir',model:'BIO-CEL® BC 416F',capacity:'416 m²',type:'Flat Sheet Cassette',kw:null,specs:'Pore 0.04µm; PES',curr:'EUR',exworks:25000,aed:117875},
+  {category:'MBR Membranes',make:'Martin Systems AG',model:'SiClaro FM Filter',capacity:'400 m²',type:'Flat Sheet',kw:null,specs:'Pore 0.1µm; PES',curr:'AED',exworks:null,aed:140640},
+  {category:'MBR Membranes',make:'Alfa Laval',model:'MFM 100-100',capacity:'100 m²',type:'Hollow Sheet',kw:null,specs:'Pore 0.2µm; PVDF',curr:'AED',exworks:null,aed:43608},
+  {category:'MBR Membranes',make:'KOCH',model:'PSH 330-8',capacity:'330 m²',type:'Hollow Fibre',kw:null,specs:'Pore 0.03µm; PVDF',curr:'EUR',exworks:18350,aed:86520},
+  {category:'MBR Membranes',make:'KOCH',model:'PSH 660-14',capacity:'575 m²',type:'Hollow Fibre',kw:null,specs:'Pore 0.03µm; PVDF',curr:'EUR',exworks:32500,aed:153238},
+  {category:'MBR Membranes',make:'KUBOTA',model:'ES200R3',capacity:'160 m²',type:'Flat Sheet',kw:null,specs:'Pore 0.2µm; C-PE',curr:'USD',exworks:14000,aed:51380},
+  {category:'OCU',make:'Pure Air USA',model:'Sulphus 2200-5',capacity:'5000 m³/hr',type:'Biological OCU',kw:null,specs:'200 PPM H2S; 99% removal; GRP',curr:'EUR',exworks:49980,aed:294822},
+  {category:'OCU',make:'Pure Air USA',model:'Sulphus 2200-1',capacity:'1000 m³/hr',type:'Biological OCU',kw:null,specs:'200 PPM H2S; 99% removal; GRP',curr:'EUR',exworks:30310,aed:194942},
+  {category:'OCU',make:'Air Clean',model:'Bio4H-rid',capacity:'1100 m³/hr',type:'Biological OCU',kw:12,specs:'450 PPM H2S; 99.9% removal',curr:'EUR',exworks:41000,aed:193315},
+  {category:'OCU',make:'Amtrad Environmental',model:'OCF 500 S',capacity:'450 m³/hr',type:'Chemical OCU',kw:null,specs:'250 PPM H2S; GRP',curr:'AED',exworks:null,aed:99000},
+  {category:'OCU',make:'Purafil',model:'DS100',capacity:'100–200 m³/hr',type:'Activated Carbon',kw:0.5,specs:'Fan powered; mist eliminator',curr:'USD',exworks:4905,aed:26703},
+  {category:'OCU',make:'Purafil',model:'DS300',capacity:'300–450 m³/hr',type:'Activated Carbon',kw:0.75,specs:'Fan powered; mist eliminator',curr:'USD',exworks:7845,aed:40007},
+  {category:'OCU',make:'Purafil',model:'DS500',capacity:'500–750 m³/hr',type:'Activated Carbon',kw:1.1,specs:'Fan powered; mist eliminator',curr:'USD',exworks:9414,aed:56857},
+  {category:'OCU',make:'Purafil',model:'DS1000',capacity:'750–1200 m³/hr',type:'Activated Carbon',kw:1.5,specs:'Fan powered; mist eliminator',curr:'USD',exworks:18212,aed:95147},
+  {category:'OCU',make:'Alfa Laval',model:'DB 850',capacity:'800 m³/hr',type:'Water-Regenerable Carbon',kw:null,specs:'Water-regenerable carbon',curr:'AED',exworks:null,aed:118181},
+  {category:'OCU',make:'Alfa Laval',model:'DB 1200',capacity:'1500 m³/hr',type:'Water-Regenerable Carbon',kw:null,specs:'Water-regenerable carbon',curr:'AED',exworks:null,aed:149640},
+  {category:'OCU',make:'Alfa Laval',model:'DB 2000',capacity:'4000 m³/hr',type:'Water-Regenerable Carbon',kw:null,specs:'Water-regenerable carbon',curr:'AED',exworks:null,aed:233160},
+  {category:'OCU',make:'Alfa Laval',model:'DB 3000',capacity:'10200 m³/hr',type:'Water-Regenerable Carbon',kw:null,specs:'Water-regenerable carbon',curr:'AED',exworks:null,aed:313200},
+  {category:'Dewatering',make:'GEA',model:'UCD 205',capacity:'1–3 m³/hr sludge',type:'Decanter Centrifuge',kw:9.2,specs:'50–100 kg DS/hr; 18–25% DS output',curr:'AED',exworks:null,aed:165000},
+  {category:'Dewatering',make:'OCM',model:'PN 50/7SL',capacity:'8.1 m³/day @ 1.5%',type:'Belt Filter Press',kw:0.75,specs:'Belt 500 mm; AISI 304 SS frame',curr:'EUR',exworks:25368,aed:119610},
+  {category:'Dewatering',make:'OCM',model:'PN 300/7S',capacity:'38 m³/hr @ 1.5%',type:'Belt Filter Press',kw:4.4,specs:'Belt 3000 mm; AISI 304 SS frame',curr:'EUR',exworks:73302,aed:345619},
+  {category:'Dewatering',make:'OCM',model:'P 30/4S',capacity:'38 m³/hr @ 1.5%',type:'Belt Thickener',kw:2.2,specs:'Belt 3000×4000 mm; 11.6 m² area',curr:'EUR',exworks:29753,aed:140285},
+];
+
+const CAT_PILL = {
+  'Blowers':'cat-blower','Sewage Pumps':'cat-pump','Instrumentation':'cat-inst',
+  'Screens & Pre-Treatment':'cat-screen','MBR Membranes':'cat-mbr',
+  'OCU':'cat-ocu','Dewatering':'cat-dew'
+};
+
+let dbSortCol='category', dbSortDir=1;
+
+function dbUnique(key){ return [...new Set(DB_DATA.map(d=>d[key]).filter(v=>v!=null&&v!==''))].sort(); }
+
+function dbPopulate(){
+  [['dbCat','category'],['dbMake','make'],['dbType','type']].forEach(([id,key])=>{
+    const s = document.getElementById(id);
+    dbUnique(key).forEach(v=>{ const o=document.createElement('option'); o.value=o.textContent=v; s.appendChild(o); });
+  });
+  const kw = document.getElementById('dbKW');
+  [0.5,1,2,3,5,7.5,11,15,22,37,55,75,110,132].forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=`≤ ${v} kW`; kw.appendChild(o); });
+  const pr = document.getElementById('dbPrice');
+  [5000,10000,25000,50000,100000,200000,500000].forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=`≤ ${v.toLocaleString()} AED`; pr.appendChild(o); });
+  const cu = document.getElementById('dbCurr');
+  ['AED','EUR','USD','GBP'].forEach(v=>{ const o=document.createElement('option'); o.value=o.textContent=v; cu.appendChild(o); });
+  document.getElementById('dbTotal').textContent = DB_DATA.length;
+  dbRender();
+}
+
+function dbGetFiltered(){
+  const search = document.getElementById('dbSearch').value.toLowerCase();
+  const cat = document.getElementById('dbCat').value;
+  const make = document.getElementById('dbMake').value;
+  const type = document.getElementById('dbType').value;
+  const kw   = parseFloat(document.getElementById('dbKW').value)||null;
+  const curr = document.getElementById('dbCurr').value;
+  const price= parseFloat(document.getElementById('dbPrice').value)||null;
+  return DB_DATA.filter(d=>{
+    if(cat && d.category!==cat) return false;
+    if(make && d.make!==make) return false;
+    if(type && d.type!==type) return false;
+    if(kw && d.kw!=null && d.kw>kw) return false;
+    if(curr && d.curr!==curr) return false;
+    if(price && d.aed>price) return false;
+    if(search){
+      const str = [d.category,d.make,d.model,d.capacity,d.type,d.specs].join(' ').toLowerCase();
+      if(!str.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function dbSort(col){
+  if(dbSortCol===col) dbSortDir*=-1; else{dbSortCol=col;dbSortDir=1;}
+  document.querySelectorAll('.db-table th').forEach(th=>{th.classList.remove('sort-asc','sort-desc');});
+  const th = document.getElementById('dh-'+col);
+  if(th) th.classList.add(dbSortDir===1?'sort-asc':'sort-desc');
+  dbRender();
+}
+
+function dbRender(){
+  const rows = dbGetFiltered();
+  rows.sort((a,b)=>{
+    let av=a[dbSortCol]??'', bv=b[dbSortCol]??'';
+    if(typeof av==='number'&&typeof bv==='number') return (av-bv)*dbSortDir;
+    return String(av).localeCompare(String(bv))*dbSortDir;
+  });
+  document.getElementById('dbCount').textContent = rows.length;
+  const tbody = document.getElementById('dbBody');
+  if(!rows.length){ tbody.innerHTML=`<tr><td colspan="11" class="no-results">No equipment matched the current filters.</td></tr>`; return; }
+  tbody.innerHTML = rows.map(d=>{
+    const idx = DB_DATA.indexOf(d);
+    return `<tr>
+    <td><span class="cat-pill ${CAT_PILL[d.category]||''}">${d.category}</span></td>
+    <td title="${d.make}">${d.make}</td>
+    <td title="${d.model}">${d.model}</td>
+    <td title="${d.capacity}">${d.capacity}</td>
+    <td title="${d.type}">${d.type}</td>
+    <td class="num">${d.kw??'—'}</td>
+    <td title="${d.specs||''}">${d.specs||'—'}</td>
+    <td>${d.curr||'—'}</td>
+    <td class="num">${d.exworks!=null?d.exworks.toLocaleString():'—'}</td>
+    <td class="num"><strong>${d.aed!=null?d.aed.toLocaleString():'—'}</strong></td>
+    <td class="td-actions">
+      <button class="btn-edit" onclick="dbEditRow(${idx})">✏ Edit</button>
+      <button class="btn-del"  onclick="dbDeleteRow(${idx})">✕ Del</button>
+    </td>
+  </tr>`;
+  }).join('');
+  dbUpdateTags();
+}
+
+function dbUpdateTags(){
+  const tags = [];
+  const cat=document.getElementById('dbCat').value, make=document.getElementById('dbMake').value;
+  const type=document.getElementById('dbType').value, kw=document.getElementById('dbKW').value;
+  const curr=document.getElementById('dbCurr').value, price=document.getElementById('dbPrice').value;
+  if(cat) tags.push([cat,'dbCat']);
+  if(make) tags.push([make,'dbMake']);
+  if(type) tags.push([type,'dbType']);
+  if(kw) tags.push([`≤ ${kw} kW`,'dbKW']);
+  if(curr) tags.push([curr,'dbCurr']);
+  if(price) tags.push([`≤ ${Number(price).toLocaleString()} AED`,'dbPrice']);
+  document.getElementById('dbTags').innerHTML = tags.map(([l,id])=>
+    `<span class="filter-tag">${l}<button onclick="dbClear('${id}')">×</button></span>`).join('');
+}
+
+function dbClear(id){ document.getElementById(id).value=''; dbRender(); }
+function dbReset(){ ['dbCat','dbMake','dbType','dbKW','dbCurr','dbPrice'].forEach(id=>document.getElementById(id).value=''); document.getElementById('dbSearch').value=''; dbRender(); }
+
+// ══ CRUD ══
+let _editIdx = null; // null = add, number = edit
+
+function dbOpenModal(idx){
+  _editIdx = (idx !== undefined) ? idx : null;
+  document.getElementById('modalTitle').textContent = _editIdx !== null ? 'Edit Equipment' : 'Add Equipment';
+  // Clear fields
+  ['mf_category','mf_make','mf_model','mf_capacity','mf_type','mf_kw','mf_specs','mf_curr','mf_exworks','mf_aed'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.value = ''; el.classList.remove('err');
+  });
+  // If editing, populate fields
+  if(_editIdx !== null){
+    const d = DB_DATA[_editIdx];
+    document.getElementById('mf_category').value  = d.category  || '';
+    document.getElementById('mf_make').value      = d.make      || '';
+    document.getElementById('mf_model').value     = d.model     || '';
+    document.getElementById('mf_capacity').value  = d.capacity  || '';
+    document.getElementById('mf_type').value      = d.type      || '';
+    document.getElementById('mf_kw').value        = d.kw        != null ? d.kw : '';
+    document.getElementById('mf_specs').value     = d.specs     || '';
+    document.getElementById('mf_curr').value      = d.curr      || 'AED';
+    document.getElementById('mf_exworks').value   = d.exworks   != null ? d.exworks : '';
+    document.getElementById('mf_aed').value       = d.aed       != null ? d.aed : '';
+  }
+  document.getElementById('equipModal').classList.add('open');
+}
+
+function dbCloseModal(){
+  document.getElementById('equipModal').classList.remove('open');
+  _editIdx = null;
+}
+
+function dbSaveEquipment(){
+  // Validate required fields
+  const req = ['mf_category','mf_make','mf_model','mf_aed'];
+  let valid = true;
+  req.forEach(id=>{
+    const el = document.getElementById(id);
+    el.classList.remove('err');
+    if(!el.value.trim()){ el.classList.add('err'); valid = false; }
+  });
+  if(!valid){ return; }
+
+  const entry = {
+    category : document.getElementById('mf_category').value.trim(),
+    make     : document.getElementById('mf_make').value.trim(),
+    model    : document.getElementById('mf_model').value.trim(),
+    capacity : document.getElementById('mf_capacity').value.trim(),
+    type     : document.getElementById('mf_type').value.trim(),
+    kw       : document.getElementById('mf_kw').value !== '' ? parseFloat(document.getElementById('mf_kw').value) : null,
+    specs    : document.getElementById('mf_specs').value.trim(),
+    curr     : document.getElementById('mf_curr').value,
+    exworks  : document.getElementById('mf_exworks').value !== '' ? parseFloat(document.getElementById('mf_exworks').value) : null,
+    aed      : parseFloat(document.getElementById('mf_aed').value),
+  };
+
+  if(_editIdx !== null){
+    DB_DATA[_editIdx] = entry;
+  } else {
+    DB_DATA.push(entry);
+  }
+
+  dbRefreshFilters();
+  dbRender();
+  document.getElementById('dbTotal').textContent = DB_DATA.length;
+  dbCloseModal();
+}
+
+function dbEditRow(idx){
+  dbOpenModal(idx);
+}
+
+function dbDeleteRow(idx){
+  const d = DB_DATA[idx];
+  if(!confirm(`Delete "${d.make} ${d.model}"?\n\nThis cannot be undone.`)) return;
+  DB_DATA.splice(idx, 1);
+  dbRefreshFilters();
+  dbRender();
+  document.getElementById('dbTotal').textContent = DB_DATA.length;
+}
+
+function dbRefreshFilters(){
+  // Rebuild category, make, type dropdowns to include any newly added values
+  [['dbCat','category'],['dbMake','make'],['dbType','type']].forEach(([id,key])=>{
+    const s = document.getElementById(id);
+    const cur = s.value;
+    s.innerHTML = `<option value="">All ${key.charAt(0).toUpperCase()+key.slice(1)}s</option>`;
+    dbUnique(key).forEach(v=>{ const o=document.createElement('option'); o.value=o.textContent=v; s.appendChild(o); });
+    s.value = cur; // restore selection if still valid
+  });
+}
+
+// ── INIT ──
+onMembraneSelect();
+calculate();
+initInputStates();
+dbPopulate();
+</script>
+<!-- ══ EQUIPMENT MODAL ══ -->
+<div class="modal-overlay" id="equipModal" onclick="if(event.target===this)dbCloseModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Add Equipment</h2>
+      <button class="modal-close" onclick="dbCloseModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>Category *</label>
+        <select id="mf_category">
+          <option value="">— select —</option>
+          <option>Blowers</option>
+          <option>Sewage Pumps</option>
+          <option>Instrumentation</option>
+          <option>Screens & Pre-Treatment</option>
+          <option>MBR Membranes</option>
+          <option>OCU</option>
+          <option>Dewatering</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Make *</label>
+        <input type="text" id="mf_make" placeholder="e.g. KOCH">
+      </div>
+      <div class="modal-field">
+        <label>Model *</label>
+        <input type="text" id="mf_model" placeholder="e.g. PSH 330-8">
+      </div>
+      <div class="modal-field">
+        <label>Capacity / Range</label>
+        <input type="text" id="mf_capacity" placeholder="e.g. 330 m²">
+      </div>
+      <div class="modal-field">
+        <label>Type</label>
+        <input type="text" id="mf_type" placeholder="e.g. Hollow Fibre">
+      </div>
+      <div class="modal-field">
+        <label>Power (kW)</label>
+        <input type="number" id="mf_kw" placeholder="e.g. 7.5" step="0.1">
+      </div>
+      <div class="modal-field full">
+        <label>Specifications</label>
+        <input type="text" id="mf_specs" placeholder="e.g. Pore 0.03µm; PVDF; IP68">
+      </div>
+      <div class="modal-field">
+        <label>Currency</label>
+        <select id="mf_curr">
+          <option value="AED">AED</option>
+          <option value="EUR">EUR</option>
+          <option value="USD">USD</option>
+          <option value="GBP">GBP</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Ex Works Price</label>
+        <input type="number" id="mf_exworks" placeholder="e.g. 18350">
+      </div>
+      <div class="modal-field full">
+        <label>Price (AED) *</label>
+        <input type="number" id="mf_aed" placeholder="e.g. 86520">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="dbCloseModal()">Cancel</button>
+      <button class="btn-save" onclick="dbSaveEquipment()">Save Equipment</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

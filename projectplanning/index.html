@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RO Project – Level 4 Schedule</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;font-size:12px;background:#f0f2f5;color:#222}
+.no-print{display:block}
+
+.toolbar{background:#1a3a5c;color:#fff;padding:10px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;top:0;z-index:200}
+.toolbar h1{font-size:14px;font-weight:700;color:#fff;white-space:nowrap;margin-right:4px}
+.toolbar label{font-size:11px;color:#adc8e8}
+.toolbar input[type=date]{font-size:11px;padding:4px 7px;border:1px solid #4a7aab;border-radius:4px;background:#0d2740;color:#fff}
+.btn{padding:5px 13px;border-radius:4px;border:none;cursor:pointer;font-size:12px;font-weight:600;white-space:nowrap}
+.btn-green{background:#27ae60;color:#fff}.btn-green:hover{background:#219150}
+.btn-blue{background:#2980b9;color:#fff}.btn-blue:hover{background:#1f6fa0}
+.btn-orange{background:#e67e22;color:#fff}.btn-orange:hover{background:#cf6d17}
+.btn-excel{background:#217346;color:#fff}.btn-excel:hover{background:#185c38}
+/* critical path toggle button */
+.btn-crit-on{background:#e74c3c;color:#fff;border:2px solid #c0392b;box-shadow:0 0 0 2px rgba(231,76,60,.35)}
+.btn-crit-on:hover{background:#c0392b}
+.btn-crit-off{background:#555;color:#ccc;border:2px solid #444;text-decoration:line-through}
+.btn-crit-off:hover{background:#444;color:#fff}
+
+.stats-bar{display:flex;gap:10px;padding:10px 18px;background:#fff;border-bottom:1px solid #ddd;flex-wrap:wrap}
+.stat-box{background:#f7f9fc;border:1px solid #dce3ec;border-radius:6px;padding:7px 13px;min-width:108px;text-align:center}
+.stat-box .sv{font-size:16px;font-weight:700;color:#1a3a5c}
+.stat-box .sl{font-size:10px;color:#666;margin-top:2px}
+
+.legend{display:flex;gap:14px;padding:7px 18px;background:#fff;border-bottom:1px solid #eee;flex-wrap:wrap;align-items:center}
+.legend span{font-size:11px;color:#555;display:flex;align-items:center;gap:5px}
+.lsq{width:14px;height:10px;border-radius:2px;display:inline-block}
+
+.tbl-wrap{overflow-x:auto;padding:0 0 60px 0}
+table{border-collapse:collapse;background:#fff;width:100%;min-width:1800px;box-shadow:0 1px 6px rgba(0,0,0,.1)}
+thead th{background:#1a3a5c;color:#fff;padding:8px 8px;font-size:11px;font-weight:700;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:100;border-right:1px solid #2a4f7c}
+tbody tr{border-bottom:1px solid #e8ecf0}
+td{padding:6px 8px;vertical-align:middle;font-size:11px;border-right:1px solid #eee;white-space:nowrap}
+
+/* Row type backgrounds */
+tr.phase-row td{background:#1a3a5c !important;color:#fff;font-weight:700;font-size:12px}
+tr.phase-row:hover td{background:#1f4570 !important}
+tr.group-row td{background:#2c5f8a !important;color:#fff;font-weight:600;font-size:12px}
+tr.group-row:hover td{background:#346a9a !important}
+tr.leaf-row td{background:#fff}
+tr.leaf-row:hover td{background:#f0f6ff}
+tr.leaf-row-alt td{background:#f9fbfd}
+tr.leaf-row-alt:hover td{background:#e8f1fb}
+
+/* % complete color tiers */
+tr.pct-done td{background:#e8faf0 !important}         /* 100% green tint */
+tr.pct-done:hover td{background:#d0f5e3 !important}
+tr.pct-high td{background:#edf7f1 !important}          /* 75-99% light green */
+tr.pct-high:hover td{background:#d8f0e6 !important}
+tr.pct-mid td{background:#fef9ec !important}           /* 25-74% amber tint */
+tr.pct-mid:hover td{background:#fdf0cc !important}
+tr.pct-low td{background:#fff !important}              /* 0-24% white */
+
+/* editing */
+tr.editing td{background:#fffde7 !important}
+tr.editing input,tr.editing select{font-size:11px;padding:2px 4px;border:1px solid #f0a500;border-radius:3px;background:#fff;color:#222;width:100%}
+tr.editing input[type=number]{width:54px}
+tr.new-row-input td{background:#e8faf0 !important}
+tr.new-row-input input,tr.new-row-input select{font-size:11px;padding:2px 4px;border:1px solid #27ae60;border-radius:3px;background:#fff;color:#222;width:100%}
+tr.new-row-input input[type=number]{width:54px}
+
+.wbs-cell{font-family:monospace;font-size:11px;color:#999;white-space:nowrap;min-width:58px}
+tr.phase-row .wbs-cell,tr.group-row .wbs-cell{color:#acd}
+.name-cell{min-width:340px;white-space:normal;word-break:break-word;line-height:1.4}
+.indent-1{padding-left:18px}.indent-2{padding-left:34px}.indent-3{padding-left:50px}
+
+.badge{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;white-space:nowrap}
+.badge-v{background:#d5f0e5;color:#0a6b3a}
+.badge-c{background:#e0e8f8;color:#1a3a8a}
+
+/* % progress pill */
+.pct-pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:1px 5px;border-radius:8px;white-space:nowrap}
+.pct-0{background:#f0f0f0;color:#888}
+.pct-low2{background:#fff3cd;color:#856404}
+.pct-mid2{background:#d1ecf1;color:#0c5460}
+.pct-high2{background:#c3e6cb;color:#155724}
+.pct-100{background:#27ae60;color:#fff}
+
+/* delay / saving badges */
+.delay-badge{display:inline-block;background:#e74c3c;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;white-space:nowrap}
+.saving-badge{display:inline-block;background:#27ae60;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;white-space:nowrap}
+.ontime-badge{display:inline-block;background:#2980b9;color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;white-space:nowrap}
+
+/* critical path */
+tr.critical-row td.name-cell{color:#c0392b !important;font-weight:700 !important}
+tr.critical-row td.name-cell .critical-icon{display:inline-block;margin-right:4px;font-size:10px}
+tr.phase-row td.name-cell .critical-icon,tr.group-row td.name-cell .critical-icon{color:#ff8080}
+tr.leaf-row.critical-row td,.leaf-row-alt.critical-row td{border-left:3px solid #e74c3c !important}
+.bar-critical{background:#e74c3c !important}
+.bar-critical-done{background:#c0392b !important}
+
+/* project name + save/load */
+.proj-name-input{font-size:13px;font-weight:700;padding:4px 10px;border:1px solid #4a7aab;border-radius:4px;background:#0d2740;color:#fff;min-width:200px}
+.proj-name-input::placeholder{color:#6a9ac4;font-weight:400}
+.btn-save{background:#8e44ad;color:#fff}.btn-save:hover{background:#7d3c98}
+.btn-load{background:#16a085;color:#fff}.btn-load:hover{background:#138a72}
+.toolbar-sep{width:1px;height:28px;background:rgba(255,255,255,0.2);margin:0 4px}
+/* save/load modal */
+.sl-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:center;justify-content:center}
+.sl-modal-bg.open{display:flex}
+.sl-modal{background:#fff;border-radius:12px;padding:26px 30px;width:440px;max-width:96vw;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.sl-modal h3{font-size:15px;font-weight:700;color:#1a3a5c;margin-bottom:16px}
+.sl-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.sl-field label{font-size:12px;font-weight:600;color:#444}
+.sl-field input{font-size:13px;padding:7px 10px;border:1px solid #ccc;border-radius:6px}
+.sl-field input:focus{outline:2px solid #8e44ad;border-color:#8e44ad}
+.sl-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.proj-list{max-height:220px;overflow-y:auto;border:1px solid #e0e0e0;border-radius:6px;margin-bottom:10px}
+.proj-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer}
+.proj-item:last-child{border-bottom:none}
+.proj-item:hover{background:#f0f6ff}
+.proj-item .pi-info{flex:1}
+.proj-item .pi-name{font-size:13px;font-weight:600;color:#1a3a5c}
+.proj-item .pi-date{font-size:10px;color:#888;margin-top:1px}
+.proj-item .pi-btns{display:flex;gap:4px}
+.pi-btn{border:1px solid #ccc;background:none;cursor:pointer;padding:2px 8px;border-radius:4px;font-size:11px}
+.pi-btn.open-btn{border-color:#27ae60;color:#27ae60}.pi-btn.open-btn:hover{background:#e8faf0}
+.pi-btn.del-btn{border-color:#e74c3c;color:#e74c3c}.pi-btn.del-btn:hover{background:#fde8e8}
+.no-projects{padding:24px;text-align:center;color:#aaa;font-size:12px}
+.save-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1a3a5c;color:#fff;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:600;z-index:700;opacity:0;transition:opacity .3s;pointer-events:none}
+.save-toast.show{opacity:1}
+
+/* gantt */
+.gantt-outer{position:relative;height:18px;background:#eef1f5;border-radius:2px;overflow:hidden;min-width:28px}
+tr.phase-row .gantt-outer{background:rgba(255,255,255,0.1)}
+tr.group-row .gantt-outer{background:rgba(255,255,255,0.1)}
+.gantt-bar-bg{position:absolute;height:14px;top:2px;border-radius:2px}
+.gantt-bar-done{position:absolute;height:14px;top:2px;border-radius:2px;opacity:0.9}
+.bar-v{background:#27ae60}
+.bar-c{background:#2980b9}
+.bar-done-clr{background:#f39c12}
+.bar-phase-v{background:rgba(255,255,255,0.4);height:10px;top:4px;border-radius:2px}
+.bar-phase-c{background:rgba(255,255,255,0.35);height:10px;top:4px;border-radius:2px}
+
+.act-cell{white-space:nowrap;text-align:center;min-width:95px}
+.ic-btn{background:none;border:1px solid #ccc;cursor:pointer;padding:2px 5px;border-radius:3px;font-size:11px;margin:1px;line-height:1.4}
+.ic-btn:hover{background:#f0f0f0}
+.ic-btn.del{border-color:#e74c3c;color:#e74c3c}.ic-btn.del:hover{background:#fde8e8}
+.ic-btn.add-b{border-color:#8e44ad;color:#8e44ad}.ic-btn.add-b:hover{background:#f5edfb}
+.ic-btn.edt{border-color:#2980b9;color:#2980b9}.ic-btn.edt:hover{background:#e8f2fb}
+.ic-btn.sav{border-color:#27ae60;color:#27ae60;font-weight:700}.ic-btn.sav:hover{background:#e8f8ee}
+.ic-btn.cnc{border-color:#999;color:#666}.ic-btn.cnc:hover{background:#f0f0f0}
+
+@media print{
+  @page{size:A3 landscape;margin:8mm}
+  .no-print,.toolbar,.stats-bar{display:none!important}
+  body{background:#fff}
+  .tbl-wrap{padding:0;overflow:visible}
+  table{min-width:unset;width:100%;box-shadow:none;border-radius:0}
+  thead th{position:static;font-size:8px;padding:4px;background:#1a3a5c!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#fff!important}
+  tr.phase-row td{background:#1a3a5c!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#fff!important}
+  tr.group-row td{background:#2c5f8a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#fff!important}
+  tr.pct-done td{background:#e8faf0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  tr.pct-high td{background:#edf7f1!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  tr.pct-mid td{background:#fef9ec!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  td{padding:3px 4px;font-size:8px}
+  .gantt-bar-bg,.gantt-bar-done{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .act-cell,.action-col{display:none!important}
+  .print-header{display:block!important}
+}
+.print-header{display:none;margin-bottom:8px;border-bottom:2px solid #1a3a5c;padding-bottom:5px}
+.print-header h1{font-size:14px;font-weight:700;color:#1a3a5c}
+.print-header p{font-size:9px;color:#555;margin-top:2px}
+</style>
+</head>
+<body>
+
+<div class="print-header">
+  <h1>REVERSE OSMOSIS PROJECT — LEVEL 4 PLANNING SCHEDULE</h1>
+  <p id="printSubtitle"></p>
+</div>
+
+<div class="toolbar no-print">
+  <h1>🔧 RO SCHEDULE</h1>
+  <input type="text" class="proj-name-input" id="projName" placeholder="Project name…" value="RO Plant Project">
+  <div class="toolbar-sep"></div>
+  <label>Planned Start:</label>
+  <input type="date" id="projStart" onchange="rebuildAll()">
+  <label>Planned End:</label>
+  <input type="date" id="projEnd" onchange="rebuildAll()">
+  <div class="toolbar-sep"></div>
+  <button class="btn btn-save" onclick="saveProject()">💾 Save</button>
+  <button class="btn btn-save" onclick="saveAsProject()" style="background:#6c3483">💾 Save As</button>
+  <button class="btn btn-load" onclick="openLoadModal()">📂 Open Project</button>
+  <div class="toolbar-sep"></div>
+  <button class="btn btn-green" onclick="addTopLevel()">＋ Phase</button>
+  <button class="btn btn-blue" onclick="window.print()">🖨 Print A3</button>
+  <button class="btn btn-excel" onclick="exportExcel()">📊 Excel</button>
+  <button class="btn btn-orange" onclick="exportCSV()">⬇ CSV</button>
+  <div class="toolbar-sep"></div>
+  <button class="btn btn-crit-on" id="critToggleBtn" onclick="toggleCritical()">🔴 Critical Path: ON</button>
+</div>
+
+<div class="stats-bar no-print" id="statsBar"></div>
+
+<div class="legend no-print">
+  <span><span class="lsq" style="background:#27ae60"></span>Vendor</span>
+  <span><span class="lsq" style="background:#2980b9"></span>Contractor</span>
+  <span id="critLegend"><span class="lsq" style="background:#e74c3c"></span>🔴 Critical path (red bar + red name)</span>
+  <span><span class="lsq" style="background:#f39c12"></span>Completed portion</span>
+  <span><span class="lsq" style="background:#e8faf0;border:1px solid #aaa"></span>100% done row</span>
+  <span><span class="lsq" style="background:#fef9ec;border:1px solid #aaa"></span>In progress row</span>
+  <span style="margin-left:6px;font-size:11px;color:#999">| ✎ Edit inline &nbsp;| ＋ Add below &nbsp;| ✕ Delete</span>
+</div>
+
+<div class="tbl-wrap">
+<table id="mainTable">
+  <thead id="tableHead"></thead>
+  <tbody id="tableBody"></tbody>
+</table>
+</div>
+
+<!-- SAVE/LOAD MODAL -->
+<div class="sl-modal-bg" id="slModalBg">
+  <div class="sl-modal">
+    <h3 id="slModalTitle">Open Project</h3>
+    <!-- SAVE AS panel -->
+    <div id="slSavePanel" style="display:none">
+      <div class="sl-field">
+        <label>Project Name</label>
+        <input type="text" id="slSaveName" placeholder="Enter project name">
+      </div>
+      <div class="sl-btns">
+        <button class="btn" style="background:#ccc;color:#333" onclick="closeSlModal()">Cancel</button>
+        <button class="btn btn-save" onclick="confirmSaveAs()">💾 Save</button>
+      </div>
+    </div>
+    <!-- LOAD panel -->
+    <div id="slLoadPanel" style="display:none">
+      <div class="proj-list" id="projList"></div>
+      <div style="font-size:11px;color:#888;margin-bottom:8px">Or import a .json file saved earlier:</div>
+      <input type="file" id="importFile" accept=".json" onchange="importFromFile(event)" style="font-size:12px">
+      <div class="sl-btns">
+        <button class="btn" style="background:#ccc;color:#333" onclick="closeSlModal()">Cancel</button>
+        <button class="btn btn-orange" onclick="exportProjectJson()">⬇ Export .json backup</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- TOAST -->
+<div class="save-toast" id="saveToast"></div>
+
+<script>
+// ===================== DATA =====================
+let projectStart = new Date();
+let projectEnd   = null;
+let editingId = null;
+let addingBelowId = null;
+let criticalSet = new Set();
+let showCritical = true;  // toggle: show/hide critical path highlighting
+
+let acts = [
+  {id:'1',name:'DESIGN & ENGINEERING',days:0,pred:[],owner:'V',type:'phase',pct:0},
+  {id:'1.1',name:'Process design basis & scope review',days:5,pred:[],owner:'V',type:'leaf',pct:100},
+  {id:'1.2',name:'P&ID development',days:8,pred:['1.1'],owner:'V',type:'leaf',pct:100},
+  {id:'1.3',name:'Equipment sizing & selection',days:6,pred:['1.1'],owner:'V',type:'leaf',pct:75},
+  {id:'1.4',name:'Civil & structural layout drawings',days:7,pred:['1.2'],owner:'V',type:'leaf',pct:50},
+  {id:'1.5',name:'Electrical & instrumentation design',days:8,pred:['1.2'],owner:'V',type:'leaf',pct:30},
+  {id:'1.6',name:'Design review & client approval',days:4,pred:['1.4','1.5'],owner:'V',type:'leaf',pct:0},
+  {id:'2',name:'PROCUREMENT',days:0,pred:[],owner:'V',type:'phase',pct:0},
+  {id:'2.1',name:'RO membranes',days:30,pred:['1.6'],owner:'V',type:'leaf',pct:0},
+  {id:'2.2',name:'High-pressure pumps & motors',days:25,pred:['1.6'],owner:'V',type:'leaf',pct:0},
+  {id:'2.3',name:'Pressure vessels & housings',days:20,pred:['1.6'],owner:'V',type:'leaf',pct:0},
+  {id:'2.4',name:'SCADA / instrumentation & controls',days:28,pred:['1.6'],owner:'V',type:'leaf',pct:0},
+  {id:'2.5',name:'Piping, valves & fittings',days:15,pred:['1.6'],owner:'V',type:'leaf',pct:0},
+  {id:'2.6',name:'Structural steel & skid frame',days:18,pred:['1.6'],owner:'V',type:'leaf',pct:0},
+  {id:'2.7',name:'Chemical dosing systems',days:20,pred:['1.6'],owner:'V',type:'leaf',pct:0},
+  {id:'2.8',name:'Electrical panels & MCC',days:22,pred:['1.6'],owner:'V',type:'leaf',pct:0},
+  {id:'3',name:'FABRICATION & ASSEMBLY',days:0,pred:[],owner:'V',type:'phase',pct:0},
+  {id:'3.1',name:'Skid frame fabrication',days:14,pred:['2.6'],owner:'V',type:'leaf',pct:0},
+  {id:'3.2',name:'Piping prefabrication',days:12,pred:['2.5'],owner:'V',type:'leaf',pct:0},
+  {id:'3.3',name:'Membrane loading into vessels',days:5,pred:['2.1','2.3','3.1'],owner:'V',type:'leaf',pct:0},
+  {id:'3.4',name:'Pump & motor installation on skid',days:6,pred:['2.2','3.1'],owner:'V',type:'leaf',pct:0},
+  {id:'3.5',name:'Piping assembly & connections',days:8,pred:['3.2','3.3','3.4'],owner:'V',type:'leaf',pct:0},
+  {id:'3.6',name:'Electrical & instrumentation wiring',days:7,pred:['2.4','2.8','3.5'],owner:'V',type:'leaf',pct:0},
+  {id:'3.7',name:'Chemical dosing skid assembly',days:5,pred:['2.7','3.5'],owner:'V',type:'leaf',pct:0},
+  {id:'3.8',name:'Final mechanical completion check',days:3,pred:['3.6','3.7'],owner:'V',type:'leaf',pct:0},
+  {id:'4',name:'QC TESTING',days:0,pred:[],owner:'V',type:'phase',pct:0},
+  {id:'4.1',name:'Hydrostatic pressure testing',days:3,pred:['3.8'],owner:'V',type:'leaf',pct:0},
+  {id:'4.2',name:'Electrical continuity & loop check',days:3,pred:['3.8'],owner:'V',type:'leaf',pct:0},
+  {id:'4.3',name:'Instrument calibration',days:3,pred:['4.2'],owner:'V',type:'leaf',pct:0},
+  {id:'4.4',name:'SCADA / PLC programming & testing',days:5,pred:['4.3'],owner:'V',type:'leaf',pct:0},
+  {id:'4.5',name:'Leak test & punch list closure',days:2,pred:['4.1','4.4'],owner:'V',type:'leaf',pct:0},
+  {id:'4.6',name:'QC documentation & data book prep',days:3,pred:['4.5'],owner:'V',type:'leaf',pct:0},
+  {id:'5',name:'FACTORY ACCEPTANCE TEST (FAT)',days:0,pred:[],owner:'V',type:'phase',pct:0},
+  {id:'5.1',name:'FAT preparation & test plan approval',days:3,pred:['4.6'],owner:'V',type:'leaf',pct:0},
+  {id:'5.2',name:'FAT execution – client witnessed',days:5,pred:['5.1'],owner:'V',type:'leaf',pct:0},
+  {id:'5.3',name:'FAT punch list close-out',days:3,pred:['5.2'],owner:'V',type:'leaf',pct:0},
+  {id:'5.4',name:'FAT certificate & document issue',days:2,pred:['5.3'],owner:'V',type:'leaf',pct:0},
+  {id:'6',name:'DISPATCH & LOGISTICS',days:0,pred:[],owner:'V',type:'phase',pct:0},
+  {id:'6.1',name:'Preservation, packing & crating',days:4,pred:['5.4'],owner:'V',type:'leaf',pct:0},
+  {id:'6.2',name:'Export documentation & customs clearance',days:3,pred:['6.1'],owner:'V',type:'leaf',pct:0},
+  {id:'6.3',name:'Freight forwarding & loading',days:2,pred:['6.2'],owner:'V',type:'leaf',pct:0},
+  {id:'6.4',name:'Transit to site',days:10,pred:['6.3'],owner:'V',type:'leaf',pct:0},
+  {id:'6.5',name:'Site receiving & inspection',days:2,pred:['6.4'],owner:'C',type:'leaf',pct:0},
+  {id:'7',name:'CONTRACTOR – SITE ACTIVITIES',days:0,pred:[],owner:'C',type:'phase',pct:0},
+  {id:'7.1',name:'BRINGING POWER',days:0,pred:[],owner:'C',type:'group',pct:0},
+  {id:'7.1.1',name:'Site survey & HV power route planning',days:5,pred:['1.6'],owner:'C',type:'leaf',pct:0},
+  {id:'7.1.2',name:'HV cable & transformer procurement',days:20,pred:['7.1.1'],owner:'C',type:'leaf',pct:0},
+  {id:'7.1.3',name:'Trench excavation & HV cable laying',days:12,pred:['7.1.2'],owner:'C',type:'leaf',pct:0},
+  {id:'7.1.4',name:'Substation & transformer installation',days:10,pred:['7.1.3'],owner:'C',type:'leaf',pct:0},
+  {id:'7.1.5',name:'Power commissioning & authority approval',days:7,pred:['7.1.4'],owner:'C',type:'leaf',pct:0},
+  {id:'7.2',name:'BRINGING ELECTRICITY (LV DISTRIBUTION)',days:0,pred:[],owner:'C',type:'group',pct:0},
+  {id:'7.2.1',name:'Main LV switchgear installation',days:5,pred:['7.1.5'],owner:'C',type:'leaf',pct:0},
+  {id:'7.2.2',name:'MCC & distribution panel erection',days:6,pred:['7.2.1'],owner:'C',type:'leaf',pct:0},
+  {id:'7.2.3',name:'Earthing & lightning protection',days:4,pred:['7.2.1'],owner:'C',type:'leaf',pct:0},
+  {id:'7.2.4',name:'Cable tray, conduit & LV cabling',days:8,pred:['7.2.2','7.2.3'],owner:'C',type:'leaf',pct:0},
+  {id:'7.2.5',name:'Electrical inspection & testing (LV)',days:3,pred:['7.2.4'],owner:'C',type:'leaf',pct:0},
+  {id:'7.3',name:'CIVIL WORK',days:0,pred:[],owner:'C',type:'group',pct:0},
+  {id:'7.3.1',name:'Site clearing & levelling',days:7,pred:['1.6'],owner:'C',type:'leaf',pct:0},
+  {id:'7.3.2',name:'Foundation excavation',days:8,pred:['7.3.1'],owner:'C',type:'leaf',pct:0},
+  {id:'7.3.3',name:'Reinforcement steel & formwork',days:10,pred:['7.3.2'],owner:'C',type:'leaf',pct:0},
+  {id:'7.3.4',name:'Concrete pour & curing (14 days)',days:14,pred:['7.3.3'],owner:'C',type:'leaf',pct:0},
+  {id:'7.3.5',name:'Equipment anchor bolts & plinths',days:5,pred:['7.3.4'],owner:'C',type:'leaf',pct:0},
+  {id:'7.3.6',name:'Building & shelter construction',days:20,pred:['7.3.4'],owner:'C',type:'leaf',pct:0},
+  {id:'7.3.7',name:'Civil completion & area handover',days:2,pred:['7.3.5','7.3.6'],owner:'C',type:'leaf',pct:0},
+  {id:'7.4',name:'INSTALLATION – PRODUCT & REJECT LINES',days:0,pred:[],owner:'C',type:'group',pct:0},
+  {id:'7.4.1',name:'RO skid offloading & rigging to position',days:3,pred:['6.5','7.3.7'],owner:'C',type:'leaf',pct:0},
+  {id:'7.4.2',name:'Equipment setting, levelling & alignment',days:4,pred:['7.4.1'],owner:'C',type:'leaf',pct:0},
+  {id:'7.4.3',name:'Product water piping installation',days:8,pred:['7.4.2','7.2.5'],owner:'C',type:'leaf',pct:0},
+  {id:'7.4.4',name:'Reject / brine line piping',days:7,pred:['7.4.2'],owner:'C',type:'leaf',pct:0},
+  {id:'7.4.5',name:'Chemical dosing line connections',days:4,pred:['7.4.3'],owner:'C',type:'leaf',pct:0},
+  {id:'7.4.6',name:'Electrical hook-up & cable termination',days:5,pred:['7.4.2','7.2.5'],owner:'C',type:'leaf',pct:0},
+  {id:'7.4.7',name:'Instrument loop checks & commissioning prep',days:5,pred:['7.4.5','7.4.6'],owner:'C',type:'leaf',pct:0},
+  {id:'7.4.8',name:'Pre-commissioning & system flushing',days:4,pred:['7.4.7'],owner:'C',type:'leaf',pct:0},
+  {id:'7.4.9',name:'Site acceptance test (SAT)',days:5,pred:['7.4.8'],owner:'C',type:'leaf',pct:0},
+  {id:'7.4.10',name:'Performance guarantee run & handover',days:7,pred:['7.4.9'],owner:'C',type:'leaf',pct:0},
+];
+
+// ===================== ENGINE =====================
+function getMonday(d){let x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x;}
+function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x;}
+function fmtDate(d){return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});}
+function fmtMonth(d){return d.toLocaleDateString('en-GB',{month:'short',year:'numeric'});}
+
+function computeSchedule(){
+  let map={};
+  acts.forEach(a=>{map[a.id]=a;a.startDay=null;a.endDay=null;});
+  function resolve(a){
+    if(a.startDay!==null) return;
+    if(a.type==='phase'||a.type==='group'){a.startDay=0;a.endDay=0;return;}
+    let pred=(a.pred||[]).filter(Boolean);
+    if(!pred.length){a.startDay=0;a.endDay=a.days||0;}
+    else{
+      let mx=0;
+      pred.forEach(pid=>{let p=map[pid.trim()];if(p){resolve(p);if((p.endDay||0)>mx)mx=p.endDay;}});
+      a.startDay=mx;a.endDay=mx+(a.days||0);
+    }
+  }
+  acts.forEach(a=>resolve(a));
+  acts.forEach(a=>{
+    if(a.type==='phase'||a.type==='group'){
+      let pfx=a.id+'.';
+      let ch=acts.filter(x=>x.id.startsWith(pfx)&&x.type==='leaf'&&(x.endDay||0)>0);
+      if(ch.length){a.startDay=Math.min(...ch.map(x=>x.startDay));a.endDay=Math.max(...ch.map(x=>x.endDay));a.days=a.endDay-a.startDay;}
+    }
+  });
+}
+function totalDays(){return Math.max(1,...acts.map(a=>a.endDay||0));}
+
+// ===================== CRITICAL PATH =====================
+// Forward pass already done in computeSchedule.
+// Backward pass: lateStart/lateFinish, then float=lateStart-startDay; float==0 → critical
+function computeCriticalPath(){
+  criticalSet = new Set();
+  let map={};
+  acts.forEach(a=>map[a.id]=a);
+  let leafs=acts.filter(a=>a.type==='leaf');
+  let total=totalDays();
+
+  // Compute successors map
+  let succ={};
+  leafs.forEach(a=>{
+    succ[a.id]=[];
+  });
+  leafs.forEach(a=>{
+    (a.pred||[]).forEach(pid=>{
+      pid=pid.trim();
+      if(succ[pid]) succ[pid].push(a.id);
+    });
+  });
+
+  // Late finish = project total for activities with no successors
+  leafs.forEach(a=>{a.lateFinish=total;a.lateStart=total-(a.days||0);});
+
+  // Backward pass (multiple iterations for convergence)
+  for(let iter=0;iter<leafs.length;iter++){
+    let changed=false;
+    // process in reverse order
+    for(let i=leafs.length-1;i>=0;i--){
+      let a=leafs[i];
+      let succs=succ[a.id]||[];
+      if(succs.length===0){
+        // terminal: late finish = project end
+        let lf=total;
+        if(lf!==a.lateFinish){a.lateFinish=lf;a.lateStart=lf-(a.days||0);changed=true;}
+      } else {
+        let minLS=Infinity;
+        succs.forEach(sid=>{let s=map[sid];if(s&&s.lateStart<minLS)minLS=s.lateStart;});
+        if(minLS<Infinity&&minLS!==a.lateFinish){a.lateFinish=minLS;a.lateStart=minLS-(a.days||0);changed=true;}
+      }
+    }
+    if(!changed) break;
+  }
+
+  // Mark critical: float = lateStart - startDay == 0
+  leafs.forEach(a=>{
+    let float=(a.lateStart||0)-(a.startDay||0);
+    if(float<=0) criticalSet.add(a.id);
+  });
+
+  // Also mark phases/groups if ALL their leaf children are critical
+  acts.filter(a=>a.type==='phase'||a.type==='group').forEach(a=>{
+    let pfx=a.id+'.';
+    let ch=leafs.filter(x=>x.id.startsWith(pfx));
+    if(ch.length>0&&ch.every(x=>criticalSet.has(x.id))) criticalSet.add(a.id);
+  });
+}
+
+// ===================== WBS =====================
+function getParentId(id){let p=id.split('.');p.pop();return p.join('.');}
+function getDepth(id){return(id.match(/\./g)||[]).length;}
+function nextChildId(parentId){
+  let pfx=parentId?parentId+'.':'';
+  let siblings=acts.filter(a=>{
+    if(!parentId) return !a.id.includes('.');
+    let pts=a.id.split('.');
+    return a.id.startsWith(pfx)&&pts.length===parentId.split('.').length+1;
+  });
+  let nums=siblings.map(a=>{let p=a.id.split('.');return parseInt(p[p.length-1]);}).filter(x=>!isNaN(x));
+  let n=Math.max(0,...nums,0)+1;
+  return parentId?parentId+'.'+n:String(n);
+}
+function insertAfter(newAct,afterId){
+  let idx=acts.findIndex(a=>a.id===afterId);
+  if(idx<0){acts.push(newAct);return;}
+  let pfx=afterId+'.';
+  let at=idx+1;
+  while(at<acts.length&&acts[at].id.startsWith(pfx))at++;
+  acts.splice(at,0,newAct);
+}
+
+// ===================== PCT COLOR CLASS =====================
+function pctClass(pct,type){
+  if(type!=='leaf') return '';
+  if(pct>=100) return 'pct-done';
+  if(pct>=75)  return 'pct-high';
+  if(pct>=25)  return 'pct-mid';
+  return 'pct-low';
+}
+function pctPillClass(pct){
+  if(pct>=100) return 'pct-100';
+  if(pct>=75)  return 'pct-high2';
+  if(pct>=25)  return 'pct-mid2';
+  if(pct>0)    return 'pct-low2';
+  return 'pct-0';
+}
+
+// ===================== RENDER HEAD =====================
+function renderHead(){
+  let total=totalDays(), wCount=Math.ceil(total/7);
+  let months=[],prev='',cur=new Date(projectStart);
+  for(let w=0;w<wCount;w++){
+    let mo=fmtMonth(cur);
+    if(mo!==prev){months.push({label:mo,wIdx:w});prev=mo;}
+    cur.setDate(cur.getDate()+7);
+  }
+  let head=document.getElementById('tableHead');
+  head.innerHTML='';
+  let r1=document.createElement('tr');
+  r1.innerHTML=`<th rowspan="2" style="min-width:65px">WBS</th>
+    <th rowspan="2" style="min-width:340px">Activity / Description</th>
+    <th rowspan="2" style="min-width:50px;text-align:center">Days</th>
+    <th rowspan="2" style="min-width:110px">Predecessor</th>
+    <th rowspan="2" style="min-width:65px;text-align:center">Start Day</th>
+    <th rowspan="2" style="min-width:65px;text-align:center">Finish Day</th>
+    <th rowspan="2" style="min-width:80px;text-align:center">Owner</th>
+    <th rowspan="2" style="min-width:80px;text-align:center">Cal. Start</th>
+    <th rowspan="2" style="min-width:80px;text-align:center">Cal. End</th>
+    <th rowspan="2" style="min-width:65px;text-align:center;background:#2c5f8a">% Done</th>`;
+  months.forEach((m,i)=>{
+    let next=i+1<months.length?months[i+1].wIdx:wCount;
+    r1.innerHTML+=`<th colspan="${next-m.wIdx}" style="text-align:center;background:#0d2740;font-size:10px">${m.label}</th>`;
+  });
+  r1.innerHTML+=`<th rowspan="2" class="action-col no-print" style="width:95px;text-align:center">Actions</th>`;
+  head.appendChild(r1);
+  let r2=document.createElement('tr');
+  cur=new Date(projectStart);
+  for(let w=0;w<wCount;w++){
+    let th=document.createElement('th');
+    th.style.cssText='text-align:center;font-size:9px;background:#0d2740;min-width:28px;padding:4px 2px';
+    th.textContent='W'+(w+1);
+    th.title=fmtDate(cur);
+    r2.appendChild(th);
+    cur.setDate(cur.getDate()+7);
+  }
+  head.appendChild(r2);
+}
+
+// ===================== RENDER BODY =====================
+function renderBody(){
+  let total=totalDays(), wCount=Math.ceil(total/7);
+  let body=document.getElementById('tableBody');
+  body.innerHTML='';
+  let leafIdx=0;
+
+  acts.forEach(a=>{
+    let tr=document.createElement('tr');
+    tr.dataset.id=a.id;
+    let pct=a.pct||0;
+    let isLeaf=a.type==='leaf';
+
+    if(a.type==='phase') tr.className='phase-row';
+    else if(a.type==='group') tr.className='group-row';
+    else{
+      let base=leafIdx%2===0?'leaf-row':'leaf-row-alt';
+      tr.className=base+' '+pctClass(pct,a.type);
+      leafIdx++;
+    }
+    if(showCritical && criticalSet.has(a.id)) tr.classList.add('critical-row');
+    if(editingId===a.id) tr.className='editing';
+    let depth=getDepth(a.id);
+    let ind=depth===1?'indent-1':depth===2?'indent-2':depth>=3?'indent-3':'';
+    let badge=a.owner==='V'?'<span class="badge badge-v">Vendor</span>':'<span class="badge badge-c">Contr.</span>';
+    let predStr=a.pred&&a.pred.length?a.pred.join(', '):'—';
+    let isCrit=showCritical && criticalSet.has(a.id);
+    let critIcon=isCrit?`<span class="critical-icon" title="Critical Path">🔴</span>`:'';
+    let nameStyle=isCrit&&isLeaf?'color:#c0392b;font-weight:700':'';
+    let nameStyleDark=isCrit&&!isLeaf?'color:#ff8080;font-weight:700':'';
+
+    // pill
+    let pillCls=pctPillClass(pct);
+    let pillHtml=isLeaf?`<span class="pct-pill ${pillCls}">${pct}%</span>`:'';
+
+    if(editingId===a.id){
+      tr.innerHTML=`
+        <td class="wbs-cell">${a.id}</td>
+        <td class="name-cell ${ind}"><input id="ei_name" type="text" value="${esc(a.name)}" style="width:98%"></td>
+        <td><input id="ei_days" type="number" value="${a.days||0}" min="0"></td>
+        <td><input id="ei_pred" type="text" value="${(a.pred||[]).join(', ')}" placeholder="e.g. 1.1, 2.3"></td>
+        <td style="text-align:center;font-size:10px;color:#aaa">${isLeaf&&a.startDay!=null?'D'+(a.startDay):''}</td>
+        <td style="text-align:center;font-size:10px;color:#aaa">${isLeaf&&a.endDay!=null?'D'+(a.endDay):''}</td>
+        <td><select id="ei_owner"><option value="V"${a.owner==='V'?' selected':''}>Vendor</option><option value="C"${a.owner==='C'?' selected':''}>Contr.</option></select></td>
+        <td style="font-size:9px;color:#aaa">${isLeaf&&a.startDay!=null?fmtDate(addDays(projectStart,a.startDay)):''}</td>
+        <td style="font-size:9px;color:#aaa">${isLeaf&&a.endDay!=null?fmtDate(addDays(projectStart,a.endDay)):''}</td>
+        <td style="text-align:center">${isLeaf?`<input class="pct-input" id="ei_pct" type="number" value="${pct}" min="0" max="100" style="width:52px;text-align:center">`:''}</td>`;
+    } else {
+      let nameTdStyle=isCrit&&isLeaf?'style="'+nameStyle+'"':isCrit?'style="'+nameStyleDark+'"':'';
+      tr.innerHTML=`
+        <td class="wbs-cell">${a.id}</td>
+        <td class="name-cell ${ind}" ${nameTdStyle}>${critIcon}${esc(a.name)}</td>
+        <td style="text-align:center">${isLeaf?a.days:(a.days>0?a.days:'')}</td>
+        <td style="font-size:10px;color:${a.type==='leaf'?'#888':'#acd'}">${isLeaf?predStr:''}</td>
+        <td style="text-align:center;font-size:10px">${isLeaf&&a.startDay!=null?'D'+a.startDay:''}</td>
+        <td style="text-align:center;font-size:10px">${isLeaf&&a.endDay!=null?'D'+a.endDay:''}</td>
+        <td style="text-align:center">${a.type!=='phase'?badge:''}</td>
+        <td style="text-align:center;font-size:9px;color:${a.type==='leaf'?'#555':'#acd'}">${isLeaf&&a.startDay!=null?fmtDate(addDays(projectStart,a.startDay)):''}</td>
+        <td style="text-align:center;font-size:9px;color:${a.type==='leaf'?'#555':'#acd'}">${isLeaf&&a.endDay!=null?fmtDate(addDays(projectStart,a.endDay)):''}</td>
+        <td style="text-align:center">${pillHtml}</td>`;
+    }
+
+    // GANTT cells
+    for(let w=0;w<wCount;w++){
+      let td=document.createElement('td');
+      td.style.cssText='padding:2px 1px;min-width:28px';
+      let sd=a.startDay||0,ed=a.endDay||0;
+      let ds=w*7,de=ds+7;
+      if(ed>sd&&sd<de&&ed>ds){
+        let bl=Math.max(0,(sd-ds)/7)*100;
+        let bw=Math.min(100,(ed-ds)/7*100)-bl;
+        bw=Math.max(2,bw);
+        let isPhase=a.type==='phase'||a.type==='group';
+        let barCls;
+        if(isCrit&&!isPhase) barCls='bar-critical';
+        else barCls=isPhase?(a.owner==='C'?'bar-phase-c':'bar-phase-v'):(a.owner==='C'?'bar-c':'bar-v');
+        // done overlay width
+        let doneFrac=0;
+        if(isLeaf&&pct>0){
+          let doneEndAbs=sd+(ed-sd)*(pct/100);
+          let doneInW=Math.max(0,Math.min(doneEndAbs,de)-Math.max(sd,ds));
+          doneFrac=(doneInW/7)*100;
+        }
+        let doneBarCls=isCrit&&isLeaf?'bar-critical-done':'bar-done-clr';
+        let doneHtml=doneFrac>0?`<div class="gantt-bar-done ${doneBarCls}" style="left:${bl.toFixed(1)}%;width:${Math.max(1,doneFrac).toFixed(1)}%"></div>`:'';
+        td.innerHTML=`<div class="gantt-outer"><div class="gantt-bar-bg ${barCls}" style="left:${bl.toFixed(1)}%;width:${bw.toFixed(1)}%"></div>${doneHtml}</div>`;
+      } else {
+        td.innerHTML=`<div class="gantt-outer" style="background:${(a.type==='phase'||a.type==='group')?'rgba(255,255,255,0.08)':(w%2?'#eef0f3':'#f3f5f8')}"></div>`;
+      }
+      tr.appendChild(td);
+    }
+
+    // Actions
+    let atd=document.createElement('td');
+    atd.className='act-cell action-col no-print';
+    if(editingId===a.id){
+      atd.innerHTML=`<button class="ic-btn sav" onclick="saveEdit('${a.id}')">✔ Save</button><button class="ic-btn cnc" onclick="cancelEdit()">✖</button>`;
+    } else {
+      atd.innerHTML=`<button class="ic-btn edt" onclick="startEdit('${a.id}')">✎</button><button class="ic-btn add-b" onclick="showAddBelow('${a.id}')">＋</button><button class="ic-btn del" onclick="deleteRow('${a.id}')">✕</button>`;
+    }
+    tr.appendChild(atd);
+    body.appendChild(tr);
+
+    // inline add row
+    if(addingBelowId===a.id){
+      let atr=document.createElement('tr');
+      atr.className='new-row-input';
+      atr.id='add-row-form';
+      let defPred=isLeaf?a.id:'';
+      let defParent=isLeaf?getParentId(a.id):a.id;
+      atr.innerHTML=`
+        <td class="wbs-cell" style="color:#27ae60;font-weight:700">NEW</td>
+        <td><input id="ai_name" type="text" placeholder="Activity name *" style="width:98%"></td>
+        <td><input id="ai_days" type="number" value="5" min="1"></td>
+        <td><input id="ai_pred" type="text" value="${defPred}" placeholder="${a.id}"></td>
+        <td colspan="4" style="font-size:10px;color:#27ae60">Fill name & days → Save</td>
+        <td><select id="ai_owner"><option value="V">Vendor</option><option value="C">Contr.</option></select></td>
+        <td><input id="ai_pct" type="number" value="0" min="0" max="100" style="width:52px;text-align:center"></td>`;
+      for(let w=0;w<wCount;w++){let td=document.createElement('td');td.innerHTML=`<div class="gantt-outer"></div>`;atr.appendChild(td);}
+      let atd2=document.createElement('td');
+      atd2.className='act-cell action-col no-print';
+      atd2.innerHTML=`<button class="ic-btn sav" onclick="saveAddBelow('${a.id}','${defParent}')">✔ Save</button><button class="ic-btn cnc" onclick="cancelAdd()">✖</button>`;
+      atr.appendChild(atd2);
+      body.appendChild(atr);
+    }
+  });
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ===================== EDIT =====================
+function startEdit(id){cancelAdd();editingId=id;renderBody();setTimeout(()=>{let n=document.getElementById('ei_name');if(n){n.focus();n.select();}},50);}
+function cancelEdit(){editingId=null;renderBody();}
+function saveEdit(id){
+  let a=acts.find(x=>x.id===id); if(!a) return;
+  let ne=document.getElementById('ei_name');
+  if(!ne||!ne.value.trim()){alert('Name cannot be empty.');return;}
+  a.name=ne.value.trim();
+  a.days=parseInt(document.getElementById('ei_days').value)||0;
+  let pr=document.getElementById('ei_pred').value.trim();
+  a.pred=pr?pr.split(',').map(s=>s.trim()).filter(Boolean):[];
+  a.owner=document.getElementById('ei_owner').value;
+  let pctEl=document.getElementById('ei_pct');
+  if(pctEl) a.pct=Math.min(100,Math.max(0,parseInt(pctEl.value)||0));
+  editingId=null;
+  rebuildAll();
+}
+
+// ===================== ADD BELOW =====================
+function showAddBelow(id){cancelEdit();addingBelowId=id;renderBody();setTimeout(()=>{let n=document.getElementById('ai_name');if(n)n.focus();},50);}
+function cancelAdd(){addingBelowId=null;}
+function saveAddBelow(afterId,parentId){
+  let ne=document.getElementById('ai_name');
+  if(!ne||!ne.value.trim()){alert('Please enter an activity name.');return;}
+  let name=ne.value.trim();
+  let days=parseInt(document.getElementById('ai_days').value)||5;
+  let pr=document.getElementById('ai_pred').value.trim();
+  let pred=pr?pr.split(',').map(s=>s.trim()).filter(Boolean):[];
+  let owner=document.getElementById('ai_owner').value;
+  let pct=Math.min(100,Math.max(0,parseInt(document.getElementById('ai_pct').value)||0));
+  let afterAct=acts.find(a=>a.id===afterId);
+  let actualParent=afterAct&&(afterAct.type==='phase'||afterAct.type==='group')?afterId:parentId;
+  let newId=nextChildId(actualParent);
+  insertAfter({id:newId,name,days,pred,owner,type:'leaf',pct},afterId);
+  addingBelowId=null;
+  rebuildAll();
+}
+
+function addTopLevel(){
+  cancelEdit();cancelAdd();
+  let tops=acts.filter(a=>a.type==='phase').map(a=>parseInt(a.id)).filter(x=>!isNaN(x));
+  let newId=String(Math.max(0,...tops)+1);
+  acts.push({id:newId,name:'NEW PHASE',days:0,pred:[],owner:'V',type:'phase',pct:0});
+  editingId=newId;
+  rebuildAll();
+  setTimeout(()=>{let n=document.getElementById('ei_name');if(n){n.focus();n.select();}},80);
+}
+
+function deleteRow(id){
+  let a=acts.find(x=>x.id===id);
+  if(!confirm('Delete "'+a?.name+'"?\nChild rows will also be removed.')) return;
+  acts=acts.filter(x=>x.id!==id&&!x.id.startsWith(id+'.'));
+  if(editingId===id) editingId=null;
+  if(addingBelowId===id) addingBelowId=null;
+  rebuildAll();
+}
+
+// ===================== STATS =====================
+function renderStats(){
+  let total=totalDays(),leafs=acts.filter(a=>a.type==='leaf');
+  let estEnd=addDays(projectStart,total);
+  let done=leafs.filter(a=>(a.pct||0)>=100).length;
+  let inprog=leafs.filter(a=>(a.pct||0)>0&&(a.pct||0)<100).length;
+  let avgPct=leafs.length?Math.round(leafs.reduce((s,a)=>s+(a.pct||0),0)/leafs.length):0;
+  let critCount=leafs.filter(a=>criticalSet.has(a.id)).length;
+
+  // Delay / Saving calculation
+  let delayHtml='';
+  if(projectEnd){
+    let plannedDays=Math.round((projectEnd-projectStart)/(1000*60*60*24));
+    let diff=total-plannedDays; // positive = delay, negative = saving
+    if(diff>0){
+      delayHtml=`<div class="stat-box"><div class="sv"><span class="delay-badge">⚠ DELAY +${diff}d</span></div><div class="sl">vs Planned End</div></div>`;
+    } else if(diff<0){
+      delayHtml=`<div class="stat-box"><div class="sv"><span class="saving-badge">✔ SAVING ${Math.abs(diff)}d</span></div><div class="sl">vs Planned End</div></div>`;
+    } else {
+      delayHtml=`<div class="stat-box"><div class="sv"><span class="ontime-badge">✔ ON TIME</span></div><div class="sl">vs Planned End</div></div>`;
+    }
+  }
+
+  document.getElementById('statsBar').innerHTML=`
+    <div class="stat-box"><div class="sv">${leafs.length}</div><div class="sl">Activities</div></div>
+    <div class="stat-box"><div class="sv" style="color:#27ae60">${leafs.filter(a=>a.owner==='V').length}</div><div class="sl">Vendor</div></div>
+    <div class="stat-box"><div class="sv" style="color:#2980b9">${leafs.filter(a=>a.owner==='C').length}</div><div class="sl">Contractor</div></div>
+    <div class="stat-box"><div class="sv" style="color:${showCritical?'#e74c3c':'#aaa'}">${critCount}</div><div class="sl">${showCritical?'🔴 Critical':'⚪ Critical (off)'}</div></div>
+    <div class="stat-box"><div class="sv">${total}</div><div class="sl">Est. Duration (days)</div></div>
+    <div class="stat-box"><div class="sv" style="font-size:12px">${fmtDate(projectStart)}</div><div class="sl">Planned Start</div></div>
+    <div class="stat-box"><div class="sv" style="font-size:12px;color:${projectEnd?'#555':'#aaa'}">${projectEnd?fmtDate(projectEnd):'Not set'}</div><div class="sl">Planned End</div></div>
+    <div class="stat-box"><div class="sv" style="font-size:12px;color:#e67e22">${fmtDate(estEnd)}</div><div class="sl">Est. Completion</div></div>
+    ${delayHtml}
+    <div class="stat-box"><div class="sv" style="color:#27ae60">${done}</div><div class="sl">✔ Completed</div></div>
+    <div class="stat-box"><div class="sv" style="color:#f39c12">${inprog}</div><div class="sl">⟳ In Progress</div></div>
+    <div class="stat-box"><div class="sv" style="color:#8e44ad">${avgPct}%</div><div class="sl">Overall Progress</div></div>`;
+  document.getElementById('printSubtitle').textContent=
+    `Planned Start: ${fmtDate(projectStart)}  |  Planned End: ${projectEnd?fmtDate(projectEnd):'Not set'}  |  Est. Completion: ${fmtDate(estEnd)}  |  ${total} days  |  Progress: ${avgPct}%  |  Printed: ${fmtDate(new Date())}`;
+}
+
+// ===================== REBUILD =====================
+function rebuildAll(){
+  let v=document.getElementById('projStart').value;
+  if(v) projectStart=getMonday(new Date(v));
+  let e=document.getElementById('projEnd').value;
+  projectEnd = e ? new Date(e) : null;
+  computeSchedule();
+  computeCriticalPath();
+  renderHead();
+  renderBody();
+  renderStats();
+}
+
+// ===================== SAVE / LOAD =====================
+const STORAGE_KEY = 'ro_schedule_projects';
+
+function getProjects(){
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');}catch(e){return {};}
+}
+function setProjects(p){localStorage.setItem(STORAGE_KEY,JSON.stringify(p));}
+
+function buildSnapshot(){
+  return {
+    name: document.getElementById('projName').value.trim()||'Unnamed Project',
+    savedAt: new Date().toISOString(),
+    projStart: document.getElementById('projStart').value,
+    projEnd:   document.getElementById('projEnd').value,
+    acts: acts.map(a=>Object.assign({},a,{startDay:undefined,endDay:undefined,lateStart:undefined,lateFinish:undefined}))
+  };
+}
+
+function showToast(msg, color='#1a3a5c'){
+  let t=document.getElementById('saveToast');
+  t.textContent=msg; t.style.background=color;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function saveProject(){
+  let snap=buildSnapshot();
+  let key=snap.name;
+  let projects=getProjects();
+  projects[key]=snap;
+  setProjects(projects);
+  showToast('✔ Project "'+key+'" saved!','#27ae60');
+}
+
+function saveAsProject(){
+  document.getElementById('slModalTitle').textContent='Save Project As…';
+  document.getElementById('slSaveName').value=document.getElementById('projName').value||'';
+  document.getElementById('slSavePanel').style.display='block';
+  document.getElementById('slLoadPanel').style.display='none';
+  document.getElementById('slModalBg').className='sl-modal-bg open';
+  setTimeout(()=>document.getElementById('slSaveName').focus(),80);
+}
+
+function confirmSaveAs(){
+  let nm=document.getElementById('slSaveName').value.trim();
+  if(!nm){alert('Please enter a project name.');return;}
+  document.getElementById('projName').value=nm;
+  let snap=buildSnapshot();
+  snap.name=nm;
+  let projects=getProjects();
+  projects[nm]=snap;
+  setProjects(projects);
+  closeSlModal();
+  showToast('✔ Saved as "'+nm+'"','#8e44ad');
+}
+
+function openLoadModal(){
+  document.getElementById('slModalTitle').textContent='Open Project';
+  document.getElementById('slSavePanel').style.display='none';
+  document.getElementById('slLoadPanel').style.display='block';
+  renderProjList();
+  document.getElementById('slModalBg').className='sl-modal-bg open';
+}
+
+function renderProjList(){
+  let projects=getProjects();
+  let keys=Object.keys(projects);
+  let el=document.getElementById('projList');
+  if(!keys.length){
+    el.innerHTML='<div class="no-projects">No saved projects yet.<br>Save a project first.</div>';
+    return;
+  }
+  el.innerHTML='';
+  keys.sort((a,b)=>new Date(projects[b].savedAt)-new Date(projects[a].savedAt)).forEach(k=>{
+    let p=projects[k];
+    let dt=new Date(p.savedAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    let div=document.createElement('div');
+    div.className='proj-item';
+    div.innerHTML=`<div class="pi-info"><div class="pi-name">${esc(k)}</div><div class="pi-date">Saved: ${dt} &nbsp;|&nbsp; ${(p.acts||[]).filter(a=>a.type==='leaf').length} activities</div></div>
+      <div class="pi-btns">
+        <button class="pi-btn open-btn" onclick="loadProject('${k.replace(/'/g,"\\'")}')">Open</button>
+        <button class="pi-btn del-btn" onclick="deleteProject('${k.replace(/'/g,"\\'")}')">✕</button>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+function loadProject(name){
+  let projects=getProjects();
+  let p=projects[name];
+  if(!p){alert('Project not found.');return;}
+  acts=p.acts.map(a=>Object.assign({pct:0},a));
+  document.getElementById('projName').value=p.name||name;
+  if(p.projStart) document.getElementById('projStart').value=p.projStart;
+  if(p.projEnd)   document.getElementById('projEnd').value=p.projEnd;
+  closeSlModal();
+  rebuildAll();
+  showToast('📂 Loaded "'+name+'"','#16a085');
+}
+
+function deleteProject(name){
+  if(!confirm('Delete saved project "'+name+'"?')) return;
+  let projects=getProjects();
+  delete projects[name];
+  setProjects(projects);
+  renderProjList();
+}
+
+function closeSlModal(){document.getElementById('slModalBg').className='sl-modal-bg';}
+document.getElementById('slModalBg').addEventListener('click',function(e){if(e.target===this)closeSlModal();});
+
+// Export project as JSON file (for sharing / backup)
+function exportProjectJson(){
+  let snap=buildSnapshot();
+  let blob=new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});
+  let url=URL.createObjectURL(blob);
+  let a=document.createElement('a');
+  a.href=url; a.download=(snap.name||'ro_project')+'.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Import from JSON file
+function importFromFile(evt){
+  let file=evt.target.files[0]; if(!file) return;
+  let reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      let p=JSON.parse(e.target.result);
+      if(!p.acts) throw new Error('Invalid project file');
+      acts=p.acts.map(a=>Object.assign({pct:0},a));
+      document.getElementById('projName').value=p.name||file.name.replace('.json','');
+      if(p.projStart) document.getElementById('projStart').value=p.projStart;
+      if(p.projEnd)   document.getElementById('projEnd').value=p.projEnd;
+      closeSlModal();
+      rebuildAll();
+      showToast('📂 Imported "'+p.name+'"','#16a085');
+    }catch(err){alert('Could not read project file: '+err.message);}
+  };
+  reader.readAsText(file);
+  evt.target.value='';
+}
+
+// ===================== EXCEL EXPORT (self-contained ZIP+XML, full color) =====================
+async function exportExcel(){
+  let btn=event.currentTarget; btn.textContent='⏳ Building…'; btn.disabled=true;
+  try{
+    // Load fflate (tiny zip library ~30kb) for building .xlsx in-browser
+    if(!window.fflate){
+      await new Promise((res,rej)=>{
+        let s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/fflate/0.8.2/fflate.min.js';
+        s.onload=res; s.onerror=()=>{
+          // fallback mirror
+          let s2=document.createElement('script');
+          s2.src='https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js';
+          s2.onload=res; s2.onerror=rej;
+          document.head.appendChild(s2);
+        };
+        document.head.appendChild(s);
+      });
+    }
+    await buildColoredExcel();
+    showToast('📊 Excel with colors exported!','#217346');
+  }catch(err){
+    console.error(err);
+    alert('Excel export error: '+err.message+'\n\nFalling back to CSV.');
+    exportCSV();
+  }finally{btn.textContent='📊 Excel';btn.disabled=false;}
+}
+
+async function buildColoredExcel(){
+  const xmlEsc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const ps=new Date(projectStart);
+  const fmtD=d=>d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+  const addD=(d,n)=>{let x=new Date(d);x.setDate(x.getDate()+n);return x;};
+  function colLetter(n){let s='';while(n>0){s=String.fromCharCode(64+(n%26||26))+s;n=Math.floor((n-1)/26);}return s;}
+  const ref=(r,c)=>colLetter(c)+r;
+
+  const total=Math.max(1,...acts.map(a=>a.endDay||0));
+  const wCount=Math.ceil(total/7);
+  const GS=11; // Gantt start col
+
+  // ── Colour palette (ARGB) ───────────────────────────────────────────
+  const C={
+    HEADER:'FF1A3A5C', HFORE:'FFFFFFFF',
+    PHASE:'FF1A3A5C',  PFORE:'FFFFFFFF',
+    GROUP:'FF2C5F8A',  GFORE:'FFFFFFFF',
+    LEAF_A:'FFFFFFFF', LEAF_B:'FFF7F9FD',
+    VENDOR:'FF27AE60', CONTR:'FF2980B9',
+    CRITICAL:'FFE74C3C',
+    DONE_OVR:'FFF39C12',
+    PCT_CELL:'FFFFF9E6',
+    MONTH_BG:'FF0D2740',
+    ROW_DONE:'FFE8FAF0', ROW_HIGH:'FFEDF7F1', ROW_MID:'FFFEF9EC',
+    PHASE_SUM_V:'FF3DAE7A', PHASE_SUM_C:'FF4A7AB5',
+    EMPTY_A:'FFF3F5F8', EMPTY_B:'FFEAECF0', EMPTY_DK:'FF1F4570',
+    BORDER:'FFD0D4DA',
+  };
+
+  // ── Style registry ──────────────────────────────────────────────────
+  const fills=['<fill><patternFill patternType="none"/></fill>','<fill><patternFill patternType="none"/></fill>'];
+  const fillIdx={}; function gFill(a){if(fillIdx[a]!=null)return fillIdx[a];let i=fills.length;fills.push(`<fill><patternFill patternType="solid"><fgColor rgb="${a}"/></patternFill></fill>`);fillIdx[a]=i;return i;}
+  const fonts=['<font><sz val="9"/><name val="Arial"/></font>'];
+  const fontIdx={}; function gFont(a,b,s){let k=a+'|'+(b?1:0)+'|'+(s||9);if(fontIdx[k]!=null)return fontIdx[k];let i=fonts.length;fonts.push(`<font><sz val="${s||9}"/><color rgb="${a}"/><name val="Arial"/>${b?'<b/>':''}</font>`);fontIdx[k]=i;return i;}
+  const borders=['<border><left/><right/><top/><bottom/></border>'];
+  const bdr=1;
+  borders.push(`<border><left style="thin"><color rgb="${C.BORDER}"/></left><right style="thin"><color rgb="${C.BORDER}"/></right><top style="thin"><color rgb="${C.BORDER}"/></top><bottom style="thin"><color rgb="${C.BORDER}"/></bottom></border>`);
+  const numFmts=[`<numFmt numFmtId="164" formatCode="0&quot;%&quot;"/>`];
+  const xfs=['<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>','<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'];
+  const xfIdx={}; function gXf(fgA,ftA,bold,sz,ha,wrap,nfmt){
+    let fi=gFont(ftA||'FF222222',bold,sz||9),li=gFill(fgA||'FFFFFFFF'),nf=nfmt||0;
+    let k=li+'|'+fi+'|'+bdr+'|'+nf+'|'+(ha||'left')+'|'+(wrap?1:0);
+    if(xfIdx[k]!=null)return xfIdx[k];
+    let i=xfs.length;
+    xfs.push(`<xf numFmtId="${nf}" fontId="${fi}" fillId="${li}" borderId="${bdr}" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="${ha||'left'}" vertical="center"${wrap?' wrapText="1"':''}/></xf>`);
+    xfIdx[k]=i;return i;
+  }
+
+  // ── Shared strings ──────────────────────────────────────────────────
+  const ss=[]; const ssIdx={}; function gSS(s){s=String(s==null?'':s);if(ssIdx[s]!=null)return ssIdx[s];let i=ss.length;ss.push(s);ssIdx[s]=i;return i;}
+  function mkC(r,c,val,xf,type){
+    let rf=ref(r,c);
+    if(val===null||val===undefined||val==='')return`<c r="${rf}" s="${xf}"/>`;
+    if(type==='n')return`<c r="${rf}" s="${xf}" t="n"><v>${val}</v></c>`;
+    return`<c r="${rf}" s="${xf}" t="s"><v>${gSS(val)}</v></c>`;
+  }
+
+  // ── Row data ─────────────────────────────────────────────────────────
+  const rows=[]; const merges=[`<mergeCell ref="A1:J1"/>`];
+
+  // ROW 1 — title + month bands
+  const titleXf=gXf(C.HEADER,C.HFORE,true,12,'center');
+  const projNm=(document.getElementById('projName').value||'RO Project')+' — Level 4 Schedule';
+  let r1=[mkC(1,1,projNm,titleXf)];
+  for(let c=2;c<=10;c++)r1.push(`<c r="${ref(1,c)}" s="${titleXf}"/>`);
+  let cur=new Date(ps),prevMo='',moSC=GS;
+  const mXf=gXf(C.MONTH_BG,C.HFORE,true,8,'center');
+  for(let w=0;w<wCount;w++){
+    let mo=cur.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+    if(mo!==prevMo){
+      if(prevMo){let ec=GS+w-1;if(moSC<ec)merges.push(`<mergeCell ref="${colLetter(moSC)}1:${colLetter(ec)}1"/>`);r1.push(mkC(1,moSC,prevMo,mXf));for(let mc=moSC+1;mc<=ec;mc++)r1.push(`<c r="${ref(1,mc)}" s="${mXf}"/>`);}
+      moSC=GS+w;prevMo=mo;
+    }
+    cur.setDate(cur.getDate()+7);
+  }
+  let ec2=GS+wCount-1;
+  if(moSC<=ec2){if(moSC<ec2)merges.push(`<mergeCell ref="${colLetter(moSC)}1:${colLetter(ec2)}1"/>`);r1.push(mkC(1,moSC,prevMo,mXf));for(let mc=moSC+1;mc<=ec2;mc++)r1.push(`<c r="${ref(1,mc)}" s="${mXf}"/>`);}
+  rows.push(`<row r="1" ht="16" customHeight="1">${r1.join('')}</row>`);
+
+  // ROW 2 — headers
+  const hXf=gXf(C.HEADER,C.HFORE,true,9,'center',true);
+  const wXf=gXf(C.MONTH_BG,C.HFORE,true,7,'center');
+  let r2=['WBS','Activity / Description','Days','Predecessor','Start Day','Finish Day','Owner','Cal. Start','Cal. End','% Done'].map((h,i)=>mkC(2,i+1,h,hXf));
+  for(let w=0;w<wCount;w++)r2.push(mkC(2,GS+w,'W'+(w+1),wXf));
+  rows.push(`<row r="2" ht="24" customHeight="1">${r2.join('')}</row>`);
+
+  // DATA ROWS
+  let toggle=0;
+  acts.forEach((a,ri)=>{
+    const rn=3+ri,isL=a.type==='leaf',isCr=showCritical&&criticalSet.has(a.id);
+    const pct=a.pct||0,sd=a.startDay||0,ed=a.endDay||0;
+    const depth=(a.id.match(/\./g)||[]).length,isDk=a.type==='phase'||a.type==='group';
+    const indent='  '.repeat(depth);
+    let rowBg=a.type==='phase'?C.PHASE:a.type==='group'?C.GROUP:
+      (toggle^=1,pct>=100?C.ROW_DONE:pct>=75?C.ROW_HIGH:pct>=25?C.ROW_MID:(toggle%2?C.LEAF_A:C.LEAF_B));
+    const fg=isDk?C.PFORE:(isCr&&isL?C.CRITICAL:'FF222222');
+
+    let rc=[];
+    rc.push(mkC(rn,1,a.id,gXf(rowBg,isDk?'FFAACCDD':'FF999999',false,8,'center')));
+    const nameFg=isCr&&isL?C.CRITICAL:(isCr?'FFFF8080':(isDk?C.PFORE:'FF222222'));
+    rc.push(mkC(rn,2,indent+(isCr&&isL?'⚠ ':'')+a.name,gXf(rowBg,nameFg,isDk||isCr,isDk?10:9,'left',true)));
+    const nXf=gXf(rowBg,isDk?C.PFORE:'FF222222',false,9,'center');
+    rc.push(isL?mkC(rn,3,a.days||0,nXf,'n'):`<c r="${ref(rn,3)}" s="${nXf}"/>`);
+    rc.push(mkC(rn,4,isL?(a.pred||[]).join(', '):'',gXf(rowBg,isDk?'FFAACCDD':'FF888888',false,8,'left')));
+    rc.push(mkC(rn,5,isL&&sd!=null?'D'+sd:'',nXf));
+    rc.push(mkC(rn,6,isL&&ed!=null?'D'+ed:'',nXf));
+    const owFg=a.owner==='V'?'FF0A6B3A':'FF1A3A8A';
+    rc.push(mkC(rn,7,a.type!=='phase'?(a.owner==='V'?'Vendor':'Contractor'):'',gXf(rowBg,isDk?C.PFORE:owFg,true,9,'center')));
+    const dtXf=gXf(rowBg,isDk?C.PFORE:'FF555555',false,8,'center');
+    rc.push(mkC(rn,8,isL&&sd!=null?fmtD(addD(ps,sd)):'',dtXf));
+    rc.push(mkC(rn,9,isL&&ed!=null?fmtD(addD(ps,ed)):'',dtXf));
+    const pXf=gXf(isL?C.PCT_CELL:rowBg,'FF222222',true,9,'center',false,isL?164:0);
+    rc.push(isL?mkC(rn,10,pct,pXf,'n'):`<c r="${ref(rn,10)}" s="${pXf}"/>`);
+
+    // Gantt
+    const doneEnd=sd+(ed-sd)*(pct/100);
+    for(let w=0;w<wCount;w++){
+      const ds=w*7,de=ds+7;
+      if(ed>sd&&sd<de&&ed>ds){
+        const doneInW=Math.max(0,Math.min(doneEnd,de)-Math.max(sd,ds));
+        const fullInW=Math.min(ed,de)-Math.max(sd,ds);
+        let barA=isDk?(a.owner==='C'?C.PHASE_SUM_C:C.PHASE_SUM_V):(isCr?C.CRITICAL:(a.owner==='C'?C.CONTR:C.VENDOR));
+        if(isL&&doneInW>=fullInW*0.5&&doneInW>0)barA=C.DONE_OVR;
+        const gXf2=gXf(barA,C.HFORE,false,7,'center');
+        let pLabel=(ds<=sd&&sd<de&&isL&&pct>0)?pct+'%':'';
+        rc.push(pLabel?mkC(rn,GS+w,pLabel,gXf2):`<c r="${ref(rn,GS+w)}" s="${gXf2}"/>`);
+      } else {
+        const emA=isDk?C.EMPTY_DK:(w%2?C.EMPTY_B:C.EMPTY_A);
+        rc.push(`<c r="${ref(rn,GS+w)}" s="${gXf(emA,C.HFORE,false,7,'center')}"/>`);
+      }
+    }
+    rows.push(`<row r="${rn}" ht="15" customHeight="1">${rc.join('')}</row>`);
+  });
+
+  // ── XML assembly ─────────────────────────────────────────────────────
+  const sheetXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetViews><sheetView workbookViewId="0"><pane xSplit="10" ySplit="2" topLeftCell="${colLetter(GS)}3" activePane="bottomRight" state="frozen"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/><cols><col min="1" max="1" width="8" customWidth="1"/><col min="2" max="2" width="36" customWidth="1"/><col min="3" max="3" width="7" customWidth="1"/><col min="4" max="4" width="14" customWidth="1"/><col min="5" max="6" width="8" customWidth="1"/><col min="7" max="7" width="11" customWidth="1"/><col min="8" max="9" width="11" customWidth="1"/><col min="10" max="10" width="7" customWidth="1"/><col min="${GS}" max="${GS+wCount-1}" width="3.2" customWidth="1"/></cols><sheetData>${rows.join('')}</sheetData><mergeCells count="${merges.length}">${merges.join('')}</mergeCells><pageSetup orientation="landscape" paperSize="9"/></worksheet>`;
+  const stylesXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="${numFmts.length}">${numFmts.join('')}</numFmts><fonts count="${fonts.length}">${fonts.join('')}</fonts><fills count="${fills.length}">${fills.join('')}</fills><borders count="${borders.length}">${borders.join('')}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${xfs.length}">${xfs.join('')}</cellXfs></styleSheet>`;
+  const ssXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${ss.length}" uniqueCount="${ss.length}">${ss.map(s=>`<si><t xml:space="preserve">${xmlEsc(s)}</t></si>`).join('')}</sst>`;
+  const wbXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="RO Schedule" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+  const wbRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/></Relationships>`;
+  const rootRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`;
+  const ct=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/></Types>`;
+
+  const enc=new TextEncoder();
+  const zipped=await new Promise((res,rej)=>{
+    fflate.zip({'[Content_Types].xml':enc.encode(ct),'_rels/.rels':enc.encode(rootRels),'xl/workbook.xml':enc.encode(wbXml),'xl/_rels/workbook.xml.rels':enc.encode(wbRels),'xl/worksheets/sheet1.xml':enc.encode(sheetXml),'xl/styles.xml':enc.encode(stylesXml),'xl/sharedStrings.xml':enc.encode(ssXml)},{level:6},(err,data)=>{if(err)rej(err);else res(data);});
+  });
+  const blob=new Blob([zipped],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url=URL.createObjectURL(blob);
+  const a2=document.createElement('a');
+  const nm=(document.getElementById('projName').value||'RO_Schedule').replace(/[^a-z0-9_\-]/gi,'_');
+  a2.href=url; a2.download=nm+'.xlsx'; a2.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===================== CSV =====================
+function exportCSV(){
+  computeSchedule();
+  let rows=[['WBS','Activity','Days','Predecessor','Start Day','End Day','Owner','Cal Start','Cal End','% Done']];
+  acts.forEach(a=>{
+    rows.push([a.id,a.name,a.days||'',a.pred?a.pred.join('; '):'',
+      a.startDay||'',a.endDay||'',a.owner==='V'?'Vendor':'Contractor',
+      a.startDay!=null?fmtDate(addDays(projectStart,a.startDay)):'',
+      a.endDay!=null?fmtDate(addDays(projectStart,a.endDay)):'',
+      (a.pct||0)+'%'
+    ]);
+  });
+  let csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  let blob=new Blob([csv],{type:'text/csv'});
+  let url=URL.createObjectURL(blob);
+  let el=document.createElement('a');el.href=url;el.download='RO_Schedule.csv';el.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===================== CRITICAL PATH TOGGLE =====================
+function toggleCritical(){
+  showCritical = !showCritical;
+  const btn = document.getElementById('critToggleBtn');
+  const leg = document.getElementById('critLegend');
+  if(showCritical){
+    btn.textContent = '🔴 Critical Path: ON';
+    btn.className   = 'btn btn-crit-on';
+    leg.style.opacity = '1';
+    leg.innerHTML = '<span class="lsq" style="background:#e74c3c"></span>🔴 Critical path (red bar + red name)';
+  } else {
+    btn.textContent = '⚪ Critical Path: OFF';
+    btn.className   = 'btn btn-crit-off';
+    leg.style.opacity = '0.35';
+    leg.innerHTML = '<span class="lsq" style="background:#ccc"></span><s>Critical path</s> (hidden)';
+  }
+  renderBody();
+  renderStats();
+}
+
+// ===================== KEYBOARD =====================
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){
+    if(editingId) saveEdit(editingId);
+    else if(addingBelowId) saveAddBelow(addingBelowId,getParentId(addingBelowId));
+  }
+  if(e.key==='Escape'){cancelEdit();cancelAdd();renderBody();}
+});
+
+// ===================== INIT =====================
+window.onload=function(){
+  projectStart=getMonday(new Date());
+  document.getElementById('projStart').value=projectStart.toISOString().split('T')[0];
+  // default planned end = project start + totalDays after first compute
+  computeSchedule();
+  let defaultEnd=addDays(projectStart,totalDays());
+  document.getElementById('projEnd').value=defaultEnd.toISOString().split('T')[0];
+  projectEnd=defaultEnd;
+  computeCriticalPath();
+  renderHead();
+  renderBody();
+  renderStats();
+};
+</script>
+</body>
+</html>

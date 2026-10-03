@@ -1,0 +1,2425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HPP Manual BOQ Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0d1117;
+  --surface:   #161b22;
+  --surface2:  #1c2330;
+  --border:    #2a3441;
+  --border2:   #3a4a5c;
+  --accent:    #3b82f6;
+  --accent2:   #60a5fa;
+  --green:     #22c55e;
+  --amber:     #f59e0b;
+  --red:       #ef4444;
+  --cyan:      #06b6d4;
+  --purple:    #a855f7;
+  --text:      #e6edf3;
+  --muted:     #7d8fa3;
+  --faint:     #3a4a5c;
+  --mono:      'DM Mono', monospace;
+  --sans:      'Syne', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { font-family:var(--sans); background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* ── HEADER ─────────────────────────────────────────── */
+.hdr { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 28px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+.hdr-title { font-size:1.1em; font-weight:800; letter-spacing:-0.02em; display:flex; align-items:center; gap:10px; }
+.hdr-title span { color:var(--accent); }
+.hdr-badge { font-family:var(--mono); font-size:10px; background:rgba(59,130,246,.15); color:var(--accent2); border:1px solid rgba(59,130,246,.3); padding:3px 9px; border-radius:20px; letter-spacing:.08em; }
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+.layout { display:grid; grid-template-columns:300px 1fr; min-height:calc(100vh - 57px); }
+
+/* ── LEFT PANEL ─────────────────────────────────────── */
+.left-panel { background:var(--surface); border-right:1px solid var(--border); padding:20px 18px; overflow-y:auto; max-height:calc(100vh - 57px); position:sticky; top:57px; }
+.panel-section { margin-bottom:22px; }
+.panel-label { font-family:var(--mono); font-size:9px; letter-spacing:.15em; color:var(--muted); text-transform:uppercase; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+
+.field-row { margin-bottom:11px; }
+.field-row label { display:block; font-size:11px; color:var(--muted); margin-bottom:4px; font-weight:600; letter-spacing:.03em; }
+.field-row input, .field-row select {
+  width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text);
+  padding:8px 10px; border-radius:6px; font-family:var(--mono); font-size:12px; outline:none;
+  transition:border-color .2s;
+}
+.field-row input:focus, .field-row select:focus { border-color:var(--accent); }
+.input-with-unit { display:flex; gap:6px; align-items:center; }
+.input-with-unit input { flex:1; }
+.unit-tag { font-family:var(--mono); font-size:10px; color:var(--muted); background:var(--surface2); border:1px solid var(--border); padding:8px 8px; border-radius:6px; white-space:nowrap; }
+
+.radio-stack { display:flex; flex-direction:column; gap:6px; }
+.radio-opt { display:flex; align-items:center; gap:8px; padding:7px 10px; border:1px solid var(--border); border-radius:6px; cursor:pointer; transition:all .15s; font-size:11px; }
+.radio-opt:hover { border-color:var(--border2); background:var(--surface2); }
+.radio-opt input[type=radio] { accent-color:var(--accent); width:13px; height:13px; flex-shrink:0; }
+.radio-opt.sel { border-color:var(--accent); background:rgba(59,130,246,.08); color:var(--accent2); }
+
+/* ── PIPE SIZES CARD ────────────────────────────────── */
+.pipe-card { background:var(--bg); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:18px; }
+.pipe-card-hdr { padding:8px 12px; background:var(--surface2); font-family:var(--mono); font-size:9px; letter-spacing:.12em; color:var(--cyan); text-transform:uppercase; border-bottom:1px solid var(--border); }
+.pipe-row { display:grid; grid-template-columns:1fr 60px 56px; padding:6px 12px; border-bottom:1px solid rgba(42,52,65,.5); font-size:11px; align-items:center; }
+.pipe-row:last-child { border-bottom:none; }
+.pipe-loc { color:var(--muted); font-family:var(--mono); font-size:10px; }
+.pipe-flow { color:var(--text); font-family:var(--mono); font-size:10px; text-align:right; }
+.pipe-size { font-family:var(--mono); font-size:12px; font-weight:600; color:var(--cyan); text-align:right; }
+.pipe-na { color:var(--faint); font-family:var(--mono); font-size:10px; }
+
+/* ── FLOW SUMMARY ───────────────────────────────────── */
+.flow-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.flow-chip { background:var(--bg); border:1px solid var(--border); border-radius:7px; padding:9px 10px; }
+.flow-chip-lbl { font-family:var(--mono); font-size:8px; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; margin-bottom:4px; }
+.flow-chip-val { font-family:var(--mono); font-size:14px; font-weight:500; color:var(--text); }
+.flow-chip-unit { font-size:9px; color:var(--faint); margin-top:1px; }
+
+/* ── RIGHT PANEL ─────────────────────────────────────── */
+.right-panel { padding:24px 28px; overflow-y:auto; }
+
+/* ── GRAND TOTAL BAR ─────────────────────────────────── */
+.grand-bar { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 22px; margin-bottom:22px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.grand-label { font-size:11px; color:var(--muted); font-weight:600; letter-spacing:.05em; text-transform:uppercase; }
+.grand-val { font-family:var(--mono); font-size:26px; font-weight:500; color:var(--green); }
+.grand-breakdown { display:flex; gap:20px; }
+.gbd-item { text-align:center; }
+.gbd-lbl { font-size:9px; color:var(--muted); font-family:var(--mono); letter-spacing:.08em; text-transform:uppercase; }
+.gbd-val { font-family:var(--mono); font-size:13px; color:var(--text); margin-top:2px; }
+
+.export-btn { background:var(--accent); color:white; border:none; padding:9px 18px; border-radius:7px; font-family:var(--sans); font-size:11px; font-weight:700; cursor:pointer; letter-spacing:.04em; transition:opacity .2s; display:flex; align-items:center; gap:6px; }
+.export-btn:hover { opacity:.85; }
+
+/* ── SECTION BLOCK ──────────────────────────────────── */
+.section-block { margin-bottom:20px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.section-hdr { padding:12px 16px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; transition:background .15s; }
+.section-hdr:hover { background:rgba(255,255,255,.02); }
+.section-hdr-left { display:flex; align-items:center; gap:10px; }
+.section-icon { font-size:16px; }
+.section-name { font-size:13px; font-weight:700; }
+.section-tag { font-family:var(--mono); font-size:9px; padding:2px 7px; border-radius:10px; letter-spacing:.06em; }
+.tag-feed   { background:rgba(34,197,94,.12);  color:var(--green);  border:1px solid rgba(34,197,94,.25); }
+.tag-reject { background:rgba(239,68,68,.12);  color:var(--red);    border:1px solid rgba(239,68,68,.25); }
+.tag-px     { background:rgba(168,85,247,.12); color:var(--purple); border:1px solid rgba(168,85,247,.25); }
+.tag-boost  { background:rgba(245,158,11,.12); color:var(--amber);  border:1px solid rgba(245,158,11,.25); }
+.section-total { font-family:var(--mono); font-size:13px; font-weight:500; }
+.section-arrow { color:var(--muted); font-size:12px; transition:transform .2s; }
+.section-arrow.open { transform:rotate(180deg); }
+.section-body { border-top:1px solid var(--border); background:var(--surface); display:none; }
+.section-body.open { display:block; }
+.section-na { padding:18px 20px; font-family:var(--mono); font-size:11px; color:var(--faint); text-align:center; }
+
+/* ── BOQ TABLE ──────────────────────────────────────── */
+.boq-table-wrap { overflow-x:auto; }
+.boq-table { width:100%; border-collapse:collapse; }
+.boq-table th {
+  font-family:var(--mono); font-size:9px; letter-spacing:.1em; color:var(--muted);
+  text-transform:uppercase; padding:8px 10px; background:var(--surface2);
+  border-bottom:1px solid var(--border); text-align:left; font-weight:500; white-space:nowrap;
+}
+.boq-table th.r { text-align:right; }
+.boq-table td { padding:0; border-bottom:1px solid rgba(42,52,65,.5); vertical-align:middle; }
+.boq-table tr:last-child td { border-bottom:none; }
+.boq-table tr.input-row td { background:var(--bg); }
+.boq-table tr.data-row:hover td { background:rgba(59,130,246,.04); }
+
+/* cell inputs */
+.cell-inp {
+  width:100%; background:transparent; border:none; color:var(--text);
+  font-family:var(--mono); font-size:11px; padding:8px 10px; outline:none;
+  min-width:80px;
+}
+.cell-inp:focus { background:rgba(59,130,246,.07); }
+.cell-inp::placeholder { color:var(--faint); }
+.cell-select {
+  width:100%; background:transparent; border:none; color:var(--text);
+  font-family:var(--mono); font-size:11px; padding:8px 10px; outline:none; cursor:pointer;
+}
+.cell-select:focus { background:rgba(59,130,246,.07); }
+.cell-readonly {
+  font-family:var(--mono); font-size:11px; padding:8px 10px; color:var(--cyan);
+  font-weight:500; white-space:nowrap;
+}
+.cell-price { font-family:var(--mono); font-size:11px; padding:8px 10px; color:var(--text); }
+.cell-total { font-family:var(--mono); font-size:12px; padding:8px 10px; color:var(--green); font-weight:500; text-align:right; }
+.cell-del { padding:0 6px; }
+.del-btn { background:none; border:none; color:var(--faint); cursor:pointer; font-size:14px; padding:4px 6px; border-radius:4px; transition:color .15s; }
+.del-btn:hover { color:var(--red); }
+
+/* add row button */
+.add-row-btn {
+  width:100%; padding:10px; background:transparent; border:none; border-top:1px dashed var(--border);
+  color:var(--muted); font-family:var(--mono); font-size:10px; letter-spacing:.08em;
+  cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.add-row-btn:hover { color:var(--accent); background:rgba(59,130,246,.05); }
+
+/* section subtotal row */
+.subtotal-row td { background:var(--surface2); padding:6px 10px; }
+.subtotal-label { font-family:var(--mono); font-size:9px; letter-spacing:.1em; color:var(--muted); text-transform:uppercase; }
+.subtotal-val { font-family:var(--mono); font-size:12px; color:var(--amber); font-weight:500; text-align:right; }
+
+/* ── UNIT PRICE REFERENCE ───────────────────────────── */
+.ref-note { font-family:var(--mono); font-size:9px; color:var(--faint); padding:8px 12px; border-top:1px solid var(--border); }
+
+/* scrollbar */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:3px; }
+
+/* ── ANIMATIONS ─────────────────────────────────────── */
+@keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+.data-row { animation:fadeIn .18s ease; }
+
+@media (max-width:900px) {
+  .layout { grid-template-columns:1fr; }
+  .left-panel { position:static; max-height:none; }
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-title">🔧 <span>HPP</span> Manual BOQ Builder</div>
+  <div style="display:flex;gap:10px;align-items:center;">
+    <div class="hdr-badge">MANUAL ENTRY MODE</div>
+    <button class="export-btn" onclick="exportCSV()">⬇ Export CSV</button>
+    <button class="export-btn" id="admin-btn" onclick="openAdmin()" style="background:#1c2330;border:1px solid var(--border);color:var(--muted);">🔒 Admin</button>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ══ LEFT PANEL ══════════════════════════════════ -->
+  <aside class="left-panel">
+
+    <!-- System Config -->
+    <div class="panel-section">
+      <div class="panel-label">System Configuration</div>
+
+      <div class="field-row">
+        <label>RO Plant Capacity</label>
+        <div class="input-with-unit">
+          <input type="number" id="capacity" value="1500" step="100" min="100" oninput="recalc()">
+          <div class="unit-tag">M³/day</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Recovery Rate</label>
+        <div class="input-with-unit">
+          <input type="number" id="recovery" value="40" min="10" max="100" step="5" oninput="recalc()">
+          <div class="unit-tag">%</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Operating Hours</label>
+        <div class="input-with-unit">
+          <input type="number" id="hours" value="24" min="1" max="24" oninput="recalc()">
+          <div class="unit-tag">hrs</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Design Flux</label>
+        <div class="input-with-unit">
+          <input type="number" id="flux" value="13" step="0.5" min="10" max="20" oninput="recalc()">
+          <div class="unit-tag">LMH</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Pipe Velocity</label>
+        <div class="input-with-unit">
+          <input type="number" id="velocity" value="2.5" step="0.1" min="1.5" max="3.5" oninput="recalc()">
+          <div class="unit-tag">M/sec</div>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Membranes per PV</label>
+        <div class="input-with-unit">
+          <input type="number" id="memPerPV" value="7" min="1" max="8" oninput="recalc()">
+          <div class="unit-tag">nos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HPP Type -->
+    <div class="panel-section">
+      <div class="panel-label">HPP System Type</div>
+      <div class="radio-stack" id="hppType-group">
+        <label class="radio-opt sel" data-val="HPP Only">
+          <input type="radio" name="hppType" value="HPP Only" checked onchange="onHppChange()"> HPP Only (Basic)
+        </label>
+        <label class="radio-opt" data-val="HPP + Booster">
+          <input type="radio" name="hppType" value="HPP + Booster" onchange="onHppChange()"> HPP + Booster
+        </label>
+        <label class="radio-opt" data-val="HPP + PX">
+          <input type="radio" name="hppType" value="HPP + PX" onchange="onHppChange()"> HPP + PX (Full)
+        </label>
+      </div>
+    </div>
+
+    <!-- Currency -->
+    <div class="panel-section">
+      <div class="panel-label">Currency</div>
+      <div class="field-row">
+        <select id="currency" onchange="recalc()">
+          <option value="AED">🇦🇪 AED</option>
+          <option value="USD">🇺🇸 USD</option>
+          <option value="EUR">🇪🇺 EUR</option>
+          <option value="GBP">🇬🇧 GBP</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Flow Summary -->
+    <div class="panel-section">
+      <div class="panel-label">Flow Results</div>
+      <div class="flow-grid">
+        <div class="flow-chip">
+          <div class="flow-chip-lbl">Product</div>
+          <div class="flow-chip-val" id="fp-prod">—</div>
+          <div class="flow-chip-unit">M³/hr</div>
+        </div>
+        <div class="flow-chip">
+          <div class="flow-chip-lbl">Feed</div>
+          <div class="flow-chip-val" id="fp-feed">—</div>
+          <div class="flow-chip-unit">M³/hr</div>
+        </div>
+        <div class="flow-chip">
+          <div class="flow-chip-lbl">Reject</div>
+          <div class="flow-chip-val" id="fp-reject">—</div>
+          <div class="flow-chip-unit">M³/hr</div>
+        </div>
+        <div class="flow-chip">
+          <div class="flow-chip-lbl">Membranes</div>
+          <div class="flow-chip-val" id="fp-mem">—</div>
+          <div class="flow-chip-unit">nos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pipe Sizes -->
+    <div class="panel-section">
+      <div class="panel-label">Calculated Pipe Sizes</div>
+      <div class="pipe-card">
+        <div class="pipe-card-hdr">Location → Size</div>
+        <div id="pipe-sizes-list"></div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ══ RIGHT PANEL ═════════════════════════════════ -->
+  <main class="right-panel">
+
+    <!-- Grand Total Bar -->
+    <div class="grand-bar">
+      <div>
+        <div class="grand-label">Total BOQ Cost</div>
+        <div class="grand-val" id="grand-total">—</div>
+      </div>
+      <div class="grand-breakdown">
+        <div class="gbd-item">
+          <div class="gbd-lbl">Feed Water</div>
+          <div class="gbd-val" id="gt-feed">—</div>
+        </div>
+        <div class="gbd-item">
+          <div class="gbd-lbl">Reject Water</div>
+          <div class="gbd-val" id="gt-reject">—</div>
+        </div>
+        <div class="gbd-item" id="gt-px-wrap">
+          <div class="gbd-lbl">PX In/Out</div>
+          <div class="gbd-val" id="gt-px">—</div>
+        </div>
+        <div class="gbd-item" id="gt-boost-wrap">
+          <div class="gbd-lbl">Booster</div>
+          <div class="gbd-val" id="gt-boost">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feed Water Section -->
+    <div class="section-block" id="sec-feed">
+      <div class="section-hdr" onclick="toggleSection('feed')">
+        <div class="section-hdr-left">
+          <span class="section-icon">💧</span>
+          <span class="section-name">Feed Water Side</span>
+          <span class="section-tag tag-feed">FEED</span>
+          <span class="section-tag tag-feed" id="sz-feed-tag" style="margin-left:2px"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="section-total" id="total-feed">AED 0</span>
+          <span class="section-arrow open" id="arrow-feed">▼</span>
+        </div>
+      </div>
+      <div class="section-body open" id="body-feed">
+        <div class="boq-table-wrap">
+          <table class="boq-table">
+            <thead>
+              <tr>
+                <th style="width:32px">#</th>
+                <th style="min-width:160px">Description</th>
+                <th style="width:110px">Material</th>
+                <th style="width:80px">Size</th>
+                <th style="width:90px">Class / Sch</th>
+                <th style="width:70px">Qty</th>
+                <th style="width:70px">Unit</th>
+                <th style="width:110px">Unit Price</th>
+                <th class="r" style="width:110px">Total</th>
+                <th style="width:32px"></th>
+              </tr>
+            </thead>
+            <tbody id="rows-feed"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addRow('feed')">＋ Add Line Item</button>
+        <div class="ref-note">Size auto-fills from Feed pipe calculation · Edit unit price as needed</div>
+      </div>
+    </div>
+
+    <!-- Reject Water Section -->
+    <div class="section-block" id="sec-reject">
+      <div class="section-hdr" onclick="toggleSection('reject')">
+        <div class="section-hdr-left">
+          <span class="section-icon">🔄</span>
+          <span class="section-name">Reject Water Side</span>
+          <span class="section-tag tag-reject">REJECT</span>
+          <span class="section-tag tag-reject" id="sz-reject-tag" style="margin-left:2px"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="section-total" id="total-reject">AED 0</span>
+          <span class="section-arrow open" id="arrow-reject">▼</span>
+        </div>
+      </div>
+      <div class="section-body open" id="body-reject">
+        <div class="boq-table-wrap">
+          <table class="boq-table">
+            <thead>
+              <tr>
+                <th style="width:32px">#</th>
+                <th style="min-width:160px">Description</th>
+                <th style="width:110px">Material</th>
+                <th style="width:80px">Size</th>
+                <th style="width:90px">Class / Sch</th>
+                <th style="width:70px">Qty</th>
+                <th style="width:70px">Unit</th>
+                <th style="width:110px">Unit Price</th>
+                <th class="r" style="width:110px">Total</th>
+                <th style="width:32px"></th>
+              </tr>
+            </thead>
+            <tbody id="rows-reject"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addRow('reject')">＋ Add Line Item</button>
+        <div class="ref-note">Size auto-fills from Reject pipe calculation · Edit unit price as needed</div>
+      </div>
+    </div>
+
+    <!-- PX Section -->
+    <div class="section-block" id="sec-px">
+      <div class="section-hdr" onclick="toggleSection('px')">
+        <div class="section-hdr-left">
+          <span class="section-icon">⚡</span>
+          <span class="section-name">PX In / Out</span>
+          <span class="section-tag tag-px">PRESSURE EXCHANGER</span>
+          <span class="section-tag tag-px" id="sz-px-tag" style="margin-left:2px"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="section-total" id="total-px">—</span>
+          <span class="section-arrow" id="arrow-px">▼</span>
+        </div>
+      </div>
+      <div class="section-body" id="body-px">
+        <div id="px-na" class="section-na">Not applicable — select HPP + PX to enable this section</div>
+        <div id="px-content" style="display:none">
+          <div class="boq-table-wrap">
+            <table class="boq-table">
+              <thead>
+                <tr>
+                  <th style="width:32px">#</th>
+                  <th style="min-width:160px">Description</th>
+                  <th style="width:110px">Material</th>
+                  <th style="width:80px">Size</th>
+                  <th style="width:90px">Class / Sch</th>
+                  <th style="width:70px">Qty</th>
+                  <th style="width:70px">Unit</th>
+                  <th style="width:110px">Unit Price</th>
+                  <th class="r" style="width:110px">Total</th>
+                  <th style="width:32px"></th>
+                </tr>
+              </thead>
+              <tbody id="rows-px"></tbody>
+            </table>
+          </div>
+          <button class="add-row-btn" onclick="addRow('px')">＋ Add Line Item</button>
+          <div class="ref-note">Size auto-fills from PX pipe calculation</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booster Section -->
+    <div class="section-block" id="sec-boost">
+      <div class="section-hdr" onclick="toggleSection('boost')">
+        <div class="section-hdr-left">
+          <span class="section-icon">🚀</span>
+          <span class="section-name">Booster Pump In / Out</span>
+          <span class="section-tag tag-boost">BOOSTER</span>
+          <span class="section-tag tag-boost" id="sz-boost-tag" style="margin-left:2px"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span class="section-total" id="total-boost">—</span>
+          <span class="section-arrow" id="arrow-boost">▼</span>
+        </div>
+      </div>
+      <div class="section-body" id="body-boost">
+        <div id="boost-na" class="section-na">Not applicable — select HPP + Booster or HPP + PX to enable</div>
+        <div id="boost-content" style="display:none">
+          <div class="boq-table-wrap">
+            <table class="boq-table">
+              <thead>
+                <tr>
+                  <th style="width:32px">#</th>
+                  <th style="min-width:160px">Description</th>
+                  <th style="width:110px">Material</th>
+                  <th style="width:80px">Size</th>
+                  <th style="width:90px">Class / Sch</th>
+                  <th style="width:70px">Qty</th>
+                  <th style="width:70px">Unit</th>
+                  <th style="width:110px">Unit Price</th>
+                  <th class="r" style="width:110px">Total</th>
+                  <th style="width:32px"></th>
+                </tr>
+              </thead>
+              <tbody id="rows-boost"></tbody>
+            </table>
+          </div>
+          <button class="add-row-btn" onclick="addRow('boost')">＋ Add Line Item</button>
+          <div class="ref-note">Size auto-fills from Booster pipe calculation</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── Constants ──────────────────────────────────────────────────────────────
+const RATES   = { AED:1.0, USD:0.272, EUR:0.251, GBP:0.216 };
+const SYMS    = { AED:'AED ', USD:'$', EUR:'€', GBP:'£' };
+
+const MATERIALS = ['Duplex','SS316','Super Duplex','GRE','HDPE','Carbon Steel'];
+const UNITS     = ['No','Nos','Meter','Set','Lot','Pair'];
+
+const PRICE_DB = {
+  'pipe': {
+    0.5: {
+      'SCH 10': { 'Duplex':43, 'SS316':30, 'Super Duplex':53, 'GRE':11, 'HDPE':6, 'Carbon Steel':13 },
+      'SCH 20': { 'Duplex':50, 'SS316':35, 'Super Duplex':63, 'GRE':13, 'HDPE':7, 'Carbon Steel':15 },
+      'SCH 40': { 'Duplex':57, 'SS316':40, 'Super Duplex':71, 'GRE':14, 'HDPE':8, 'Carbon Steel':18 },
+    },
+    0.75: {
+      'SCH 10': { 'Duplex':59, 'SS316':41, 'Super Duplex':74, 'GRE':15, 'HDPE':8, 'Carbon Steel':18 },
+      'SCH 20': { 'Duplex':69, 'SS316':48, 'Super Duplex':86, 'GRE':17, 'HDPE':9, 'Carbon Steel':21 },
+      'SCH 40': { 'Duplex':78, 'SS316':55, 'Super Duplex':98, 'GRE':20, 'HDPE':10, 'Carbon Steel':24 },
+    },
+    1: {
+      'SCH 10': { 'Duplex':75, 'SS316':52, 'Super Duplex':94, 'GRE':19, 'HDPE':10, 'Carbon Steel':23 },
+      'SCH 20': { 'Duplex':88, 'SS316':61, 'Super Duplex':110, 'GRE':22, 'HDPE':12, 'Carbon Steel':27 },
+      'SCH 40': { 'Duplex':100, 'SS316':70, 'Super Duplex':125, 'GRE':25, 'HDPE':13, 'Carbon Steel':31 },
+    },
+    1.5: {
+      'SCH 10': { 'Duplex':107, 'SS316':75, 'Super Duplex':134, 'GRE':27, 'HDPE':14, 'Carbon Steel':33 },
+      'SCH 20': { 'Duplex':125, 'SS316':88, 'Super Duplex':157, 'GRE':32, 'HDPE':17, 'Carbon Steel':39 },
+      'SCH 40': { 'Duplex':143, 'SS316':100, 'Super Duplex':178, 'GRE':36, 'HDPE':19, 'Carbon Steel':44 },
+    },
+    2: {
+      'SCH 10': { 'Duplex':144, 'SS316':101, 'Super Duplex':180, 'GRE':36, 'HDPE':19, 'Carbon Steel':45 },
+      'SCH 20': { 'Duplex':169, 'SS316':119, 'Super Duplex':212, 'GRE':43, 'HDPE':23, 'Carbon Steel':52 },
+      'SCH 40': { 'Duplex':193, 'SS316':135, 'Super Duplex':241, 'GRE':49, 'HDPE':26, 'Carbon Steel':59 },
+    },
+    2.5: {
+      'SCH 10': { 'Duplex':187, 'SS316':131, 'Super Duplex':234, 'GRE':47, 'HDPE':25, 'Carbon Steel':58 },
+      'SCH 20': { 'Duplex':220, 'SS316':154, 'Super Duplex':274, 'GRE':55, 'HDPE':29, 'Carbon Steel':68 },
+      'SCH 40': { 'Duplex':250, 'SS316':175, 'Super Duplex':312, 'GRE':63, 'HDPE':33, 'Carbon Steel':77 },
+    },
+    3: {
+      'SCH 10': { 'Duplex':235, 'SS316':165, 'Super Duplex':294, 'GRE':59, 'HDPE':31, 'Carbon Steel':73 },
+      'SCH 20': { 'Duplex':276, 'SS316':193, 'Super Duplex':345, 'GRE':70, 'HDPE':37, 'Carbon Steel':85 },
+      'SCH 40': { 'Duplex':314, 'SS316':220, 'Super Duplex':392, 'GRE':79, 'HDPE':42, 'Carbon Steel':97 },
+    },
+    4: {
+      'SCH 10': { 'Duplex':310, 'SS316':217, 'Super Duplex':388, 'GRE':78, 'HDPE':41, 'Carbon Steel':96 },
+      'SCH 20': { 'Duplex':364, 'SS316':255, 'Super Duplex':455, 'GRE':92, 'HDPE':48, 'Carbon Steel':112 },
+      'SCH 40': { 'Duplex':414, 'SS316':289, 'Super Duplex':517, 'GRE':104, 'HDPE':55, 'Carbon Steel':128 },
+    },
+    6: {
+      'SCH 10': { 'Duplex':535, 'SS316':374, 'Super Duplex':668, 'GRE':135, 'HDPE':71, 'Carbon Steel':165 },
+      'SCH 20': { 'Duplex':627, 'SS316':439, 'Super Duplex':784, 'GRE':158, 'HDPE':84, 'Carbon Steel':194 },
+      'SCH 40': { 'Duplex':713, 'SS316':499, 'Super Duplex':891, 'GRE':180, 'HDPE':95, 'Carbon Steel':220 },
+    },
+    8: {
+      'SCH 10': { 'Duplex':829, 'SS316':580, 'Super Duplex':1036, 'GRE':209, 'HDPE':110, 'Carbon Steel':256 },
+      'SCH 20': { 'Duplex':973, 'SS316':681, 'Super Duplex':1215, 'GRE':246, 'HDPE':130, 'Carbon Steel':300 },
+      'SCH 40': { 'Duplex':1105, 'SS316':773, 'Super Duplex':1381, 'GRE':279, 'HDPE':147, 'Carbon Steel':341 },
+    },
+    10: {
+      'SCH 10': { 'Duplex':1176, 'SS316':823, 'Super Duplex':1470, 'GRE':297, 'HDPE':157, 'Carbon Steel':363 },
+      'SCH 20': { 'Duplex':1380, 'SS316':966, 'Super Duplex':1725, 'GRE':348, 'HDPE':184, 'Carbon Steel':426 },
+      'SCH 40': { 'Duplex':1569, 'SS316':1098, 'Super Duplex':1960, 'GRE':396, 'HDPE':209, 'Carbon Steel':484 },
+    },
+    12: {
+      'SCH 10': { 'Duplex':1578, 'SS316':1104, 'Super Duplex':1971, 'GRE':398, 'HDPE':210, 'Carbon Steel':487 },
+      'SCH 20': { 'Duplex':1851, 'SS316':1295, 'Super Duplex':2313, 'GRE':467, 'HDPE':247, 'Carbon Steel':571 },
+      'SCH 40': { 'Duplex':2103, 'SS316':1472, 'Super Duplex':2628, 'GRE':531, 'HDPE':280, 'Carbon Steel':649 },
+    },
+  },
+  'elbow': {
+    0.5: {
+      'SCH 10': { 'Duplex':32, 'SS316':22, 'Super Duplex':40, 'GRE':8, 'HDPE':4, 'Carbon Steel':10 },
+      'SCH 20': { 'Duplex':37, 'SS316':26, 'Super Duplex':47, 'GRE':10, 'HDPE':5, 'Carbon Steel':12 },
+      'SCH 40': { 'Duplex':42, 'SS316':30, 'Super Duplex':53, 'GRE':11, 'HDPE':6, 'Carbon Steel':13 },
+    },
+    0.75: {
+      'SCH 10': { 'Duplex':44, 'SS316':31, 'Super Duplex':55, 'GRE':12, 'HDPE':6, 'Carbon Steel':14 },
+      'SCH 20': { 'Duplex':51, 'SS316':36, 'Super Duplex':64, 'GRE':14, 'HDPE':7, 'Carbon Steel':16 },
+      'SCH 40': { 'Duplex':58, 'SS316':41, 'Super Duplex':73, 'GRE':15, 'HDPE':8, 'Carbon Steel':18 },
+    },
+    1: {
+      'SCH 10': { 'Duplex':56, 'SS316':39, 'Super Duplex':69, 'GRE':15, 'HDPE':8, 'Carbon Steel':17 },
+      'SCH 20': { 'Duplex':65, 'SS316':46, 'Super Duplex':81, 'GRE':17, 'HDPE':9, 'Carbon Steel':20 },
+      'SCH 40': { 'Duplex':74, 'SS316':52, 'Super Duplex':93, 'GRE':20, 'HDPE':11, 'Carbon Steel':23 },
+    },
+    1.5: {
+      'SCH 10': { 'Duplex':79, 'SS316':56, 'Super Duplex':99, 'GRE':21, 'HDPE':11, 'Carbon Steel':25 },
+      'SCH 20': { 'Duplex':93, 'SS316':65, 'Super Duplex':116, 'GRE':25, 'HDPE':13, 'Carbon Steel':29 },
+      'SCH 40': { 'Duplex':106, 'SS316':74, 'Super Duplex':132, 'GRE':28, 'HDPE':15, 'Carbon Steel':33 },
+    },
+    2: {
+      'SCH 10': { 'Duplex':107, 'SS316':75, 'Super Duplex':134, 'GRE':28, 'HDPE':15, 'Carbon Steel':33 },
+      'SCH 20': { 'Duplex':126, 'SS316':88, 'Super Duplex':157, 'GRE':33, 'HDPE':18, 'Carbon Steel':39 },
+      'SCH 40': { 'Duplex':143, 'SS316':100, 'Super Duplex':178, 'GRE':38, 'HDPE':20, 'Carbon Steel':45 },
+    },
+    2.5: {
+      'SCH 10': { 'Duplex':139, 'SS316':97, 'Super Duplex':174, 'GRE':37, 'HDPE':20, 'Carbon Steel':43 },
+      'SCH 20': { 'Duplex':163, 'SS316':114, 'Super Duplex':204, 'GRE':43, 'HDPE':23, 'Carbon Steel':51 },
+      'SCH 40': { 'Duplex':185, 'SS316':130, 'Super Duplex':231, 'GRE':49, 'HDPE':26, 'Carbon Steel':58 },
+    },
+    3: {
+      'SCH 10': { 'Duplex':175, 'SS316':122, 'Super Duplex':218, 'GRE':46, 'HDPE':25, 'Carbon Steel':54 },
+      'SCH 20': { 'Duplex':205, 'SS316':143, 'Super Duplex':256, 'GRE':54, 'HDPE':29, 'Carbon Steel':64 },
+      'SCH 40': { 'Duplex':233, 'SS316':163, 'Super Duplex':291, 'GRE':62, 'HDPE':33, 'Carbon Steel':73 },
+    },
+    4: {
+      'SCH 10': { 'Duplex':230, 'SS316':161, 'Super Duplex':288, 'GRE':61, 'HDPE':33, 'Carbon Steel':72 },
+      'SCH 20': { 'Duplex':270, 'SS316':189, 'Super Duplex':337, 'GRE':71, 'HDPE':38, 'Carbon Steel':84 },
+      'SCH 40': { 'Duplex':307, 'SS316':215, 'Super Duplex':383, 'GRE':81, 'HDPE':44, 'Carbon Steel':96 },
+    },
+    6: {
+      'SCH 10': { 'Duplex':397, 'SS316':278, 'Super Duplex':496, 'GRE':105, 'HDPE':56, 'Carbon Steel':124 },
+      'SCH 20': { 'Duplex':466, 'SS316':326, 'Super Duplex':582, 'GRE':123, 'HDPE':66, 'Carbon Steel':145 },
+      'SCH 40': { 'Duplex':529, 'SS316':370, 'Super Duplex':661, 'GRE':140, 'HDPE':75, 'Carbon Steel':165 },
+    },
+    8: {
+      'SCH 10': { 'Duplex':615, 'SS316':430, 'Super Duplex':768, 'GRE':163, 'HDPE':87, 'Carbon Steel':192 },
+      'SCH 20': { 'Duplex':722, 'SS316':505, 'Super Duplex':902, 'GRE':191, 'HDPE':102, 'Carbon Steel':225 },
+      'SCH 40': { 'Duplex':820, 'SS316':574, 'Super Duplex':1025, 'GRE':217, 'HDPE':116, 'Carbon Steel':256 },
+    },
+    10: {
+      'SCH 10': { 'Duplex':873, 'SS316':611, 'Super Duplex':1091, 'GRE':231, 'HDPE':124, 'Carbon Steel':272 },
+      'SCH 20': { 'Duplex':1024, 'SS316':716, 'Super Duplex':1280, 'GRE':271, 'HDPE':145, 'Carbon Steel':319 },
+      'SCH 40': { 'Duplex':1164, 'SS316':814, 'Super Duplex':1454, 'GRE':308, 'HDPE':165, 'Carbon Steel':363 },
+    },
+    12: {
+      'SCH 10': { 'Duplex':1170, 'SS316':819, 'Super Duplex':1462, 'GRE':310, 'HDPE':166, 'Carbon Steel':365 },
+      'SCH 20': { 'Duplex':1373, 'SS316':961, 'Super Duplex':1716, 'GRE':363, 'HDPE':195, 'Carbon Steel':428 },
+      'SCH 40': { 'Duplex':1561, 'SS316':1092, 'Super Duplex':1950, 'GRE':413, 'HDPE':221, 'Carbon Steel':487 },
+    },
+  },
+  'tee': {
+    0.5: {
+      'SCH 10': { 'Duplex':55, 'SS316':39, 'Super Duplex':69, 'GRE':13, 'HDPE':8, 'Carbon Steel':17 },
+      'SCH 20': { 'Duplex':65, 'SS316':45, 'Super Duplex':81, 'GRE':15, 'HDPE':9, 'Carbon Steel':20 },
+      'SCH 40': { 'Duplex':74, 'SS316':52, 'Super Duplex':92, 'GRE':18, 'HDPE':10, 'Carbon Steel':23 },
+    },
+    0.75: {
+      'SCH 10': { 'Duplex':76, 'SS316':53, 'Super Duplex':95, 'GRE':18, 'HDPE':11, 'Carbon Steel':24 },
+      'SCH 20': { 'Duplex':89, 'SS316':62, 'Super Duplex':111, 'GRE':21, 'HDPE':13, 'Carbon Steel':28 },
+      'SCH 40': { 'Duplex':101, 'SS316':71, 'Super Duplex':126, 'GRE':24, 'HDPE':14, 'Carbon Steel':31 },
+    },
+    1: {
+      'SCH 10': { 'Duplex':97, 'SS316':68, 'Super Duplex':121, 'GRE':23, 'HDPE':14, 'Carbon Steel':30 },
+      'SCH 20': { 'Duplex':113, 'SS316':79, 'Super Duplex':142, 'GRE':27, 'HDPE':16, 'Carbon Steel':35 },
+      'SCH 40': { 'Duplex':129, 'SS316':90, 'Super Duplex':161, 'GRE':31, 'HDPE':18, 'Carbon Steel':40 },
+    },
+    1.5: {
+      'SCH 10': { 'Duplex':138, 'SS316':97, 'Super Duplex':172, 'GRE':33, 'HDPE':20, 'Carbon Steel':43 },
+      'SCH 20': { 'Duplex':162, 'SS316':113, 'Super Duplex':202, 'GRE':39, 'HDPE':23, 'Carbon Steel':50 },
+      'SCH 40': { 'Duplex':184, 'SS316':129, 'Super Duplex':230, 'GRE':44, 'HDPE':26, 'Carbon Steel':57 },
+    },
+    2: {
+      'SCH 10': { 'Duplex':186, 'SS316':130, 'Super Duplex':233, 'GRE':45, 'HDPE':26, 'Carbon Steel':58 },
+      'SCH 20': { 'Duplex':219, 'SS316':153, 'Super Duplex':273, 'GRE':52, 'HDPE':31, 'Carbon Steel':68 },
+      'SCH 40': { 'Duplex':248, 'SS316':174, 'Super Duplex':310, 'GRE':59, 'HDPE':35, 'Carbon Steel':77 },
+    },
+    2.5: {
+      'SCH 10': { 'Duplex':242, 'SS316':169, 'Super Duplex':302, 'GRE':58, 'HDPE':34, 'Carbon Steel':75 },
+      'SCH 20': { 'Duplex':283, 'SS316':198, 'Super Duplex':354, 'GRE':68, 'HDPE':40, 'Carbon Steel':88 },
+      'SCH 40': { 'Duplex':322, 'SS316':225, 'Super Duplex':402, 'GRE':77, 'HDPE':46, 'Carbon Steel':100 },
+    },
+    3: {
+      'SCH 10': { 'Duplex':304, 'SS316':213, 'Super Duplex':380, 'GRE':73, 'HDPE':43, 'Carbon Steel':94 },
+      'SCH 20': { 'Duplex':356, 'SS316':249, 'Super Duplex':445, 'GRE':85, 'HDPE':50, 'Carbon Steel':110 },
+      'SCH 40': { 'Duplex':405, 'SS316':283, 'Super Duplex':506, 'GRE':97, 'HDPE':57, 'Carbon Steel':125 },
+    },
+    4: {
+      'SCH 10': { 'Duplex':400, 'SS316':280, 'Super Duplex':500, 'GRE':96, 'HDPE':57, 'Carbon Steel':124 },
+      'SCH 20': { 'Duplex':470, 'SS316':329, 'Super Duplex':587, 'GRE':112, 'HDPE':66, 'Carbon Steel':145 },
+      'SCH 40': { 'Duplex':534, 'SS316':374, 'Super Duplex':667, 'GRE':128, 'HDPE':75, 'Carbon Steel':165 },
+    },
+    6: {
+      'SCH 10': { 'Duplex':690, 'SS316':483, 'Super Duplex':862, 'GRE':165, 'HDPE':98, 'Carbon Steel':214 },
+      'SCH 20': { 'Duplex':810, 'SS316':567, 'Super Duplex':1012, 'GRE':194, 'HDPE':114, 'Carbon Steel':251 },
+      'SCH 40': { 'Duplex':920, 'SS316':644, 'Super Duplex':1150, 'GRE':220, 'HDPE':130, 'Carbon Steel':285 },
+    },
+    8: {
+      'SCH 10': { 'Duplex':1070, 'SS316':749, 'Super Duplex':1337, 'GRE':256, 'HDPE':151, 'Carbon Steel':331 },
+      'SCH 20': { 'Duplex':1255, 'SS316':878, 'Super Duplex':1569, 'GRE':300, 'HDPE':177, 'Carbon Steel':389 },
+      'SCH 40': { 'Duplex':1426, 'SS316':998, 'Super Duplex':1782, 'GRE':341, 'HDPE':202, 'Carbon Steel':442 },
+    },
+    10: {
+      'SCH 10': { 'Duplex':1518, 'SS316':1063, 'Super Duplex':1898, 'GRE':363, 'HDPE':214, 'Carbon Steel':470 },
+      'SCH 20': { 'Duplex':1781, 'SS316':1247, 'Super Duplex':2226, 'GRE':426, 'HDPE':252, 'Carbon Steel':552 },
+      'SCH 40': { 'Duplex':2024, 'SS316':1417, 'Super Duplex':2530, 'GRE':484, 'HDPE':286, 'Carbon Steel':627 },
+    },
+    12: {
+      'SCH 10': { 'Duplex':2036, 'SS316':1425, 'Super Duplex':2544, 'GRE':487, 'HDPE':288, 'Carbon Steel':631 },
+      'SCH 20': { 'Duplex':2388, 'SS316':1672, 'Super Duplex':2985, 'GRE':571, 'HDPE':337, 'Carbon Steel':740 },
+      'SCH 40': { 'Duplex':2714, 'SS316':1900, 'Super Duplex':3392, 'GRE':649, 'HDPE':384, 'Carbon Steel':841 },
+    },
+  },
+  'reducer': {
+    0.5: {
+      'SCH 10': { 'Duplex':23, 'SS316':16, 'Super Duplex':28, 'GRE':7, 'HDPE':4, 'Carbon Steel':9 },
+      'SCH 20': { 'Duplex':27, 'SS316':19, 'Super Duplex':33, 'GRE':8, 'HDPE':4, 'Carbon Steel':11 },
+      'SCH 40': { 'Duplex':30, 'SS316':21, 'Super Duplex':38, 'GRE':9, 'HDPE':5, 'Carbon Steel':12 },
+    },
+    0.75: {
+      'SCH 10': { 'Duplex':31, 'SS316':22, 'Super Duplex':39, 'GRE':9, 'HDPE':5, 'Carbon Steel':12 },
+      'SCH 20': { 'Duplex':37, 'SS316':26, 'Super Duplex':46, 'GRE':11, 'HDPE':6, 'Carbon Steel':15 },
+      'SCH 40': { 'Duplex':42, 'SS316':29, 'Super Duplex':52, 'GRE':12, 'HDPE':7, 'Carbon Steel':16 },
+    },
+    1: {
+      'SCH 10': { 'Duplex':40, 'SS316':28, 'Super Duplex':50, 'GRE':12, 'HDPE':6, 'Carbon Steel':16 },
+      'SCH 20': { 'Duplex':47, 'SS316':33, 'Super Duplex':59, 'GRE':14, 'HDPE':7, 'Carbon Steel':18 },
+      'SCH 40': { 'Duplex':53, 'SS316':37, 'Super Duplex':66, 'GRE':15, 'HDPE':8, 'Carbon Steel':21 },
+    },
+    1.5: {
+      'SCH 10': { 'Duplex':57, 'SS316':40, 'Super Duplex':71, 'GRE':16, 'HDPE':9, 'Carbon Steel':22 },
+      'SCH 20': { 'Duplex':67, 'SS316':47, 'Super Duplex':84, 'GRE':19, 'HDPE':11, 'Carbon Steel':26 },
+      'SCH 40': { 'Duplex':76, 'SS316':53, 'Super Duplex':95, 'GRE':22, 'HDPE':12, 'Carbon Steel':30 },
+    },
+    2: {
+      'SCH 10': { 'Duplex':77, 'SS316':54, 'Super Duplex':96, 'GRE':22, 'HDPE':12, 'Carbon Steel':30 },
+      'SCH 20': { 'Duplex':90, 'SS316':63, 'Super Duplex':113, 'GRE':26, 'HDPE':14, 'Carbon Steel':36 },
+      'SCH 40': { 'Duplex':103, 'SS316':72, 'Super Duplex':128, 'GRE':30, 'HDPE':16, 'Carbon Steel':40 },
+    },
+    2.5: {
+      'SCH 10': { 'Duplex':100, 'SS316':70, 'Super Duplex':125, 'GRE':29, 'HDPE':16, 'Carbon Steel':39 },
+      'SCH 20': { 'Duplex':117, 'SS316':82, 'Super Duplex':146, 'GRE':34, 'HDPE':18, 'Carbon Steel':46 },
+      'SCH 40': { 'Duplex':133, 'SS316':93, 'Super Duplex':166, 'GRE':38, 'HDPE':21, 'Carbon Steel':52 },
+    },
+    3: {
+      'SCH 10': { 'Duplex':125, 'SS316':88, 'Super Duplex':157, 'GRE':36, 'HDPE':20, 'Carbon Steel':50 },
+      'SCH 20': { 'Duplex':147, 'SS316':103, 'Super Duplex':184, 'GRE':43, 'HDPE':23, 'Carbon Steel':58 },
+      'SCH 40': { 'Duplex':167, 'SS316':117, 'Super Duplex':209, 'GRE':48, 'HDPE':26, 'Carbon Steel':66 },
+    },
+    4: {
+      'SCH 10': { 'Duplex':165, 'SS316':116, 'Super Duplex':207, 'GRE':48, 'HDPE':26, 'Carbon Steel':65 },
+      'SCH 20': { 'Duplex':194, 'SS316':136, 'Super Duplex':242, 'GRE':56, 'HDPE':31, 'Carbon Steel':77 },
+      'SCH 40': { 'Duplex':220, 'SS316':154, 'Super Duplex':276, 'GRE':64, 'HDPE':35, 'Carbon Steel':87 },
+    },
+    6: {
+      'SCH 10': { 'Duplex':285, 'SS316':200, 'Super Duplex':356, 'GRE':82, 'HDPE':45, 'Carbon Steel':112 },
+      'SCH 20': { 'Duplex':334, 'SS316':234, 'Super Duplex':418, 'GRE':97, 'HDPE':53, 'Carbon Steel':132 },
+      'SCH 40': { 'Duplex':380, 'SS316':266, 'Super Duplex':475, 'GRE':110, 'HDPE':60, 'Carbon Steel':150 },
+    },
+    8: {
+      'SCH 10': { 'Duplex':442, 'SS316':309, 'Super Duplex':552, 'GRE':128, 'HDPE':70, 'Carbon Steel':174 },
+      'SCH 20': { 'Duplex':518, 'SS316':363, 'Super Duplex':648, 'GRE':150, 'HDPE':82, 'Carbon Steel':205 },
+      'SCH 40': { 'Duplex':589, 'SS316':412, 'Super Duplex':736, 'GRE':170, 'HDPE':93, 'Carbon Steel':232 },
+    },
+    10: {
+      'SCH 10': { 'Duplex':627, 'SS316':439, 'Super Duplex':784, 'GRE':182, 'HDPE':99, 'Carbon Steel':248 },
+      'SCH 20': { 'Duplex':736, 'SS316':515, 'Super Duplex':920, 'GRE':213, 'HDPE':116, 'Carbon Steel':290 },
+      'SCH 40': { 'Duplex':836, 'SS316':585, 'Super Duplex':1045, 'GRE':242, 'HDPE':132, 'Carbon Steel':330 },
+    },
+    12: {
+      'SCH 10': { 'Duplex':841, 'SS316':589, 'Super Duplex':1051, 'GRE':243, 'HDPE':133, 'Carbon Steel':332 },
+      'SCH 20': { 'Duplex':986, 'SS316':691, 'Super Duplex':1233, 'GRE':286, 'HDPE':156, 'Carbon Steel':389 },
+      'SCH 40': { 'Duplex':1121, 'SS316':785, 'Super Duplex':1401, 'GRE':324, 'HDPE':177, 'Carbon Steel':442 },
+    },
+  },
+  'flange': {
+    0.5: {
+      '150#': { 'Duplex':39, 'SS316':27, 'Super Duplex':48, 'GRE':8, 'HDPE':5, 'Carbon Steel':12 },
+      '300#': { 'Duplex':52, 'SS316':36, 'Super Duplex':65, 'GRE':11, 'HDPE':6, 'Carbon Steel':16 },
+      '600#': { 'Duplex':74, 'SS316':52, 'Super Duplex':93, 'GRE':16, 'HDPE':9, 'Carbon Steel':23 },
+    },
+    0.75: {
+      '150#': { 'Duplex':53, 'SS316':37, 'Super Duplex':66, 'GRE':11, 'HDPE':6, 'Carbon Steel':17 },
+      '300#': { 'Duplex':71, 'SS316':50, 'Super Duplex':89, 'GRE':15, 'HDPE':8, 'Carbon Steel':22 },
+      '600#': { 'Duplex':102, 'SS316':71, 'Super Duplex':127, 'GRE':22, 'HDPE':12, 'Carbon Steel':32 },
+    },
+    1: {
+      '150#': { 'Duplex':67, 'SS316':47, 'Super Duplex':84, 'GRE':15, 'HDPE':8, 'Carbon Steel':21 },
+      '300#': { 'Duplex':91, 'SS316':64, 'Super Duplex':114, 'GRE':20, 'HDPE':11, 'Carbon Steel':28 },
+      '600#': { 'Duplex':130, 'SS316':91, 'Super Duplex':162, 'GRE':28, 'HDPE':15, 'Carbon Steel':41 },
+    },
+    1.5: {
+      '150#': { 'Duplex':96, 'SS316':67, 'Super Duplex':121, 'GRE':21, 'HDPE':11, 'Carbon Steel':30 },
+      '300#': { 'Duplex':130, 'SS316':91, 'Super Duplex':162, 'GRE':28, 'HDPE':15, 'Carbon Steel':41 },
+      '600#': { 'Duplex':185, 'SS316':130, 'Super Duplex':232, 'GRE':40, 'HDPE':22, 'Carbon Steel':58 },
+    },
+    2: {
+      '150#': { 'Duplex':130, 'SS316':91, 'Super Duplex':163, 'GRE':28, 'HDPE':15, 'Carbon Steel':41 },
+      '300#': { 'Duplex':175, 'SS316':123, 'Super Duplex':219, 'GRE':38, 'HDPE':21, 'Carbon Steel':55 },
+      '600#': { 'Duplex':250, 'SS316':175, 'Super Duplex':313, 'GRE':54, 'HDPE':30, 'Carbon Steel':78 },
+    },
+    2.5: {
+      '150#': { 'Duplex':169, 'SS316':118, 'Super Duplex':211, 'GRE':36, 'HDPE':20, 'Carbon Steel':53 },
+      '300#': { 'Duplex':227, 'SS316':159, 'Super Duplex':284, 'GRE':49, 'HDPE':27, 'Carbon Steel':71 },
+      '600#': { 'Duplex':324, 'SS316':227, 'Super Duplex':406, 'GRE':70, 'HDPE':38, 'Carbon Steel':102 },
+    },
+    3: {
+      '150#': { 'Duplex':212, 'SS316':148, 'Super Duplex':265, 'GRE':46, 'HDPE':25, 'Carbon Steel':66 },
+      '300#': { 'Duplex':286, 'SS316':200, 'Super Duplex':357, 'GRE':62, 'HDPE':34, 'Carbon Steel':89 },
+      '600#': { 'Duplex':408, 'SS316':286, 'Super Duplex':510, 'GRE':88, 'HDPE':48, 'Carbon Steel':128 },
+    },
+    4: {
+      '150#': { 'Duplex':280, 'SS316':196, 'Super Duplex':350, 'GRE':60, 'HDPE':33, 'Carbon Steel':87 },
+      '300#': { 'Duplex':376, 'SS316':263, 'Super Duplex':471, 'GRE':81, 'HDPE':45, 'Carbon Steel':118 },
+      '600#': { 'Duplex':538, 'SS316':376, 'Super Duplex':672, 'GRE':116, 'HDPE':64, 'Carbon Steel':168 },
+    },
+    6: {
+      '150#': { 'Duplex':482, 'SS316':337, 'Super Duplex':603, 'GRE':104, 'HDPE':57, 'Carbon Steel':151 },
+      '300#': { 'Duplex':649, 'SS316':454, 'Super Duplex':811, 'GRE':140, 'HDPE':77, 'Carbon Steel':203 },
+      '600#': { 'Duplex':927, 'SS316':649, 'Super Duplex':1159, 'GRE':200, 'HDPE':110, 'Carbon Steel':290 },
+    },
+    8: {
+      '150#': { 'Duplex':747, 'SS316':523, 'Super Duplex':934, 'GRE':161, 'HDPE':89, 'Carbon Steel':234 },
+      '300#': { 'Duplex':1006, 'SS316':704, 'Super Duplex':1258, 'GRE':217, 'HDPE':119, 'Carbon Steel':315 },
+      '600#': { 'Duplex':1437, 'SS316':1006, 'Super Duplex':1796, 'GRE':310, 'HDPE':170, 'Carbon Steel':450 },
+    },
+    10: {
+      '150#': { 'Duplex':1060, 'SS316':742, 'Super Duplex':1326, 'GRE':229, 'HDPE':126, 'Carbon Steel':332 },
+      '300#': { 'Duplex':1428, 'SS316':999, 'Super Duplex':1785, 'GRE':308, 'HDPE':169, 'Carbon Steel':447 },
+      '600#': { 'Duplex':2039, 'SS316':1428, 'Super Duplex':2550, 'GRE':440, 'HDPE':242, 'Carbon Steel':638 },
+    },
+    12: {
+      '150#': { 'Duplex':1422, 'SS316':996, 'Super Duplex':1778, 'GRE':307, 'HDPE':169, 'Carbon Steel':445 },
+      '300#': { 'Duplex':1914, 'SS316':1340, 'Super Duplex':2393, 'GRE':413, 'HDPE':227, 'Carbon Steel':599 },
+      '600#': { 'Duplex':2735, 'SS316':1915, 'Super Duplex':3419, 'GRE':590, 'HDPE':324, 'Carbon Steel':856 },
+    },
+  },
+  'coupling': {
+    0.5: {
+      'SCH 10': { 'Duplex':4, 'SS316':3, 'Super Duplex':6, 'GRE':2, 'HDPE':1, 'Carbon Steel':2 },
+      'SCH 20': { 'Duplex':5, 'SS316':4, 'Super Duplex':7, 'GRE':2, 'HDPE':1, 'Carbon Steel':3 },
+      'SCH 40': { 'Duplex':6, 'SS316':4, 'Super Duplex':8, 'GRE':2, 'HDPE':2, 'Carbon Steel':3 },
+    },
+    0.75: {
+      'SCH 10': { 'Duplex':6, 'SS316':4, 'Super Duplex':8, 'GRE':2, 'HDPE':2, 'Carbon Steel':3 },
+      'SCH 20': { 'Duplex':7, 'SS316':5, 'Super Duplex':9, 'GRE':3, 'HDPE':2, 'Carbon Steel':4 },
+      'SCH 40': { 'Duplex':8, 'SS316':6, 'Super Duplex':10, 'GRE':3, 'HDPE':2, 'Carbon Steel':4 },
+    },
+    1: {
+      'SCH 10': { 'Duplex':8, 'SS316':6, 'Super Duplex':10, 'GRE':3, 'HDPE':2, 'Carbon Steel':4 },
+      'SCH 20': { 'Duplex':9, 'SS316':7, 'Super Duplex':12, 'GRE':4, 'HDPE':2, 'Carbon Steel':5 },
+      'SCH 40': { 'Duplex':11, 'SS316':7, 'Super Duplex':13, 'GRE':4, 'HDPE':3, 'Carbon Steel':5 },
+    },
+    1.5: {
+      'SCH 10': { 'Duplex':11, 'SS316':8, 'Super Duplex':14, 'GRE':4, 'HDPE':3, 'Carbon Steel':6 },
+      'SCH 20': { 'Duplex':13, 'SS316':9, 'Super Duplex':17, 'GRE':5, 'HDPE':4, 'Carbon Steel':7 },
+      'SCH 40': { 'Duplex':15, 'SS316':11, 'Super Duplex':19, 'GRE':6, 'HDPE':4, 'Carbon Steel':8 },
+    },
+    2: {
+      'SCH 10': { 'Duplex':15, 'SS316':11, 'Super Duplex':19, 'GRE':6, 'HDPE':4, 'Carbon Steel':8 },
+      'SCH 20': { 'Duplex':18, 'SS316':13, 'Super Duplex':22, 'GRE':7, 'HDPE':5, 'Carbon Steel':9 },
+      'SCH 40': { 'Duplex':20, 'SS316':14, 'Super Duplex':25, 'GRE':8, 'HDPE':5, 'Carbon Steel':10 },
+    },
+    2.5: {
+      'SCH 10': { 'Duplex':20, 'SS316':14, 'Super Duplex':25, 'GRE':8, 'HDPE':5, 'Carbon Steel':10 },
+      'SCH 20': { 'Duplex':23, 'SS316':16, 'Super Duplex':29, 'GRE':9, 'HDPE':6, 'Carbon Steel':12 },
+      'SCH 40': { 'Duplex':26, 'SS316':19, 'Super Duplex':33, 'GRE':10, 'HDPE':7, 'Carbon Steel':13 },
+    },
+    3: {
+      'SCH 10': { 'Duplex':25, 'SS316':17, 'Super Duplex':31, 'GRE':10, 'HDPE':7, 'Carbon Steel':13 },
+      'SCH 20': { 'Duplex':29, 'SS316':21, 'Super Duplex':36, 'GRE':12, 'HDPE':8, 'Carbon Steel':15 },
+      'SCH 40': { 'Duplex':33, 'SS316':23, 'Super Duplex':41, 'GRE':13, 'HDPE':9, 'Carbon Steel':17 },
+    },
+    4: {
+      'SCH 10': { 'Duplex':33, 'SS316':23, 'Super Duplex':41, 'GRE':13, 'HDPE':9, 'Carbon Steel':17 },
+      'SCH 20': { 'Duplex':38, 'SS316':27, 'Super Duplex':48, 'GRE':15, 'HDPE':10, 'Carbon Steel':19 },
+      'SCH 40': { 'Duplex':44, 'SS316':31, 'Super Duplex':55, 'GRE':17, 'HDPE':12, 'Carbon Steel':22 },
+    },
+    6: {
+      'SCH 10': { 'Duplex':56, 'SS316':40, 'Super Duplex':70, 'GRE':22, 'HDPE':15, 'Carbon Steel':28 },
+      'SCH 20': { 'Duplex':66, 'SS316':47, 'Super Duplex':83, 'GRE':26, 'HDPE':18, 'Carbon Steel':33 },
+      'SCH 40': { 'Duplex':75, 'SS316':53, 'Super Duplex':94, 'GRE':30, 'HDPE':20, 'Carbon Steel':38 },
+    },
+    8: {
+      'SCH 10': { 'Duplex':87, 'SS316':62, 'Super Duplex':109, 'GRE':35, 'HDPE':23, 'Carbon Steel':44 },
+      'SCH 20': { 'Duplex':102, 'SS316':72, 'Super Duplex':128, 'GRE':41, 'HDPE':27, 'Carbon Steel':52 },
+      'SCH 40': { 'Duplex':116, 'SS316':82, 'Super Duplex':146, 'GRE':46, 'HDPE':31, 'Carbon Steel':59 },
+    },
+    10: {
+      'SCH 10': { 'Duplex':124, 'SS316':87, 'Super Duplex':155, 'GRE':50, 'HDPE':33, 'Carbon Steel':63 },
+      'SCH 20': { 'Duplex':145, 'SS316':103, 'Super Duplex':182, 'GRE':58, 'HDPE':39, 'Carbon Steel':74 },
+      'SCH 40': { 'Duplex':165, 'SS316':117, 'Super Duplex':207, 'GRE':66, 'HDPE':44, 'Carbon Steel':84 },
+    },
+    12: {
+      'SCH 10': { 'Duplex':166, 'SS316':117, 'Super Duplex':208, 'GRE':66, 'HDPE':44, 'Carbon Steel':84 },
+      'SCH 20': { 'Duplex':195, 'SS316':138, 'Super Duplex':244, 'GRE':78, 'HDPE':52, 'Carbon Steel':99 },
+      'SCH 40': { 'Duplex':221, 'SS316':156, 'Super Duplex':277, 'GRE':88, 'HDPE':59, 'Carbon Steel':112 },
+    },
+  },
+  'victaulic': {
+    0.5: {
+      'SCH 10': { 'Duplex':3, 'SS316':2, 'Super Duplex':4, 'GRE':null, 'HDPE':null, 'Carbon Steel':2 },
+      'SCH 20': { 'Duplex':3, 'SS316':2, 'Super Duplex':4, 'GRE':null, 'HDPE':null, 'Carbon Steel':2 },
+      'SCH 40': { 'Duplex':4, 'SS316':3, 'Super Duplex':5, 'GRE':null, 'HDPE':null, 'Carbon Steel':2 },
+    },
+    0.75: {
+      'SCH 10': { 'Duplex':4, 'SS316':3, 'Super Duplex':5, 'GRE':null, 'HDPE':null, 'Carbon Steel':2 },
+      'SCH 20': { 'Duplex':5, 'SS316':3, 'Super Duplex':6, 'GRE':null, 'HDPE':null, 'Carbon Steel':3 },
+      'SCH 40': { 'Duplex':5, 'SS316':4, 'Super Duplex':6, 'GRE':null, 'HDPE':null, 'Carbon Steel':3 },
+    },
+    1: {
+      'SCH 10': { 'Duplex':5, 'SS316':3, 'Super Duplex':6, 'GRE':null, 'HDPE':null, 'Carbon Steel':3 },
+      'SCH 20': { 'Duplex':6, 'SS316':4, 'Super Duplex':7, 'GRE':null, 'HDPE':null, 'Carbon Steel':3 },
+      'SCH 40': { 'Duplex':7, 'SS316':5, 'Super Duplex':8, 'GRE':null, 'HDPE':null, 'Carbon Steel':4 },
+    },
+    1.5: {
+      'SCH 10': { 'Duplex':7, 'SS316':5, 'Super Duplex':9, 'GRE':null, 'HDPE':null, 'Carbon Steel':4 },
+      'SCH 20': { 'Duplex':8, 'SS316':6, 'Super Duplex':10, 'GRE':null, 'HDPE':null, 'Carbon Steel':5 },
+      'SCH 40': { 'Duplex':9, 'SS316':7, 'Super Duplex':12, 'GRE':null, 'HDPE':null, 'Carbon Steel':6 },
+    },
+    2: {
+      'SCH 10': { 'Duplex':10, 'SS316':7, 'Super Duplex':12, 'GRE':null, 'HDPE':null, 'Carbon Steel':6 },
+      'SCH 20': { 'Duplex':11, 'SS316':8, 'Super Duplex':14, 'GRE':null, 'HDPE':null, 'Carbon Steel':7 },
+      'SCH 40': { 'Duplex':13, 'SS316':9, 'Super Duplex':16, 'GRE':null, 'HDPE':null, 'Carbon Steel':8 },
+    },
+    2.5: {
+      'SCH 10': { 'Duplex':12, 'SS316':9, 'Super Duplex':15, 'GRE':null, 'HDPE':null, 'Carbon Steel':7 },
+      'SCH 20': { 'Duplex':14, 'SS316':10, 'Super Duplex':18, 'GRE':null, 'HDPE':null, 'Carbon Steel':9 },
+      'SCH 40': { 'Duplex':16, 'SS316':12, 'Super Duplex':21, 'GRE':null, 'HDPE':null, 'Carbon Steel':10 },
+    },
+    3: {
+      'SCH 10': { 'Duplex':16, 'SS316':11, 'Super Duplex':19, 'GRE':null, 'HDPE':null, 'Carbon Steel':9 },
+      'SCH 20': { 'Duplex':18, 'SS316':13, 'Super Duplex':23, 'GRE':null, 'HDPE':null, 'Carbon Steel':11 },
+      'SCH 40': { 'Duplex':21, 'SS316':15, 'Super Duplex':26, 'GRE':null, 'HDPE':null, 'Carbon Steel':12 },
+    },
+    4: {
+      'SCH 10': { 'Duplex':20, 'SS316':14, 'Super Duplex':26, 'GRE':null, 'HDPE':null, 'Carbon Steel':12 },
+      'SCH 20': { 'Duplex':24, 'SS316':17, 'Super Duplex':30, 'GRE':null, 'HDPE':null, 'Carbon Steel':14 },
+      'SCH 40': { 'Duplex':27, 'SS316':19, 'Super Duplex':34, 'GRE':null, 'HDPE':null, 'Carbon Steel':16 },
+    },
+    6: {
+      'SCH 10': { 'Duplex':35, 'SS316':25, 'Super Duplex':44, 'GRE':null, 'HDPE':null, 'Carbon Steel':21 },
+      'SCH 20': { 'Duplex':41, 'SS316':29, 'Super Duplex':52, 'GRE':null, 'HDPE':null, 'Carbon Steel':25 },
+      'SCH 40': { 'Duplex':47, 'SS316':33, 'Super Duplex':59, 'GRE':null, 'HDPE':null, 'Carbon Steel':28 },
+    },
+    8: {
+      'SCH 10': { 'Duplex':55, 'SS316':38, 'Super Duplex':69, 'GRE':null, 'HDPE':null, 'Carbon Steel':33 },
+      'SCH 20': { 'Duplex':64, 'SS316':45, 'Super Duplex':80, 'GRE':null, 'HDPE':null, 'Carbon Steel':38 },
+      'SCH 40': { 'Duplex':73, 'SS316':51, 'Super Duplex':91, 'GRE':null, 'HDPE':null, 'Carbon Steel':43 },
+    },
+    10: {
+      'SCH 10': { 'Duplex':78, 'SS316':54, 'Super Duplex':97, 'GRE':null, 'HDPE':null, 'Carbon Steel':46 },
+      'SCH 20': { 'Duplex':91, 'SS316':64, 'Super Duplex':114, 'GRE':null, 'HDPE':null, 'Carbon Steel':54 },
+      'SCH 40': { 'Duplex':103, 'SS316':73, 'Super Duplex':130, 'GRE':null, 'HDPE':null, 'Carbon Steel':62 },
+    },
+    12: {
+      'SCH 10': { 'Duplex':104, 'SS316':73, 'Super Duplex':131, 'GRE':null, 'HDPE':null, 'Carbon Steel':62 },
+      'SCH 20': { 'Duplex':122, 'SS316':86, 'Super Duplex':153, 'GRE':null, 'HDPE':null, 'Carbon Steel':73 },
+      'SCH 40': { 'Duplex':139, 'SS316':97, 'Super Duplex':174, 'GRE':null, 'HDPE':null, 'Carbon Steel':83 },
+    },
+  },
+  'gate valve': {
+    0.5: {
+      '150#': { 'Duplex':267, 'SS316':187, 'Super Duplex':334, 'GRE':null, 'HDPE':null, 'Carbon Steel':116 },
+      '300#': { 'Duplex':360, 'SS316':252, 'Super Duplex':450, 'GRE':null, 'HDPE':null, 'Carbon Steel':157 },
+      '600#': { 'Duplex':514, 'SS316':360, 'Super Duplex':642, 'GRE':null, 'HDPE':null, 'Carbon Steel':224 },
+    },
+    0.75: {
+      '150#': { 'Duplex':367, 'SS316':257, 'Super Duplex':459, 'GRE':null, 'HDPE':null, 'Carbon Steel':160 },
+      '300#': { 'Duplex':494, 'SS316':346, 'Super Duplex':618, 'GRE':null, 'HDPE':null, 'Carbon Steel':216 },
+      '600#': { 'Duplex':706, 'SS316':494, 'Super Duplex':883, 'GRE':null, 'HDPE':null, 'Carbon Steel':308 },
+    },
+    1: {
+      '150#': { 'Duplex':468, 'SS316':327, 'Super Duplex':584, 'GRE':null, 'HDPE':null, 'Carbon Steel':204 },
+      '300#': { 'Duplex':629, 'SS316':441, 'Super Duplex':787, 'GRE':null, 'HDPE':null, 'Carbon Steel':274 },
+      '600#': { 'Duplex':899, 'SS316':629, 'Super Duplex':1124, 'GRE':null, 'HDPE':null, 'Carbon Steel':392 },
+    },
+    1.5: {
+      '150#': { 'Duplex':668, 'SS316':467, 'Super Duplex':835, 'GRE':null, 'HDPE':null, 'Carbon Steel':291 },
+      '300#': { 'Duplex':899, 'SS316':629, 'Super Duplex':1124, 'GRE':null, 'HDPE':null, 'Carbon Steel':392 },
+      '600#': { 'Duplex':1284, 'SS316':899, 'Super Duplex':1605, 'GRE':null, 'HDPE':null, 'Carbon Steel':560 },
+    },
+    2: {
+      '150#': { 'Duplex':902, 'SS316':631, 'Super Duplex':1127, 'GRE':null, 'HDPE':null, 'Carbon Steel':393 },
+      '300#': { 'Duplex':1214, 'SS316':850, 'Super Duplex':1517, 'GRE':null, 'HDPE':null, 'Carbon Steel':529 },
+      '600#': { 'Duplex':1734, 'SS316':1214, 'Super Duplex':2167, 'GRE':null, 'HDPE':null, 'Carbon Steel':756 },
+    },
+    2.5: {
+      '150#': { 'Duplex':1169, 'SS316':818, 'Super Duplex':1461, 'GRE':null, 'HDPE':null, 'Carbon Steel':510 },
+      '300#': { 'Duplex':1573, 'SS316':1101, 'Super Duplex':1967, 'GRE':null, 'HDPE':null, 'Carbon Steel':686 },
+      '600#': { 'Duplex':2248, 'SS316':1573, 'Super Duplex':2809, 'GRE':null, 'HDPE':null, 'Carbon Steel':980 },
+    },
+    3: {
+      '150#': { 'Duplex':1469, 'SS316':1028, 'Super Duplex':1837, 'GRE':null, 'HDPE':null, 'Carbon Steel':641 },
+      '300#': { 'Duplex':1978, 'SS316':1384, 'Super Duplex':2472, 'GRE':null, 'HDPE':null, 'Carbon Steel':862 },
+      '600#': { 'Duplex':2826, 'SS316':1978, 'Super Duplex':3532, 'GRE':null, 'HDPE':null, 'Carbon Steel':1232 },
+    },
+    4: {
+      '150#': { 'Duplex':1937, 'SS316':1356, 'Super Duplex':2421, 'GRE':null, 'HDPE':null, 'Carbon Steel':844 },
+      '300#': { 'Duplex':2607, 'SS316':1825, 'Super Duplex':3259, 'GRE':null, 'HDPE':null, 'Carbon Steel':1137 },
+      '600#': { 'Duplex':3725, 'SS316':2607, 'Super Duplex':4656, 'GRE':null, 'HDPE':null, 'Carbon Steel':1624 },
+    },
+    6: {
+      '150#': { 'Duplex':3339, 'SS316':2337, 'Super Duplex':4174, 'GRE':null, 'HDPE':null, 'Carbon Steel':1456 },
+      '300#': { 'Duplex':4495, 'SS316':3146, 'Super Duplex':5619, 'GRE':null, 'HDPE':null, 'Carbon Steel':1960 },
+      '600#': { 'Duplex':6422, 'SS316':4495, 'Super Duplex':8027, 'GRE':null, 'HDPE':null, 'Carbon Steel':2800 },
+    },
+    8: {
+      '150#': { 'Duplex':5176, 'SS316':3623, 'Super Duplex':6470, 'GRE':null, 'HDPE':null, 'Carbon Steel':2257 },
+      '300#': { 'Duplex':6968, 'SS316':4877, 'Super Duplex':8709, 'GRE':null, 'HDPE':null, 'Carbon Steel':3038 },
+      '600#': { 'Duplex':9954, 'SS316':6967, 'Super Duplex':12442, 'GRE':null, 'HDPE':null, 'Carbon Steel':4340 },
+    },
+    10: {
+      '150#': { 'Duplex':7347, 'SS316':5142, 'Super Duplex':9183, 'GRE':null, 'HDPE':null, 'Carbon Steel':3203 },
+      '300#': { 'Duplex':9890, 'SS316':6922, 'Super Duplex':12362, 'GRE':null, 'HDPE':null, 'Carbon Steel':4312 },
+      '600#': { 'Duplex':14128, 'SS316':9889, 'Super Duplex':17659, 'GRE':null, 'HDPE':null, 'Carbon Steel':6160 },
+    },
+    12: {
+      '150#': { 'Duplex':9851, 'SS316':6895, 'Super Duplex':12313, 'GRE':null, 'HDPE':null, 'Carbon Steel':4295 },
+      '300#': { 'Duplex':13261, 'SS316':9282, 'Super Duplex':16576, 'GRE':null, 'HDPE':null, 'Carbon Steel':5782 },
+      '600#': { 'Duplex':18945, 'SS316':13260, 'Super Duplex':23680, 'GRE':null, 'HDPE':null, 'Carbon Steel':8260 },
+    },
+  },
+  'check valve': {
+    0.5: {
+      '150#': { 'Duplex':77, 'SS316':54, 'Super Duplex':97, 'GRE':null, 'HDPE':null, 'Carbon Steel':34 },
+      '300#': { 'Duplex':104, 'SS316':73, 'Super Duplex':130, 'GRE':null, 'HDPE':null, 'Carbon Steel':46 },
+      '600#': { 'Duplex':149, 'SS316':104, 'Super Duplex':186, 'GRE':null, 'HDPE':null, 'Carbon Steel':66 },
+    },
+    0.75: {
+      '150#': { 'Duplex':106, 'SS316':74, 'Super Duplex':133, 'GRE':null, 'HDPE':null, 'Carbon Steel':47 },
+      '300#': { 'Duplex':143, 'SS316':100, 'Super Duplex':179, 'GRE':null, 'HDPE':null, 'Carbon Steel':63 },
+      '600#': { 'Duplex':204, 'SS316':143, 'Super Duplex':256, 'GRE':null, 'HDPE':null, 'Carbon Steel':90 },
+    },
+    1: {
+      '150#': { 'Duplex':135, 'SS316':95, 'Super Duplex':169, 'GRE':null, 'HDPE':null, 'Carbon Steel':60 },
+      '300#': { 'Duplex':182, 'SS316':127, 'Super Duplex':228, 'GRE':null, 'HDPE':null, 'Carbon Steel':80 },
+      '600#': { 'Duplex':260, 'SS316':182, 'Super Duplex':325, 'GRE':null, 'HDPE':null, 'Carbon Steel':115 },
+    },
+    1.5: {
+      '150#': { 'Duplex':193, 'SS316':135, 'Super Duplex':242, 'GRE':null, 'HDPE':null, 'Carbon Steel':85 },
+      '300#': { 'Duplex':260, 'SS316':182, 'Super Duplex':325, 'GRE':null, 'HDPE':null, 'Carbon Steel':115 },
+      '600#': { 'Duplex':372, 'SS316':260, 'Super Duplex':465, 'GRE':null, 'HDPE':null, 'Carbon Steel':164 },
+    },
+    2: {
+      '150#': { 'Duplex':261, 'SS316':183, 'Super Duplex':326, 'GRE':null, 'HDPE':null, 'Carbon Steel':115 },
+      '300#': { 'Duplex':351, 'SS316':246, 'Super Duplex':439, 'GRE':null, 'HDPE':null, 'Carbon Steel':155 },
+      '600#': { 'Duplex':502, 'SS316':351, 'Super Duplex':627, 'GRE':null, 'HDPE':null, 'Carbon Steel':221 },
+    },
+    2.5: {
+      '150#': { 'Duplex':338, 'SS316':237, 'Super Duplex':423, 'GRE':null, 'HDPE':null, 'Carbon Steel':149 },
+      '300#': { 'Duplex':455, 'SS316':319, 'Super Duplex':569, 'GRE':null, 'HDPE':null, 'Carbon Steel':201 },
+      '600#': { 'Duplex':650, 'SS316':455, 'Super Duplex':813, 'GRE':null, 'HDPE':null, 'Carbon Steel':287 },
+    },
+    3: {
+      '150#': { 'Duplex':425, 'SS316':298, 'Super Duplex':532, 'GRE':null, 'HDPE':null, 'Carbon Steel':188 },
+      '300#': { 'Duplex':572, 'SS316':401, 'Super Duplex':715, 'GRE':null, 'HDPE':null, 'Carbon Steel':253 },
+      '600#': { 'Duplex':818, 'SS316':572, 'Super Duplex':1022, 'GRE':null, 'HDPE':null, 'Carbon Steel':361 },
+    },
+    4: {
+      '150#': { 'Duplex':560, 'SS316':392, 'Super Duplex':701, 'GRE':null, 'HDPE':null, 'Carbon Steel':247 },
+      '300#': { 'Duplex':754, 'SS316':528, 'Super Duplex':943, 'GRE':null, 'HDPE':null, 'Carbon Steel':333 },
+      '600#': { 'Duplex':1078, 'SS316':755, 'Super Duplex':1347, 'GRE':null, 'HDPE':null, 'Carbon Steel':476 },
+    },
+    6: {
+      '150#': { 'Duplex':966, 'SS316':677, 'Super Duplex':1208, 'GRE':null, 'HDPE':null, 'Carbon Steel':426 },
+      '300#': { 'Duplex':1301, 'SS316':911, 'Super Duplex':1626, 'GRE':null, 'HDPE':null, 'Carbon Steel':574 },
+      '600#': { 'Duplex':1858, 'SS316':1301, 'Super Duplex':2323, 'GRE':null, 'HDPE':null, 'Carbon Steel':820 },
+    },
+    8: {
+      '150#': { 'Duplex':1498, 'SS316':1049, 'Super Duplex':1872, 'GRE':null, 'HDPE':null, 'Carbon Steel':661 },
+      '300#': { 'Duplex':2016, 'SS316':1412, 'Super Duplex':2520, 'GRE':null, 'HDPE':null, 'Carbon Steel':890 },
+      '600#': { 'Duplex':2880, 'SS316':2017, 'Super Duplex':3601, 'GRE':null, 'HDPE':null, 'Carbon Steel':1271 },
+    },
+    10: {
+      '150#': { 'Duplex':2126, 'SS316':1488, 'Super Duplex':2658, 'GRE':null, 'HDPE':null, 'Carbon Steel':938 },
+      '300#': { 'Duplex':2861, 'SS316':2004, 'Super Duplex':3577, 'GRE':null, 'HDPE':null, 'Carbon Steel':1263 },
+      '600#': { 'Duplex':4088, 'SS316':2862, 'Super Duplex':5111, 'GRE':null, 'HDPE':null, 'Carbon Steel':1804 },
+    },
+    12: {
+      '150#': { 'Duplex':2850, 'SS316':1996, 'Super Duplex':3563, 'GRE':null, 'HDPE':null, 'Carbon Steel':1258 },
+      '300#': { 'Duplex':3837, 'SS316':2687, 'Super Duplex':4797, 'GRE':null, 'HDPE':null, 'Carbon Steel':1693 },
+      '600#': { 'Duplex':5481, 'SS316':3838, 'Super Duplex':6853, 'GRE':null, 'HDPE':null, 'Carbon Steel':2419 },
+    },
+  },
+  'ball valve': {
+    0.5: {
+      '150#': { 'Duplex':133, 'SS316':93, 'Super Duplex':166, 'GRE':null, 'HDPE':null, 'Carbon Steel':58 },
+      '300#': { 'Duplex':179, 'SS316':125, 'Super Duplex':224, 'GRE':null, 'HDPE':null, 'Carbon Steel':78 },
+      '600#': { 'Duplex':256, 'SS316':179, 'Super Duplex':320, 'GRE':null, 'HDPE':null, 'Carbon Steel':112 },
+    },
+    0.75: {
+      '150#': { 'Duplex':183, 'SS316':128, 'Super Duplex':229, 'GRE':null, 'HDPE':null, 'Carbon Steel':80 },
+      '300#': { 'Duplex':246, 'SS316':172, 'Super Duplex':308, 'GRE':null, 'HDPE':null, 'Carbon Steel':108 },
+      '600#': { 'Duplex':352, 'SS316':246, 'Super Duplex':440, 'GRE':null, 'HDPE':null, 'Carbon Steel':154 },
+    },
+    1: {
+      '150#': { 'Duplex':233, 'SS316':163, 'Super Duplex':291, 'GRE':null, 'HDPE':null, 'Carbon Steel':102 },
+      '300#': { 'Duplex':314, 'SS316':220, 'Super Duplex':392, 'GRE':null, 'HDPE':null, 'Carbon Steel':137 },
+      '600#': { 'Duplex':448, 'SS316':314, 'Super Duplex':560, 'GRE':null, 'HDPE':null, 'Carbon Steel':196 },
+    },
+    1.5: {
+      '150#': { 'Duplex':333, 'SS316':233, 'Super Duplex':416, 'GRE':null, 'HDPE':null, 'Carbon Steel':146 },
+      '300#': { 'Duplex':448, 'SS316':314, 'Super Duplex':560, 'GRE':null, 'HDPE':null, 'Carbon Steel':196 },
+      '600#': { 'Duplex':640, 'SS316':448, 'Super Duplex':800, 'GRE':null, 'HDPE':null, 'Carbon Steel':280 },
+    },
+    2: {
+      '150#': { 'Duplex':449, 'SS316':314, 'Super Duplex':562, 'GRE':null, 'HDPE':null, 'Carbon Steel':197 },
+      '300#': { 'Duplex':605, 'SS316':423, 'Super Duplex':756, 'GRE':null, 'HDPE':null, 'Carbon Steel':265 },
+      '600#': { 'Duplex':864, 'SS316':605, 'Super Duplex':1080, 'GRE':null, 'HDPE':null, 'Carbon Steel':378 },
+    },
+    2.5: {
+      '150#': { 'Duplex':582, 'SS316':408, 'Super Duplex':728, 'GRE':null, 'HDPE':null, 'Carbon Steel':255 },
+      '300#': { 'Duplex':784, 'SS316':549, 'Super Duplex':980, 'GRE':null, 'HDPE':null, 'Carbon Steel':343 },
+      '600#': { 'Duplex':1120, 'SS316':784, 'Super Duplex':1400, 'GRE':null, 'HDPE':null, 'Carbon Steel':490 },
+    },
+    3: {
+      '150#': { 'Duplex':732, 'SS316':513, 'Super Duplex':915, 'GRE':null, 'HDPE':null, 'Carbon Steel':320 },
+      '300#': { 'Duplex':986, 'SS316':690, 'Super Duplex':1232, 'GRE':null, 'HDPE':null, 'Carbon Steel':431 },
+      '600#': { 'Duplex':1408, 'SS316':986, 'Super Duplex':1760, 'GRE':null, 'HDPE':null, 'Carbon Steel':616 },
+    },
+    4: {
+      '150#': { 'Duplex':965, 'SS316':676, 'Super Duplex':1206, 'GRE':null, 'HDPE':null, 'Carbon Steel':422 },
+      '300#': { 'Duplex':1299, 'SS316':909, 'Super Duplex':1624, 'GRE':null, 'HDPE':null, 'Carbon Steel':568 },
+      '600#': { 'Duplex':1856, 'SS316':1299, 'Super Duplex':2320, 'GRE':null, 'HDPE':null, 'Carbon Steel':812 },
+    },
+    6: {
+      '150#': { 'Duplex':1664, 'SS316':1165, 'Super Duplex':2080, 'GRE':null, 'HDPE':null, 'Carbon Steel':728 },
+      '300#': { 'Duplex':2240, 'SS316':1568, 'Super Duplex':2800, 'GRE':null, 'HDPE':null, 'Carbon Steel':980 },
+      '600#': { 'Duplex':3200, 'SS316':2240, 'Super Duplex':4000, 'GRE':null, 'HDPE':null, 'Carbon Steel':1400 },
+    },
+    8: {
+      '150#': { 'Duplex':2579, 'SS316':1805, 'Super Duplex':3224, 'GRE':null, 'HDPE':null, 'Carbon Steel':1128 },
+      '300#': { 'Duplex':3472, 'SS316':2430, 'Super Duplex':4340, 'GRE':null, 'HDPE':null, 'Carbon Steel':1519 },
+      '600#': { 'Duplex':4960, 'SS316':3472, 'Super Duplex':6200, 'GRE':null, 'HDPE':null, 'Carbon Steel':2170 },
+    },
+    10: {
+      '150#': { 'Duplex':3661, 'SS316':2563, 'Super Duplex':4576, 'GRE':null, 'HDPE':null, 'Carbon Steel':1602 },
+      '300#': { 'Duplex':4928, 'SS316':3450, 'Super Duplex':6160, 'GRE':null, 'HDPE':null, 'Carbon Steel':2156 },
+      '600#': { 'Duplex':7040, 'SS316':4928, 'Super Duplex':8800, 'GRE':null, 'HDPE':null, 'Carbon Steel':3080 },
+    },
+    12: {
+      '150#': { 'Duplex':4909, 'SS316':3436, 'Super Duplex':6136, 'GRE':null, 'HDPE':null, 'Carbon Steel':2148 },
+      '300#': { 'Duplex':6608, 'SS316':4626, 'Super Duplex':8260, 'GRE':null, 'HDPE':null, 'Carbon Steel':2891 },
+      '600#': { 'Duplex':9440, 'SS316':6608, 'Super Duplex':11800, 'GRE':null, 'HDPE':null, 'Carbon Steel':4130 },
+    },
+  },
+  'nrv': {
+    0.5: {
+      '150#': { 'Duplex':44, 'SS316':31, 'Super Duplex':55, 'GRE':null, 'HDPE':null, 'Carbon Steel':20 },
+      '300#': { 'Duplex':59, 'SS316':41, 'Super Duplex':73, 'GRE':null, 'HDPE':null, 'Carbon Steel':27 },
+      '600#': { 'Duplex':84, 'SS316':59, 'Super Duplex':105, 'GRE':null, 'HDPE':null, 'Carbon Steel':38 },
+    },
+    0.75: {
+      '150#': { 'Duplex':60, 'SS316':42, 'Super Duplex':75, 'GRE':null, 'HDPE':null, 'Carbon Steel':27 },
+      '300#': { 'Duplex':81, 'SS316':57, 'Super Duplex':101, 'GRE':null, 'HDPE':null, 'Carbon Steel':37 },
+      '600#': { 'Duplex':115, 'SS316':81, 'Super Duplex':144, 'GRE':null, 'HDPE':null, 'Carbon Steel':53 },
+    },
+    1: {
+      '150#': { 'Duplex':76, 'SS316':53, 'Super Duplex':95, 'GRE':null, 'HDPE':null, 'Carbon Steel':35 },
+      '300#': { 'Duplex':103, 'SS316':72, 'Super Duplex':128, 'GRE':null, 'HDPE':null, 'Carbon Steel':47 },
+      '600#': { 'Duplex':147, 'SS316':103, 'Super Duplex':184, 'GRE':null, 'HDPE':null, 'Carbon Steel':67 },
+    },
+    1.5: {
+      '150#': { 'Duplex':109, 'SS316':76, 'Super Duplex':136, 'GRE':null, 'HDPE':null, 'Carbon Steel':50 },
+      '300#': { 'Duplex':147, 'SS316':103, 'Super Duplex':184, 'GRE':null, 'HDPE':null, 'Carbon Steel':67 },
+      '600#': { 'Duplex':210, 'SS316':147, 'Super Duplex':262, 'GRE':null, 'HDPE':null, 'Carbon Steel':96 },
+    },
+    2: {
+      '150#': { 'Duplex':147, 'SS316':103, 'Super Duplex':184, 'GRE':null, 'HDPE':null, 'Carbon Steel':67 },
+      '300#': { 'Duplex':198, 'SS316':139, 'Super Duplex':248, 'GRE':null, 'HDPE':null, 'Carbon Steel':91 },
+      '600#': { 'Duplex':283, 'SS316':198, 'Super Duplex':354, 'GRE':null, 'HDPE':null, 'Carbon Steel':130 },
+    },
+    2.5: {
+      '150#': { 'Duplex':191, 'SS316':134, 'Super Duplex':239, 'GRE':null, 'HDPE':null, 'Carbon Steel':87 },
+      '300#': { 'Duplex':257, 'SS316':180, 'Super Duplex':321, 'GRE':null, 'HDPE':null, 'Carbon Steel':118 },
+      '600#': { 'Duplex':367, 'SS316':257, 'Super Duplex':459, 'GRE':null, 'HDPE':null, 'Carbon Steel':168 },
+    },
+    3: {
+      '150#': { 'Duplex':240, 'SS316':168, 'Super Duplex':300, 'GRE':null, 'HDPE':null, 'Carbon Steel':110 },
+      '300#': { 'Duplex':323, 'SS316':226, 'Super Duplex':404, 'GRE':null, 'HDPE':null, 'Carbon Steel':148 },
+      '600#': { 'Duplex':462, 'SS316':323, 'Super Duplex':577, 'GRE':null, 'HDPE':null, 'Carbon Steel':211 },
+    },
+    4: {
+      '150#': { 'Duplex':316, 'SS316':221, 'Super Duplex':395, 'GRE':null, 'HDPE':null, 'Carbon Steel':145 },
+      '300#': { 'Duplex':426, 'SS316':298, 'Super Duplex':532, 'GRE':null, 'HDPE':null, 'Carbon Steel':195 },
+      '600#': { 'Duplex':608, 'SS316':426, 'Super Duplex':760, 'GRE':null, 'HDPE':null, 'Carbon Steel':278 },
+    },
+    6: {
+      '150#': { 'Duplex':545, 'SS316':382, 'Super Duplex':682, 'GRE':null, 'HDPE':null, 'Carbon Steel':250 },
+      '300#': { 'Duplex':734, 'SS316':514, 'Super Duplex':918, 'GRE':null, 'HDPE':null, 'Carbon Steel':336 },
+      '600#': { 'Duplex':1049, 'SS316':734, 'Super Duplex':1311, 'GRE':null, 'HDPE':null, 'Carbon Steel':480 },
+    },
+    8: {
+      '150#': { 'Duplex':845, 'SS316':592, 'Super Duplex':1057, 'GRE':null, 'HDPE':null, 'Carbon Steel':387 },
+      '300#': { 'Duplex':1138, 'SS316':796, 'Super Duplex':1422, 'GRE':null, 'HDPE':null, 'Carbon Steel':521 },
+      '600#': { 'Duplex':1626, 'SS316':1138, 'Super Duplex':2032, 'GRE':null, 'HDPE':null, 'Carbon Steel':744 },
+    },
+    10: {
+      '150#': { 'Duplex':1200, 'SS316':840, 'Super Duplex':1500, 'GRE':null, 'HDPE':null, 'Carbon Steel':549 },
+      '300#': { 'Duplex':1615, 'SS316':1130, 'Super Duplex':2019, 'GRE':null, 'HDPE':null, 'Carbon Steel':739 },
+      '600#': { 'Duplex':2308, 'SS316':1615, 'Super Duplex':2884, 'GRE':null, 'HDPE':null, 'Carbon Steel':1056 },
+    },
+    12: {
+      '150#': { 'Duplex':1609, 'SS316':1126, 'Super Duplex':2011, 'GRE':null, 'HDPE':null, 'Carbon Steel':736 },
+      '300#': { 'Duplex':2166, 'SS316':1516, 'Super Duplex':2707, 'GRE':null, 'HDPE':null, 'Carbon Steel':991 },
+      '600#': { 'Duplex':3095, 'SS316':2165, 'Super Duplex':3867, 'GRE':null, 'HDPE':null, 'Carbon Steel':1416 },
+    },
+  },
+  'butterfly': {
+    0.5: {
+      '150#': { 'Duplex':92, 'SS316':64, 'Super Duplex':114, 'GRE':null, 'HDPE':null, 'Carbon Steel':40 },
+      '300#': { 'Duplex':123, 'SS316':86, 'Super Duplex':154, 'GRE':null, 'HDPE':null, 'Carbon Steel':54 },
+      '600#': { 'Duplex':176, 'SS316':123, 'Super Duplex':220, 'GRE':null, 'HDPE':null, 'Carbon Steel':77 },
+    },
+    0.75: {
+      '150#': { 'Duplex':126, 'SS316':88, 'Super Duplex':157, 'GRE':null, 'HDPE':null, 'Carbon Steel':55 },
+      '300#': { 'Duplex':169, 'SS316':119, 'Super Duplex':212, 'GRE':null, 'HDPE':null, 'Carbon Steel':74 },
+      '600#': { 'Duplex':242, 'SS316':169, 'Super Duplex':302, 'GRE':null, 'HDPE':null, 'Carbon Steel':106 },
+    },
+    1: {
+      '150#': { 'Duplex':160, 'SS316':112, 'Super Duplex':200, 'GRE':null, 'HDPE':null, 'Carbon Steel':70 },
+      '300#': { 'Duplex':216, 'SS316':151, 'Super Duplex':270, 'GRE':null, 'HDPE':null, 'Carbon Steel':94 },
+      '600#': { 'Duplex':308, 'SS316':216, 'Super Duplex':385, 'GRE':null, 'HDPE':null, 'Carbon Steel':134 },
+    },
+    1.5: {
+      '150#': { 'Duplex':229, 'SS316':160, 'Super Duplex':286, 'GRE':null, 'HDPE':null, 'Carbon Steel':100 },
+      '300#': { 'Duplex':308, 'SS316':216, 'Super Duplex':385, 'GRE':null, 'HDPE':null, 'Carbon Steel':134 },
+      '600#': { 'Duplex':440, 'SS316':308, 'Super Duplex':550, 'GRE':null, 'HDPE':null, 'Carbon Steel':192 },
+    },
+    2: {
+      '150#': { 'Duplex':309, 'SS316':216, 'Super Duplex':386, 'GRE':null, 'HDPE':null, 'Carbon Steel':135 },
+      '300#': { 'Duplex':416, 'SS316':291, 'Super Duplex':520, 'GRE':null, 'HDPE':null, 'Carbon Steel':181 },
+      '600#': { 'Duplex':594, 'SS316':416, 'Super Duplex':742, 'GRE':null, 'HDPE':null, 'Carbon Steel':259 },
+    },
+    2.5: {
+      '150#': { 'Duplex':400, 'SS316':280, 'Super Duplex':500, 'GRE':null, 'HDPE':null, 'Carbon Steel':175 },
+      '300#': { 'Duplex':539, 'SS316':377, 'Super Duplex':674, 'GRE':null, 'HDPE':null, 'Carbon Steel':235 },
+      '600#': { 'Duplex':770, 'SS316':539, 'Super Duplex':962, 'GRE':null, 'HDPE':null, 'Carbon Steel':336 },
+    },
+    3: {
+      '150#': { 'Duplex':503, 'SS316':352, 'Super Duplex':629, 'GRE':null, 'HDPE':null, 'Carbon Steel':220 },
+      '300#': { 'Duplex':678, 'SS316':474, 'Super Duplex':847, 'GRE':null, 'HDPE':null, 'Carbon Steel':296 },
+      '600#': { 'Duplex':968, 'SS316':678, 'Super Duplex':1210, 'GRE':null, 'HDPE':null, 'Carbon Steel':422 },
+    },
+    4: {
+      '150#': { 'Duplex':664, 'SS316':464, 'Super Duplex':829, 'GRE':null, 'HDPE':null, 'Carbon Steel':290 },
+      '300#': { 'Duplex':893, 'SS316':625, 'Super Duplex':1116, 'GRE':null, 'HDPE':null, 'Carbon Steel':390 },
+      '600#': { 'Duplex':1276, 'SS316':893, 'Super Duplex':1595, 'GRE':null, 'HDPE':null, 'Carbon Steel':557 },
+    },
+    6: {
+      '150#': { 'Duplex':1144, 'SS316':801, 'Super Duplex':1430, 'GRE':null, 'HDPE':null, 'Carbon Steel':499 },
+      '300#': { 'Duplex':1540, 'SS316':1078, 'Super Duplex':1925, 'GRE':null, 'HDPE':null, 'Carbon Steel':672 },
+      '600#': { 'Duplex':2200, 'SS316':1540, 'Super Duplex':2750, 'GRE':null, 'HDPE':null, 'Carbon Steel':960 },
+    },
+    8: {
+      '150#': { 'Duplex':1773, 'SS316':1241, 'Super Duplex':2216, 'GRE':null, 'HDPE':null, 'Carbon Steel':774 },
+      '300#': { 'Duplex':2387, 'SS316':1671, 'Super Duplex':2984, 'GRE':null, 'HDPE':null, 'Carbon Steel':1042 },
+      '600#': { 'Duplex':3410, 'SS316':2387, 'Super Duplex':4262, 'GRE':null, 'HDPE':null, 'Carbon Steel':1488 },
+    },
+    10: {
+      '150#': { 'Duplex':2517, 'SS316':1762, 'Super Duplex':3146, 'GRE':null, 'HDPE':null, 'Carbon Steel':1098 },
+      '300#': { 'Duplex':3388, 'SS316':2372, 'Super Duplex':4235, 'GRE':null, 'HDPE':null, 'Carbon Steel':1478 },
+      '600#': { 'Duplex':4840, 'SS316':3388, 'Super Duplex':6050, 'GRE':null, 'HDPE':null, 'Carbon Steel':2112 },
+    },
+    12: {
+      '150#': { 'Duplex':3375, 'SS316':2362, 'Super Duplex':4219, 'GRE':null, 'HDPE':null, 'Carbon Steel':1473 },
+      '300#': { 'Duplex':4543, 'SS316':3180, 'Super Duplex':5679, 'GRE':null, 'HDPE':null, 'Carbon Steel':1982 },
+      '600#': { 'Duplex':6490, 'SS316':4543, 'Super Duplex':8113, 'GRE':null, 'HDPE':null, 'Carbon Steel':2832 },
+    },
+  },
+  'strainer': {
+    0.5: {
+      '150#': { 'Duplex':116, 'SS316':82, 'Super Duplex':146, 'GRE':null, 'HDPE':null, 'Carbon Steel':50 },
+      '300#': { 'Duplex':157, 'SS316':110, 'Super Duplex':196, 'GRE':null, 'HDPE':null, 'Carbon Steel':67 },
+      '600#': { 'Duplex':224, 'SS316':157, 'Super Duplex':280, 'GRE':null, 'HDPE':null, 'Carbon Steel':96 },
+    },
+    0.75: {
+      '150#': { 'Duplex':160, 'SS316':112, 'Super Duplex':200, 'GRE':null, 'HDPE':null, 'Carbon Steel':69 },
+      '300#': { 'Duplex':216, 'SS316':151, 'Super Duplex':270, 'GRE':null, 'HDPE':null, 'Carbon Steel':92 },
+      '600#': { 'Duplex':308, 'SS316':216, 'Super Duplex':385, 'GRE':null, 'HDPE':null, 'Carbon Steel':132 },
+    },
+    1: {
+      '150#': { 'Duplex':204, 'SS316':143, 'Super Duplex':255, 'GRE':null, 'HDPE':null, 'Carbon Steel':87 },
+      '300#': { 'Duplex':274, 'SS316':192, 'Super Duplex':343, 'GRE':null, 'HDPE':null, 'Carbon Steel':118 },
+      '600#': { 'Duplex':392, 'SS316':274, 'Super Duplex':490, 'GRE':null, 'HDPE':null, 'Carbon Steel':168 },
+    },
+    1.5: {
+      '150#': { 'Duplex':291, 'SS316':204, 'Super Duplex':364, 'GRE':null, 'HDPE':null, 'Carbon Steel':125 },
+      '300#': { 'Duplex':392, 'SS316':274, 'Super Duplex':490, 'GRE':null, 'HDPE':null, 'Carbon Steel':168 },
+      '600#': { 'Duplex':560, 'SS316':392, 'Super Duplex':700, 'GRE':null, 'HDPE':null, 'Carbon Steel':240 },
+    },
+    2: {
+      '150#': { 'Duplex':393, 'SS316':275, 'Super Duplex':491, 'GRE':null, 'HDPE':null, 'Carbon Steel':168 },
+      '300#': { 'Duplex':529, 'SS316':370, 'Super Duplex':662, 'GRE':null, 'HDPE':null, 'Carbon Steel':227 },
+      '600#': { 'Duplex':756, 'SS316':529, 'Super Duplex':945, 'GRE':null, 'HDPE':null, 'Carbon Steel':324 },
+    },
+    2.5: {
+      '150#': { 'Duplex':510, 'SS316':357, 'Super Duplex':637, 'GRE':null, 'HDPE':null, 'Carbon Steel':218 },
+      '300#': { 'Duplex':686, 'SS316':480, 'Super Duplex':858, 'GRE':null, 'HDPE':null, 'Carbon Steel':294 },
+      '600#': { 'Duplex':980, 'SS316':686, 'Super Duplex':1225, 'GRE':null, 'HDPE':null, 'Carbon Steel':420 },
+    },
+    3: {
+      '150#': { 'Duplex':641, 'SS316':448, 'Super Duplex':801, 'GRE':null, 'HDPE':null, 'Carbon Steel':275 },
+      '300#': { 'Duplex':862, 'SS316':604, 'Super Duplex':1078, 'GRE':null, 'HDPE':null, 'Carbon Steel':370 },
+      '600#': { 'Duplex':1232, 'SS316':862, 'Super Duplex':1540, 'GRE':null, 'HDPE':null, 'Carbon Steel':528 },
+    },
+    4: {
+      '150#': { 'Duplex':844, 'SS316':591, 'Super Duplex':1056, 'GRE':null, 'HDPE':null, 'Carbon Steel':362 },
+      '300#': { 'Duplex':1137, 'SS316':796, 'Super Duplex':1421, 'GRE':null, 'HDPE':null, 'Carbon Steel':487 },
+      '600#': { 'Duplex':1624, 'SS316':1137, 'Super Duplex':2030, 'GRE':null, 'HDPE':null, 'Carbon Steel':696 },
+    },
+    6: {
+      '150#': { 'Duplex':1456, 'SS316':1019, 'Super Duplex':1820, 'GRE':null, 'HDPE':null, 'Carbon Steel':624 },
+      '300#': { 'Duplex':1960, 'SS316':1372, 'Super Duplex':2450, 'GRE':null, 'HDPE':null, 'Carbon Steel':840 },
+      '600#': { 'Duplex':2800, 'SS316':1960, 'Super Duplex':3500, 'GRE':null, 'HDPE':null, 'Carbon Steel':1200 },
+    },
+    8: {
+      '150#': { 'Duplex':2257, 'SS316':1580, 'Super Duplex':2821, 'GRE':null, 'HDPE':null, 'Carbon Steel':967 },
+      '300#': { 'Duplex':3038, 'SS316':2127, 'Super Duplex':3797, 'GRE':null, 'HDPE':null, 'Carbon Steel':1302 },
+      '600#': { 'Duplex':4340, 'SS316':3038, 'Super Duplex':5425, 'GRE':null, 'HDPE':null, 'Carbon Steel':1860 },
+    },
+    10: {
+      '150#': { 'Duplex':3203, 'SS316':2242, 'Super Duplex':4004, 'GRE':null, 'HDPE':null, 'Carbon Steel':1373 },
+      '300#': { 'Duplex':4312, 'SS316':3018, 'Super Duplex':5390, 'GRE':null, 'HDPE':null, 'Carbon Steel':1848 },
+      '600#': { 'Duplex':6160, 'SS316':4312, 'Super Duplex':7700, 'GRE':null, 'HDPE':null, 'Carbon Steel':2640 },
+    },
+    12: {
+      '150#': { 'Duplex':4295, 'SS316':3007, 'Super Duplex':5369, 'GRE':null, 'HDPE':null, 'Carbon Steel':1841 },
+      '300#': { 'Duplex':5782, 'SS316':4047, 'Super Duplex':7227, 'GRE':null, 'HDPE':null, 'Carbon Steel':2478 },
+      '600#': { 'Duplex':8260, 'SS316':5782, 'Super Duplex':10325, 'GRE':null, 'HDPE':null, 'Carbon Steel':3540 },
+    },
+  },
+  'gasket': {
+    0.5: {
+      '150#': { 'Duplex':4, 'SS316':2, 'Super Duplex':4, 'GRE':1, 'HDPE':1, 'Carbon Steel':2 },
+      '300#': { 'Duplex':5, 'SS316':3, 'Super Duplex':6, 'GRE':2, 'HDPE':1, 'Carbon Steel':2 },
+      '600#': { 'Duplex':7, 'SS316':5, 'Super Duplex':8, 'GRE':3, 'HDPE':2, 'Carbon Steel':3 },
+    },
+    0.75: {
+      '150#': { 'Duplex':5, 'SS316':3, 'Super Duplex':6, 'GRE':2, 'HDPE':1, 'Carbon Steel':2 },
+      '300#': { 'Duplex':7, 'SS316':5, 'Super Duplex':8, 'GRE':3, 'HDPE':2, 'Carbon Steel':3 },
+      '600#': { 'Duplex':9, 'SS316':7, 'Super Duplex':12, 'GRE':4, 'HDPE':3, 'Carbon Steel':4 },
+    },
+    1: {
+      '150#': { 'Duplex':6, 'SS316':4, 'Super Duplex':8, 'GRE':3, 'HDPE':2, 'Carbon Steel':3 },
+      '300#': { 'Duplex':8, 'SS316':6, 'Super Duplex':10, 'GRE':3, 'HDPE':2, 'Carbon Steel':4 },
+      '600#': { 'Duplex':12, 'SS316':8, 'Super Duplex':15, 'GRE':5, 'HDPE':4, 'Carbon Steel':6 },
+    },
+    1.5: {
+      '150#': { 'Duplex':9, 'SS316':6, 'Super Duplex':11, 'GRE':4, 'HDPE':3, 'Carbon Steel':4 },
+      '300#': { 'Duplex':12, 'SS316':8, 'Super Duplex':15, 'GRE':5, 'HDPE':4, 'Carbon Steel':6 },
+      '600#': { 'Duplex':17, 'SS316':12, 'Super Duplex':21, 'GRE':7, 'HDPE':5, 'Carbon Steel':8 },
+    },
+    2: {
+      '150#': { 'Duplex':12, 'SS316':8, 'Super Duplex':15, 'GRE':5, 'HDPE':4, 'Carbon Steel':6 },
+      '300#': { 'Duplex':16, 'SS316':11, 'Super Duplex':20, 'GRE':7, 'HDPE':5, 'Carbon Steel':8 },
+      '600#': { 'Duplex':23, 'SS316':16, 'Super Duplex':29, 'GRE':9, 'HDPE':7, 'Carbon Steel':11 },
+    },
+    2.5: {
+      '150#': { 'Duplex':15, 'SS316':11, 'Super Duplex':19, 'GRE':6, 'HDPE':5, 'Carbon Steel':7 },
+      '300#': { 'Duplex':21, 'SS316':15, 'Super Duplex':26, 'GRE':9, 'HDPE':6, 'Carbon Steel':10 },
+      '600#': { 'Duplex':30, 'SS316':21, 'Super Duplex':37, 'GRE':12, 'HDPE':9, 'Carbon Steel':14 },
+    },
+    3: {
+      '150#': { 'Duplex':19, 'SS316':14, 'Super Duplex':24, 'GRE':8, 'HDPE':6, 'Carbon Steel':9 },
+      '300#': { 'Duplex':26, 'SS316':18, 'Super Duplex':33, 'GRE':11, 'HDPE':8, 'Carbon Steel':12 },
+      '600#': { 'Duplex':37, 'SS316':26, 'Super Duplex':47, 'GRE':15, 'HDPE':11, 'Carbon Steel':18 },
+    },
+    4: {
+      '150#': { 'Duplex':26, 'SS316':18, 'Super Duplex':32, 'GRE':11, 'HDPE':8, 'Carbon Steel':12 },
+      '300#': { 'Duplex':35, 'SS316':24, 'Super Duplex':43, 'GRE':14, 'HDPE':10, 'Carbon Steel':16 },
+      '600#': { 'Duplex':49, 'SS316':35, 'Super Duplex':61, 'GRE':20, 'HDPE':14, 'Carbon Steel':23 },
+    },
+    6: {
+      '150#': { 'Duplex':44, 'SS316':31, 'Super Duplex':55, 'GRE':18, 'HDPE':13, 'Carbon Steel':21 },
+      '300#': { 'Duplex':59, 'SS316':42, 'Super Duplex':74, 'GRE':24, 'HDPE':18, 'Carbon Steel':28 },
+      '600#': { 'Duplex':85, 'SS316':60, 'Super Duplex':106, 'GRE':35, 'HDPE':25, 'Carbon Steel':40 },
+    },
+    8: {
+      '150#': { 'Duplex':69, 'SS316':48, 'Super Duplex':85, 'GRE':28, 'HDPE':20, 'Carbon Steel':32 },
+      '300#': { 'Duplex':92, 'SS316':65, 'Super Duplex':115, 'GRE':38, 'HDPE':27, 'Carbon Steel':43 },
+      '600#': { 'Duplex':132, 'SS316':93, 'Super Duplex':164, 'GRE':54, 'HDPE':39, 'Carbon Steel':62 },
+    },
+    10: {
+      '150#': { 'Duplex':97, 'SS316':69, 'Super Duplex':121, 'GRE':40, 'HDPE':29, 'Carbon Steel':46 },
+      '300#': { 'Duplex':131, 'SS316':92, 'Super Duplex':163, 'GRE':54, 'HDPE':38, 'Carbon Steel':62 },
+      '600#': { 'Duplex':187, 'SS316':132, 'Super Duplex':233, 'GRE':77, 'HDPE':55, 'Carbon Steel':88 },
+    },
+    12: {
+      '150#': { 'Duplex':130, 'SS316':92, 'Super Duplex':163, 'GRE':54, 'HDPE':38, 'Carbon Steel':61 },
+      '300#': { 'Duplex':176, 'SS316':124, 'Super Duplex':219, 'GRE':72, 'HDPE':52, 'Carbon Steel':83 },
+      '600#': { 'Duplex':251, 'SS316':177, 'Super Duplex':313, 'GRE':103, 'HDPE':74, 'Carbon Steel':118 },
+    },
+  },
+  'stud bolt': {
+    0.5: {
+      '150#': { 'Duplex':2, 'SS316':1, 'Super Duplex':2, 'GRE':null, 'HDPE':null, 'Carbon Steel':1 },
+      '300#': { 'Duplex':3, 'SS316':2, 'Super Duplex':3, 'GRE':null, 'HDPE':null, 'Carbon Steel':1 },
+      '600#': { 'Duplex':4, 'SS316':3, 'Super Duplex':4, 'GRE':null, 'HDPE':null, 'Carbon Steel':2 },
+    },
+    0.75: {
+      '150#': { 'Duplex':3, 'SS316':2, 'Super Duplex':3, 'GRE':null, 'HDPE':null, 'Carbon Steel':1 },
+      '300#': { 'Duplex':3, 'SS316':2, 'Super Duplex':4, 'GRE':null, 'HDPE':null, 'Carbon Steel':2 },
+      '600#': { 'Duplex':5, 'SS316':4, 'Super Duplex':6, 'GRE':null, 'HDPE':null, 'Carbon Steel':2 },
+    },
+    1: {
+      '150#': { 'Duplex':3, 'SS316':2, 'Super Duplex':4, 'GRE':null, 'HDPE':null, 'Carbon Steel':2 },
+      '300#': { 'Duplex':4, 'SS316':3, 'Super Duplex':5, 'GRE':null, 'HDPE':null, 'Carbon Steel':2 },
+      '600#': { 'Duplex':6, 'SS316':4, 'Super Duplex':8, 'GRE':null, 'HDPE':null, 'Carbon Steel':3 },
+    },
+    1.5: {
+      '150#': { 'Duplex':5, 'SS316':3, 'Super Duplex':6, 'GRE':null, 'HDPE':null, 'Carbon Steel':2 },
+      '300#': { 'Duplex':6, 'SS316':4, 'Super Duplex':8, 'GRE':null, 'HDPE':null, 'Carbon Steel':3 },
+      '600#': { 'Duplex':9, 'SS316':6, 'Super Duplex':11, 'GRE':null, 'HDPE':null, 'Carbon Steel':4 },
+    },
+    2: {
+      '150#': { 'Duplex':6, 'SS316':4, 'Super Duplex':8, 'GRE':null, 'HDPE':null, 'Carbon Steel':3 },
+      '300#': { 'Duplex':9, 'SS316':6, 'Super Duplex':11, 'GRE':null, 'HDPE':null, 'Carbon Steel':4 },
+      '600#': { 'Duplex':12, 'SS316':9, 'Super Duplex':15, 'GRE':null, 'HDPE':null, 'Carbon Steel':6 },
+    },
+    2.5: {
+      '150#': { 'Duplex':8, 'SS316':6, 'Super Duplex':10, 'GRE':null, 'HDPE':null, 'Carbon Steel':4 },
+      '300#': { 'Duplex':11, 'SS316':8, 'Super Duplex':14, 'GRE':null, 'HDPE':null, 'Carbon Steel':5 },
+      '600#': { 'Duplex':16, 'SS316':11, 'Super Duplex':20, 'GRE':null, 'HDPE':null, 'Carbon Steel':8 },
+    },
+    3: {
+      '150#': { 'Duplex':10, 'SS316':7, 'Super Duplex':13, 'GRE':null, 'HDPE':null, 'Carbon Steel':5 },
+      '300#': { 'Duplex':14, 'SS316':10, 'Super Duplex':17, 'GRE':null, 'HDPE':null, 'Carbon Steel':7 },
+      '600#': { 'Duplex':20, 'SS316':14, 'Super Duplex':25, 'GRE':null, 'HDPE':null, 'Carbon Steel':10 },
+    },
+    4: {
+      '150#': { 'Duplex':14, 'SS316':10, 'Super Duplex':17, 'GRE':null, 'HDPE':null, 'Carbon Steel':7 },
+      '300#': { 'Duplex':18, 'SS316':13, 'Super Duplex':23, 'GRE':null, 'HDPE':null, 'Carbon Steel':9 },
+      '600#': { 'Duplex':26, 'SS316':19, 'Super Duplex':32, 'GRE':null, 'HDPE':null, 'Carbon Steel':13 },
+    },
+    6: {
+      '150#': { 'Duplex':23, 'SS316':17, 'Super Duplex':29, 'GRE':null, 'HDPE':null, 'Carbon Steel':11 },
+      '300#': { 'Duplex':31, 'SS316':22, 'Super Duplex':39, 'GRE':null, 'HDPE':null, 'Carbon Steel':15 },
+      '600#': { 'Duplex':45, 'SS316':32, 'Super Duplex':56, 'GRE':null, 'HDPE':null, 'Carbon Steel':22 },
+    },
+    8: {
+      '150#': { 'Duplex':36, 'SS316':26, 'Super Duplex':45, 'GRE':null, 'HDPE':null, 'Carbon Steel':18 },
+      '300#': { 'Duplex':49, 'SS316':35, 'Super Duplex':61, 'GRE':null, 'HDPE':null, 'Carbon Steel':24 },
+      '600#': { 'Duplex':70, 'SS316':50, 'Super Duplex':87, 'GRE':null, 'HDPE':null, 'Carbon Steel':34 },
+    },
+    10: {
+      '150#': { 'Duplex':51, 'SS316':37, 'Super Duplex':64, 'GRE':null, 'HDPE':null, 'Carbon Steel':25 },
+      '300#': { 'Duplex':69, 'SS316':49, 'Super Duplex':86, 'GRE':null, 'HDPE':null, 'Carbon Steel':34 },
+      '600#': { 'Duplex':99, 'SS316':70, 'Super Duplex':123, 'GRE':null, 'HDPE':null, 'Carbon Steel':48 },
+    },
+    12: {
+      '150#': { 'Duplex':69, 'SS316':49, 'Super Duplex':86, 'GRE':null, 'HDPE':null, 'Carbon Steel':34 },
+      '300#': { 'Duplex':93, 'SS316':66, 'Super Duplex':116, 'GRE':null, 'HDPE':null, 'Carbon Steel':45 },
+      '600#': { 'Duplex':133, 'SS316':94, 'Super Duplex':165, 'GRE':null, 'HDPE':null, 'Carbon Steel':65 },
+    },
+  },
+};
+
+// Pricing basis per component type
+const PRICE_UNITS = {
+  'pipe': 'meter',
+  'elbow': 'piece',
+  'tee': 'piece',
+  'reducer': 'piece',
+  'flange': 'piece',
+  'coupling': 'piece',
+  'victaulic': 'piece',
+  'gate valve': 'piece',
+  'check valve': 'piece',
+  'ball valve': 'piece',
+  'nrv': 'piece',
+  'butterfly': 'piece',
+  'strainer': 'piece',
+  'gasket': 'piece',
+  'stud bolt': 'piece',
+};
+
+// ── Class / Schedule definitions ─────────────────────────────────────────
+const VALVE_FLANGE_KEYS = ['valve','flange','nrv','check valve','gate valve','ball valve',
+  'butterfly','strainer','actuator','gasket','stud bolt'];
+
+const SCHEDULES = ['SCH 10','SCH 20','SCH 40'];
+const CLASSES   = ['150#','300#','600#'];
+
+function isValveOrFlange(desc) {
+  if (!desc) return false;
+  const d = desc.toLowerCase();
+  return VALVE_FLANGE_KEYS.some(k => d.includes(k));
+}
+
+function getClassSchConfig(desc) {
+  if (isValveOrFlange(desc)) return { type:'cls', options:CLASSES,   default:'600#'   };
+  return                              { type:'sch', options:SCHEDULES, default:'SCH 40' };
+}
+
+// Lookup price from 4D matrix: PRICE_DB[comp][size][cs][mat]
+function lookupPrice(desc, mat, size, cs) {
+  if (!desc || !mat) return '';
+  const d = desc.toLowerCase();
+  // find matching component key
+  let compKey = null;
+  for (const k of Object.keys(PRICE_DB)) {
+    if (d.includes(k)) { compKey = k; break; }
+  }
+  if (!compKey) return '';
+  const szKey = parseFloat(size) || null;
+  if (!szKey) return '';
+  const csKey = cs || (isValveOrFlange(desc) ? '600#' : 'SCH 40');
+  try {
+    const p = PRICE_DB[compKey][szKey][csKey][mat];
+    return (p != null && !isNaN(p)) ? p : '';
+  } catch(e) { return ''; }
+}
+
+// Keep flat PRICE_REF for backwards compat (used by old code paths) — build from PRICE_DB at 6" SCH40/600#
+const PRICE_REF = {};
+for (const [comp, sizeMap] of Object.entries(PRICE_DB)) {
+  const csKey = isValveOrFlange(comp) ? '600#' : 'SCH 40';
+  try { PRICE_REF[comp] = { ...PRICE_DB[comp][6][csKey] }; } catch(e) { PRICE_REF[comp] = {}; }
+}
+
+// ── State ─────────────────────────────────────────────────────────────────
+// rows[section] = array of { id, desc, mat, size, qty, unit, price, cs, priceManual, sizeOverride }
+const rows = { feed:[], reject:[], px:[], boost:[] };
+let rowCounter = 0;
+let currentSizes = { feed:null, reject:null, hpp:null, col:null, px:null, boost:null };
+
+// ── Pipe calc helpers ─────────────────────────────────────────────────────
+function calcDiam(flow, vel) {
+  if (!flow || flow <= 0) return 0;
+  const fs = flow / 3600;          // m³/hr → m³/s
+  const a  = fs / vel;             // cross-sectional area m²
+  return Math.sqrt(4 * a / Math.PI) * 39.37;  // diameter in inches
+}
+function getSize(d) {
+  if (d <= 0) return null;
+  const std = [0.5,0.75,1,1.5,2,2.5,3,4,6,8,10,12];
+  return std.reduce((b,s) => Math.abs(s-d)<Math.abs(b-d)?s:b, std[0]);
+}
+function fmtSize(s) { return s ? s + '"' : 'N/A'; }
+
+// ── Price lookup ──────────────────────────────────────────────────────────
+// ── Section size mapping ─────────────────────────────────────────────────
+function sectionDefaultSize(sec) {
+  const map = { feed: currentSizes.feed, reject: currentSizes.reject, px: currentSizes.px, boost: currentSizes.boost };
+  return map[sec] || null;
+}
+
+// ── Main recalculate ──────────────────────────────────────────────────────
+function recalc() {
+  const cap   = parseFloat(document.getElementById('capacity').value) || 1500;
+  const rec   = parseFloat(document.getElementById('recovery').value) || 40;
+  const hrs   = parseFloat(document.getElementById('hours').value)    || 24;
+  const flux  = parseFloat(document.getElementById('flux').value)     || 13;
+  const vel   = parseFloat(document.getElementById('velocity').value) || 2.5;
+  const memPV = parseFloat(document.getElementById('memPerPV').value) || 7;
+  const curr  = document.getElementById('currency').value;
+  const sym   = SYMS[curr];
+  const rate  = RATES[curr];
+  const hppType = document.querySelector('input[name="hppType"]:checked').value;
+
+  // Flows
+  const prodFlow = cap / hrs;
+  const recRate  = rec / 100;
+  const feedFlow = prodFlow / recRate;
+  const rejFlow  = feedFlow - prodFlow;
+  const totMem   = (prodFlow * 1000 / flux) / 37;
+  const pxFlow   = hppType === 'HPP + PX' ? prodFlow : 0;
+  const boostFlow= (hppType === 'HPP + Booster' || hppType === 'HPP + PX') ? prodFlow : 0;
+  const colFlow  = prodFlow * 0.942;
+  const hppFlow  = feedFlow * 0.2667;
+
+  // Sizes
+  currentSizes = {
+    feed:   getSize(calcDiam(feedFlow,  vel)),
+    reject: getSize(calcDiam(rejFlow,   vel)),
+    hpp:    getSize(calcDiam(hppFlow,   vel)),
+    col:    getSize(calcDiam(colFlow,   vel)),
+    px:     pxFlow    > 0 ? getSize(calcDiam(pxFlow,    vel)) : null,
+    boost:  boostFlow > 0 ? getSize(calcDiam(boostFlow, vel)) : null
+  };
+
+  // Update flow chips
+  document.getElementById('fp-prod').textContent   = prodFlow.toFixed(2);
+  document.getElementById('fp-feed').textContent   = feedFlow.toFixed(2);
+  document.getElementById('fp-reject').textContent = rejFlow.toFixed(2);
+  document.getElementById('fp-mem').textContent    = totMem.toFixed(1);
+
+  // Update pipe sizes panel
+  const pipeRows = [
+    { loc:'RO Main (Feed)',  flow:feedFlow,  size:currentSizes.feed },
+    { loc:'Reject Main',     flow:rejFlow,   size:currentSizes.reject },
+    { loc:'HPP Flow',        flow:hppFlow,   size:currentSizes.hpp },
+    { loc:'Column Flow',     flow:colFlow,   size:currentSizes.col },
+    { loc:'PX In/Out',       flow:pxFlow,    size:currentSizes.px },
+    { loc:'Booster Pump',    flow:boostFlow, size:currentSizes.boost },
+  ];
+  document.getElementById('pipe-sizes-list').innerHTML = pipeRows.map(r => `
+    <div class="pipe-row">
+      <div class="pipe-loc">${r.loc}</div>
+      <div class="pipe-flow">${r.flow>0 ? r.flow.toFixed(1) : '—'}</div>
+      <div class="pipe-size ${r.size ? '' : 'pipe-na'}">${r.size ? r.size+'"' : 'N/A'}</div>
+    </div>`).join('');
+
+  // Update size tags in section headers
+  setTag('feed',   currentSizes.feed);
+  setTag('reject', currentSizes.reject);
+  setTag('px',     currentSizes.px);
+  setTag('boost',  currentSizes.boost);
+
+  // Show/hide PX and Booster sections
+  const pxActive    = hppType === 'HPP + PX';
+  const boostActive = hppType === 'HPP + Booster' || hppType === 'HPP + PX';
+  document.getElementById('px-na').style.display      = pxActive    ? 'none'  : 'block';
+  document.getElementById('px-content').style.display = pxActive    ? 'block' : 'none';
+  document.getElementById('boost-na').style.display      = boostActive ? 'none'  : 'block';
+  document.getElementById('boost-content').style.display = boostActive ? 'block' : 'none';
+  document.getElementById('gt-px-wrap').style.opacity    = pxActive    ? '1' : '0.35';
+  document.getElementById('gt-boost-wrap').style.opacity = boostActive ? '1' : '0.35';
+
+  // Update all row size cells & recalc totals
+  ['feed','reject','px','boost'].forEach(sec => refreshSectionSizes(sec));
+  updateTotals(sym, rate);
+}
+
+function setTag(sec, size) {
+  const el = document.getElementById('sz-' + sec + '-tag');
+  if (!el) return;
+  el.textContent = size ? size + '"' : '';
+  el.style.display = size ? '' : 'none';
+}
+
+function refreshSectionSizes(sec) {
+  const defSize = sectionDefaultSize(sec);
+  rows[sec].forEach(row => {
+    const sizeEl = document.getElementById('size-' + row.id);
+    if (sizeEl && !row.sizeOverride) {
+      sizeEl.textContent = defSize ? defSize + '"' : '—';
+      row.size = defSize || null;
+    }
+  });
+}
+
+// ── Add row ───────────────────────────────────────────────────────────────
+function addRow(sec) {
+  const id   = ++rowCounter;
+  const defSize = sectionDefaultSize(sec);
+  const cfg  = getClassSchConfig('');          // blank desc → default to SCH
+  const rowData = { id, desc:'', mat:'Duplex', size:defSize, qty:'', unit:'No', price:'',
+                    cs: cfg.default, sizeOverride:false, priceManual:false };
+  rows[sec].push(rowData);
+  renderRow(sec, rowData);
+  // focus description of new row
+  setTimeout(() => {
+    const el = document.getElementById('desc-' + id);
+    if (el) el.focus();
+  }, 40);
+}
+
+function renderRow(sec, row) {
+  const tbody = document.getElementById('rows-' + sec);
+  const rowNum = rows[sec].indexOf(row) + 1;
+  const tr = document.createElement('tr');
+  tr.className = 'data-row';
+  tr.id = 'tr-' + row.id;
+
+  const stdSizes = [0.5,0.75,1,1.5,2,2.5,3,4,6,8,10,12];
+  const sizeOpts = stdSizes.map(s => `<option value="${s}" ${row.size===s?'selected':''}>${s}"</option>`).join('');
+
+  // Class/Schedule column — built from current desc
+  const cfg    = getClassSchConfig(row.desc);
+  const csOpts = cfg.options.map(o => `<option value="${o}" ${row.cs===o?'selected':''}>${o}</option>`).join('');
+  const csLabel = cfg.type === 'sch' ? 'SCH' : 'CLS';
+  const csColor = cfg.type === 'sch' ? 'var(--cyan)' : 'var(--amber)';
+
+  tr.innerHTML = `
+    <td><div class="cell-price" style="color:var(--muted);text-align:center">${rowNum}</div></td>
+    <td><input class="cell-inp" id="desc-${row.id}" placeholder="e.g. Elbow, Pipe, Gate Valve…"
+      value="${row.desc}" oninput="onDescChange(${row.id},'${sec}')" list="desc-list"></td>
+    <td>
+      <select class="cell-select" id="mat-${row.id}" onchange="onMatChange(${row.id},'${sec}')">
+        ${MATERIALS.map(m=>`<option ${row.mat===m?'selected':''}>${m}</option>`).join('')}
+      </select>
+    </td>
+    <td>
+      <select class="cell-select" id="size-sel-${row.id}" onchange="onSizeChange(${row.id},'${sec}')">
+        ${sizeOpts}
+      </select>
+    </td>
+    <td id="cs-cell-${row.id}" style="position:relative;">
+      <div style="position:absolute;top:4px;left:6px;font-family:var(--mono);font-size:7px;
+        color:${csColor};letter-spacing:.08em;text-transform:uppercase;pointer-events:none;z-index:1;">
+        ${csLabel}
+      </div>
+      <select class="cell-select" id="cs-${row.id}"
+        style="padding-top:16px;font-size:11px;color:${csColor};"
+        onchange="onCSChange(${row.id},'${sec}')">
+        ${csOpts}
+      </select>
+    </td>
+    <td><input class="cell-inp" id="qty-${row.id}" type="number" min="0" step="0.01"
+      placeholder="0" value="${row.qty}" oninput="onQtyChange(${row.id},'${sec}')"></td>
+    <td>
+      <select class="cell-select" id="unit-${row.id}" onchange="onUnitChange(${row.id})">
+        ${UNITS.map(u=>`<option ${row.unit===u?'selected':''}>${u}</option>`).join('')}
+      </select>
+    </td>
+    <td><input class="cell-inp" id="price-${row.id}" type="number" min="0" step="0.01"
+      placeholder="auto" value="${row.price}" oninput="onPriceChange(${row.id},'${sec}')"></td>
+    <td><div class="cell-total" id="total-${row.id}">—</div></td>
+    <td class="cell-del"><button class="del-btn" onclick="deleteRow(${row.id},'${sec}')" title="Remove">✕</button></td>
+  `;
+  tbody.appendChild(tr);
+  updateRowTotal(row.id, sec);
+}
+
+// ── Row event handlers ────────────────────────────────────────────────────
+function onDescChange(id, sec) {
+  const row = findRow(id, sec);
+  if (!row) return;
+  const prevType = getClassSchConfig(row.desc).type;
+  row.desc = document.getElementById('desc-' + id).value;
+
+  // Rebuild Class/Schedule dropdown if type changed (sch↔cls)
+  const cfg = getClassSchConfig(row.desc);
+  if (cfg.type !== prevType) {
+    // Reset to appropriate default
+    row.cs = cfg.default;
+    row.priceManual = false;  // re-suggest price with new context
+    const csCell = document.getElementById('cs-cell-' + id);
+    const csSel  = document.getElementById('cs-' + id);
+    if (csCell && csSel) {
+      const csColor = cfg.type === 'sch' ? 'var(--cyan)' : 'var(--amber)';
+      const csLabel = cfg.type === 'sch' ? 'SCH' : 'CLS';
+      csCell.querySelector('div').textContent  = csLabel;
+      csCell.querySelector('div').style.color  = csColor;
+      csSel.style.color = csColor;
+      csSel.innerHTML = cfg.options.map(o =>
+        `<option value="${o}" ${o===cfg.default?'selected':''}>${o}</option>`
+      ).join('');
+    }
+  }
+
+  // Auto-lookup price
+  if (!row.priceManual) {
+    const sz  = parseFloat(document.getElementById('size-sel-' + id)?.value) || row.size;
+    const cs  = document.getElementById('cs-' + id)?.value || row.cs;
+    const p   = lookupPrice(row.desc, row.mat, sz, cs);
+    if (p !== '') {
+      document.getElementById('price-' + id).value = p;
+      row.price = p;
+    }
+  }
+  updateRowTotal(id, sec);
+}
+
+function onMatChange(id, sec) {
+  const row = findRow(id, sec);
+  if (!row) return;
+  row.mat = document.getElementById('mat-' + id).value;
+  if (!row.priceManual) {
+    const sz = parseFloat(document.getElementById('size-sel-' + id)?.value) || row.size;
+    const cs = document.getElementById('cs-' + id)?.value || row.cs;
+    const p  = lookupPrice(row.desc, row.mat, sz, cs);
+    if (p !== '') {
+      document.getElementById('price-' + id).value = p;
+      row.price = p;
+    }
+  }
+  updateRowTotal(id, sec);
+}
+
+function onSizeChange(id, sec) {
+  const row = findRow(id, sec);
+  if (!row) return;
+  row.size = parseFloat(document.getElementById('size-sel-' + id).value);
+  row.sizeOverride = true;
+  // Refresh price for new size
+  if (!row.priceManual) {
+    const cs = document.getElementById('cs-' + id)?.value || row.cs;
+    const p  = lookupPrice(row.desc, row.mat, row.size, cs);
+    if (p !== '') {
+      document.getElementById('price-' + id).value = p;
+      row.price = p;
+    }
+  }
+  updateRowTotal(id, sec);
+}
+
+function onCSChange(id, sec) {
+  const row = findRow(id, sec);
+  if (!row) return;
+  row.cs = document.getElementById('cs-' + id).value;
+  // Recalculate price suggestion unless manually overridden
+  if (!row.priceManual) {
+    const sz = parseFloat(document.getElementById('size-sel-' + id)?.value) || row.size;
+    const p  = lookupPrice(row.desc, row.mat, sz, row.cs);
+    if (p !== '') {
+      document.getElementById('price-' + id).value = p;
+      row.price = p;
+    }
+  }
+  updateRowTotal(id, sec);
+}
+
+function onQtyChange(id, sec) {
+  const row = findRow(id, sec);
+  if (!row) return;
+  row.qty = parseFloat(document.getElementById('qty-' + id).value) || 0;
+  updateRowTotal(id, sec);
+}
+
+function onUnitChange(id) {
+  const row = findRowAny(id);
+  if (!row) return;
+  row.unit = document.getElementById('unit-' + id).value;
+}
+
+function onPriceChange(id, sec) {
+  const row = findRow(id, sec);
+  if (!row) return;
+  row.price = parseFloat(document.getElementById('price-' + id).value) || 0;
+  row.priceManual = true;
+  updateRowTotal(id, sec);
+}
+
+function deleteRow(id, sec) {
+  const idx = rows[sec].findIndex(r => r.id === id);
+  if (idx < 0) return;
+  rows[sec].splice(idx, 1);
+  const tr = document.getElementById('tr-' + id);
+  if (tr) tr.remove();
+  // Renumber
+  renumberSection(sec);
+  const curr  = document.getElementById('currency').value;
+  updateTotals(SYMS[curr], RATES[curr]);
+}
+
+function renumberSection(sec) {
+  rows[sec].forEach((row, i) => {
+    const tr = document.getElementById('tr-' + row.id);
+    if (tr) tr.querySelector('.cell-price').textContent = i + 1;
+  });
+}
+
+function updateRowTotal(id, sec) {
+  const row = findRow(id, sec);
+  if (!row) return;
+  const curr  = document.getElementById('currency').value;
+  const sym   = SYMS[curr];
+  const rate  = RATES[curr];
+  const qty   = parseFloat(document.getElementById('qty-' + id)?.value)   || 0;
+  const price = parseFloat(document.getElementById('price-' + id)?.value) || 0;
+  const tot   = qty * price * rate;
+  const el    = document.getElementById('total-' + id);
+  if (el) el.textContent = tot > 0 ? sym + tot.toLocaleString('en-US',{maximumFractionDigits:0}) : '—';
+  updateTotals(sym, rate);
+}
+
+function updateTotals(sym, rate) {
+  let grand = 0;
+  ['feed','reject','px','boost'].forEach(sec => {
+    let secTotal = 0;
+    rows[sec].forEach(row => {
+      const qty   = parseFloat(document.getElementById('qty-'  + row.id)?.value)   || 0;
+      const price = parseFloat(document.getElementById('price-' + row.id)?.value) || 0;
+      secTotal += qty * price;
+    });
+    const converted = secTotal * rate;
+    grand += converted;
+    const el = document.getElementById('total-' + sec);
+    if (el) el.textContent = converted > 0 ? sym + converted.toLocaleString('en-US',{maximumFractionDigits:0}) : (sec==='px'||sec==='boost') ? '—' : sym + '0';
+    const gt = document.getElementById('gt-' + sec);
+    if (gt) gt.textContent = converted > 0 ? sym + converted.toLocaleString('en-US',{maximumFractionDigits:0}) : '—';
+  });
+  document.getElementById('grand-total').textContent = sym + grand.toLocaleString('en-US',{maximumFractionDigits:0});
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function findRow(id, sec) { return rows[sec].find(r => r.id === id); }
+function findRowAny(id) {
+  for (const sec of ['feed','reject','px','boost']) {
+    const r = rows[sec].find(r => r.id === id);
+    if (r) return r;
+  }
+  return null;
+}
+
+function toggleSection(sec) {
+  const body  = document.getElementById('body-'  + sec);
+  const arrow = document.getElementById('arrow-' + sec);
+  const open  = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  arrow.classList.toggle('open', !open);
+}
+
+function onHppChange() {
+  // Update radio highlight
+  document.querySelectorAll('.radio-opt').forEach(el => {
+    const val = el.dataset.val;
+    const inp = el.querySelector('input');
+    el.classList.toggle('sel', inp && inp.checked);
+  });
+  recalc();
+}
+
+// ── Export CSV ────────────────────────────────────────────────────────────
+function exportCSV() {
+  const curr = document.getElementById('currency').value;
+  const sym  = SYMS[curr];
+  const rate = RATES[curr];
+  const hppType = document.querySelector('input[name="hppType"]:checked').value;
+
+  const lines = [
+    ['"HPP Manual BOQ Report"'],
+    [`"Generated","${new Date().toLocaleString()}"`],
+    [`"HPP Type","${hppType}"`, `"Currency","${curr}"`],
+    [],
+    ['"#"','"Section"','"Description"','"Material"','"Size"','"Class/Sch"','"Qty"','"Unit"','"Unit Price (AED)"',`"Total (${curr})"`]
+  ];
+
+  let itemNo = 1;
+  ['feed','reject','px','boost'].forEach((sec, si) => {
+    const secNames = ['Feed Water Side','Reject Water Side','PX In/Out','Booster Pump'];
+    rows[sec].forEach(row => {
+      const qty   = parseFloat(document.getElementById('qty-'   + row.id)?.value) || 0;
+      const price = parseFloat(document.getElementById('price-' + row.id)?.value) || 0;
+      const tot   = qty * price * rate;
+      const mat   = document.getElementById('mat-'  + row.id)?.value || row.mat;
+      const sz    = document.getElementById('size-sel-' + row.id)?.value || '';
+      const cs    = document.getElementById('cs-'  + row.id)?.value || row.cs || '';
+      const unit  = document.getElementById('unit-' + row.id)?.value || row.unit;
+      const desc  = document.getElementById('desc-' + row.id)?.value || row.desc;
+      lines.push([`"${itemNo++}"`,`"${secNames[si]}"`,`"${desc}"`,`"${mat}"`,`"${sz}\""`,`"${cs}"`,`"${qty}"`,`"${unit}"`,`"${price}"`,`"${tot.toFixed(0)}"`]);
+    });
+  });
+
+  const csv = lines.map(r => r.join(',')).join('\n');
+  const a   = document.createElement('a');
+  a.href    = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download= 'HPP_BOQ_' + Date.now() + '.csv';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ── Datalist for descriptions ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const dl = document.createElement('datalist');
+  dl.id = 'desc-list';
+  const suggestions = [
+    'Pipe','Elbow','Tee','Reducer','Flange','Coupling','Victaulic Coupling',
+    'Gate Valve','Ball Valve','Check Valve','NRV','Butterfly Valve',
+    'Strainer','Gasket','Stud Bolt','Spool Piece','Header Pipe',
+    'CIP Inlet Gate Valve','Reject Isolation Valve','High Pressure Pump NRV',
+    'Pressure Gauge','Temperature Gauge','Flow Meter','Sample Valve'
+  ];
+  suggestions.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    dl.appendChild(opt);
+  });
+  document.body.appendChild(dl);
+
+  recalc();
+  // Start each section with one blank row
+  addRow('feed');
+  addRow('reject');
+
+  // Boot: load price DB from localStorage
+  loadPriceDB();
+});
+
+// ── Keep a snapshot of factory defaults for reset ─────────────────────────
+const PRICE_DB_DEFAULTS = JSON.parse(JSON.stringify(PRICE_DB));
+// Also keep flat ref for any legacy lookups
+const PRICE_REF_DEFAULTS = PRICE_REF;
+
+// ══════════════════════════════════════════════════════════════════════════
+// ADMIN PANEL
+// ══════════════════════════════════════════════════════════════════════════
+const ADMIN_PASS    = '42304230';
+const PRICE_DB_KEY  = 'hpp_boq_price_db';
+let   adminAuthed   = false;
+
+function openAdmin() {
+  document.getElementById('admin-overlay').style.display = 'flex';
+  if (!adminAuthed) {
+    document.getElementById('admin-gate').style.display    = 'block';
+    document.getElementById('admin-content').style.display = 'none';
+    setTimeout(() => document.getElementById('admin-pw').focus(), 80);
+  } else {
+    showAdminContent();
+  }
+}
+function closeAdmin() {
+  document.getElementById('admin-overlay').style.display = 'none';
+  document.getElementById('admin-pw').value = '';
+  document.getElementById('admin-pw-err').textContent = '';
+}
+function checkAdminPw() {
+  const pw = document.getElementById('admin-pw').value;
+  if (pw === ADMIN_PASS) {
+    adminAuthed = true;
+    document.getElementById('admin-pw').value = '';
+    showAdminContent();
+  } else {
+    const err = document.getElementById('admin-pw-err');
+    err.textContent = 'Incorrect password';
+    const inp = document.getElementById('admin-pw');
+    inp.style.borderColor = '#ef4444';
+    setTimeout(() => { inp.style.borderColor = '#2a3441'; err.textContent = ''; }, 1500);
+  }
+}
+function showAdminContent() {
+  document.getElementById('admin-gate').style.display    = 'none';
+  document.getElementById('admin-content').style.display = 'block';
+  renderPriceDB();
+}
+function switchAdminTab(btn, tabId) {
+  document.querySelectorAll('.adm-tab').forEach(b => {
+    b.style.color = '#7d8fa3';
+    b.style.borderBottom = '2px solid transparent';
+  });
+  document.querySelectorAll('.adm-tab-content').forEach(t => t.style.display = 'none');
+  btn.style.color = '#e6edf3';
+  btn.style.borderBottom = '2px solid #3b82f6';
+  document.getElementById(tabId).style.display = 'block';
+}
+
+// ── PRICE DATABASE ────────────────────────────────────────────────────────
+// Live price DB = deep clone of PRICE_DB (4D), overrideable
+let priceDB = null;
+
+function loadPriceDB() {
+  try {
+    const saved = localStorage.getItem(PRICE_DB_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Deep merge saved over defaults
+      priceDB = JSON.parse(JSON.stringify(PRICE_DB));
+      for (const [comp, szMap] of Object.entries(parsed)) {
+        if (!priceDB[comp]) continue;
+        for (const [sz, csMap] of Object.entries(szMap)) {
+          if (!priceDB[comp][sz]) continue;
+          for (const [cs, matMap] of Object.entries(csMap)) {
+            if (!priceDB[comp][sz][cs]) continue;
+            Object.assign(priceDB[comp][sz][cs], matMap);
+          }
+        }
+      }
+      // Push live values into PRICE_DB so lookups use saved prices
+      for (const [comp, szMap] of Object.entries(priceDB)) {
+        for (const [sz, csMap] of Object.entries(szMap)) {
+          for (const [cs, matMap] of Object.entries(csMap)) {
+            Object.assign(PRICE_DB[comp][sz][cs], matMap);
+          }
+        }
+      }
+      return;
+    }
+  } catch(e) {}
+  priceDB = JSON.parse(JSON.stringify(PRICE_DB));
+}
+
+function savePriceDB() {
+  // Read all inputs back
+  const SIZES = [0.5,0.75,1,1.5,2,2.5,3,4,6,8,10,12];
+  const MATS  = ['Duplex','SS316','Super Duplex','GRE','HDPE','Carbon Steel'];
+  for (const comp of Object.keys(priceDB)) {
+    const isV = isValveOrFlange(comp);
+    const csList = isV ? ['150#','300#','600#'] : ['SCH 10','SCH 20','SCH 40'];
+    for (const sz of SIZES) {
+      for (const cs of csList) {
+        for (const mat of MATS) {
+          const cid = pdbCellId(comp, sz, cs, mat);
+          const inp = document.getElementById(cid);
+          if (inp) {
+            const v = inp.value.trim();
+            const p = (v === '' || v === '—') ? null : (parseFloat(v) || null);
+            priceDB[comp][sz][cs][mat] = p;
+            PRICE_DB[comp][sz][cs][mat] = p;
+          }
+        }
+      }
+    }
+  }
+  try { localStorage.setItem(PRICE_DB_KEY, JSON.stringify(priceDB)); } catch(e) {}
+  alert('Price database saved. All BOQ lookups updated.');
+}
+
+function resetPriceDB() {
+  if (!confirm('Reset ALL prices to original defaults?')) return;
+  priceDB = JSON.parse(JSON.stringify(PRICE_DB_DEFAULTS));
+  for (const [comp,szMap] of Object.entries(priceDB))
+    for (const [sz,csMap] of Object.entries(szMap))
+      for (const [cs,matMap] of Object.entries(csMap))
+        Object.assign(PRICE_DB[comp][sz][cs], matMap);
+  try { localStorage.removeItem(PRICE_DB_KEY); } catch(e) {}
+  renderPriceDB();
+}
+
+function pdbCellId(comp, sz, cs, mat) {
+  return 'pdb-' + [comp,sz,cs,mat].map(s=>String(s).replace(/[^a-zA-Z0-9]/g,'-')).join('-');
+}
+
+// ── renderPriceDB: tabbed by component, rows=size, cols=cs×mat ───────────
+let pdbActiveComp = null;
+
+function renderPriceDB() {
+  if (!priceDB) loadPriceDB();
+  const wrap = document.getElementById('price-db-tbody');
+  if (!wrap) return;
+  const comps = Object.keys(priceDB);
+  if (!pdbActiveComp || !priceDB[pdbActiveComp]) pdbActiveComp = comps[0];
+
+  const SIZES = [0.5,0.75,1,1.5,2,2.5,3,4,6,8,10,12];
+  const MATS  = ['Duplex','SS316','Super Duplex','GRE','HDPE','C.Steel'];
+  const MATS_FULL = ['Duplex','SS316','Super Duplex','GRE','HDPE','Carbon Steel'];
+  const isV   = isValveOrFlange(pdbActiveComp);
+  const csList= isV ? ['150#','300#','600#'] : ['SCH 10','SCH 20','SCH 40'];
+  const unitLbl = (pdbActiveComp === 'pipe') ? '/m' : '/pc';
+  const basisNote = isV
+    ? 'Valves & flanges — priced per piece. Class shown.'
+    : (pdbActiveComp === 'pipe' ? 'Pipes — priced per meter. Schedule shown.' : 'Fittings — priced per piece. Schedule shown.');
+
+  // Comp tabs
+  const tabHTML = comps.map(c =>
+    `<button onclick="pdbActiveComp='${c}';renderPriceDB()"
+      style="padding:5px 9px;border-radius:4px;font-size:9px;font-weight:700;font-family:'DM Mono',monospace;
+      letter-spacing:.05em;cursor:pointer;border:1px solid ${c===pdbActiveComp?'#3b82f6':'#2a3441'};
+      background:${c===pdbActiveComp?'rgba(59,130,246,.15)':'#0d1117'};
+      color:${c===pdbActiveComp?'#60a5fa':'#7d8fa3'};text-transform:capitalize;white-space:nowrap;">
+      ${c}
+    </button>`
+  ).join('');
+
+  // Header row — cs × mat
+  const thCells = csList.flatMap(cs =>
+    MATS.map(mat =>
+      `<th style="padding:5px 4px;background:#1c2330;font-family:'DM Mono',monospace;font-size:7px;
+        letter-spacing:.06em;color:#7d8fa3;text-align:right;white-space:nowrap;min-width:58px;
+        border-bottom:1px solid #2a3441;">${cs}<br><span style="color:#3a4a5c;">${mat}</span></th>`
+    )
+  ).join('');
+
+  // Data rows — one per size
+  const dataRows = SIZES.map((sz,ri) => {
+    const cells = csList.flatMap(cs =>
+      MATS_FULL.map((mat,mi) => {
+        const v   = priceDB[pdbActiveComp]?.[sz]?.[cs]?.[mat] ?? '';
+        const cid = pdbCellId(pdbActiveComp, sz, cs, mat);
+        const na  = (mat === 'GRE' || mat === 'HDPE') && isV;
+        return `<td style="padding:1px 2px;border-bottom:1px solid rgba(42,52,65,.3);">
+          <input id="${cid}" type="number" value="${na ? '' : (v != null ? v : '')}"
+            ${na ? 'disabled placeholder="—"' : 'placeholder="0"'}
+            style="width:58px;background:transparent;border:none;
+            color:${na?'#3a4a5c':'#e6edf3'};font-family:'DM Mono',monospace;
+            font-size:10px;padding:4px 5px;outline:none;text-align:right;"
+            onfocus="this.style.background='rgba(59,130,246,.1)'"
+            onblur="this.style.background='transparent'">
+        </td>`;
+      })
+    ).join('');
+    const bg = ri % 2 === 0 ? 'rgba(28,35,48,.4)' : 'transparent';
+    return `<tr style="background:${bg}">
+      <td style="padding:4px 8px;border-bottom:1px solid rgba(42,52,65,.3);font-family:'DM Mono',monospace;
+        font-size:10px;color:#06b6d4;font-weight:600;white-space:nowrap;">${sz}"</td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  // Column group header
+  const csGroupHdr = csList.map(cs =>
+    `<th colspan="${MATS.length}" style="padding:5px 4px;background:#0d1117;font-family:'DM Mono',monospace;
+      font-size:8px;letter-spacing:.1em;color:${isV?'#f59e0b':'#06b6d4'};text-align:center;
+      border-bottom:1px solid #2a3441;text-transform:uppercase;">${cs}</th>`
+  ).join('');
+
+  wrap.innerHTML = `
+    <tr><td colspan="99" style="padding:0 0 8px;">
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">${tabHTML}</div>
+    </td></tr>
+    <tr><td colspan="99" style="padding:0 0 6px;">
+      <div style="font-size:9px;color:#7d8fa3;font-family:'DM Mono',monospace;">
+        ${basisNote} &nbsp;Unit: AED${unitLbl}
+      </div>
+    </td></tr>
+    <tr>
+      <th style="padding:5px 8px;background:#0d1117;font-family:'DM Mono',monospace;font-size:8px;
+        letter-spacing:.1em;color:#7d8fa3;text-align:left;border-bottom:1px solid #2a3441;">SIZE</th>
+      ${csGroupHdr}
+    </tr>
+    <tr>
+      <th style="padding:4px 8px;background:#1c2330;border-bottom:1px solid #2a3441;"></th>
+      ${thCells}
+    </tr>
+    ${dataRows}
+  `;
+}
+
+// ── PDF extraction ────────────────────────────────────────────────────────
+function pdfDrop(e) {
+  e.preventDefault();
+  const dz = document.getElementById('pdf-drop-zone');
+  dz.style.borderColor = '#2a3441'; dz.style.background = '#0d1117';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') extractPricesFromPDF(file);
+  else setPdfStatus('⚠ Please drop a PDF file.', '#ef4444');
+}
+function pdfFileSelected(e) {
+  const file = e.target.files[0];
+  if (file) extractPricesFromPDF(file);
+  e.target.value = '';
+}
+function setPdfStatus(msg, color) {
+  const el = document.getElementById('pdf-status');
+  el.innerHTML = msg; el.style.color = color || '#7d8fa3';
+}
+
+async function extractPricesFromPDF(file) {
+  setPdfStatus('<span style="display:inline-block;width:10px;height:10px;border:2px solid #1c2330;border-top-color:#3b82f6;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;"></span>Reading PDF...', '#06b6d4');
+  const b64 = await new Promise((res,rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('File read failed'));
+    r.readAsDataURL(file);
+  });
+  const components = Object.keys(PRICE_REF_DEFAULTS).join(', ');
+  const prompt = `You are a procurement price extraction assistant.
+A supplier PDF quotation is attached. Extract unit prices for piping components and fittings.
+Component types we need: ${components}
+Materials: Duplex, SS316, Super Duplex, GRE, HDPE, Carbon Steel
+
+Return ONLY a valid JSON object — keys must exactly match the component names above, values are objects with material keys.
+Use null where not found. All prices in AED (1 USD = 3.67, 1 EUR = 3.99).
+Example: {"pipe": {"Duplex": 750, "SS316": 520, "Super Duplex": 940, "GRE": null, "HDPE": null, "Carbon Steel": 230}}
+Return ONLY valid JSON, no markdown fences, no explanation.`;
+
+  try {
+    setPdfStatus('<span style="display:inline-block;width:10px;height:10px;border:2px solid #1c2330;border-top-color:#3b82f6;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;"></span>AI extracting prices...', '#06b6d4');
+    const apiKey = (document.getElementById('pdf-api-key').value || '').trim();
+    const headers = { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' };
+    if (apiKey) headers['x-api-key'] = apiKey;
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers,
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 2000,
+        messages: [{ role: 'user', content: [
+          { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: b64 } },
+          { type: 'text', text: prompt }
+        ]}]
+      })
+    });
+    if (!resp.ok) throw new Error('API error ' + resp.status);
+    const data = await resp.json();
+    const raw  = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const extracted = JSON.parse(raw.replace(/```json|```/gi,'').trim());
+    let updated = 0;
+    // extracted format from AI: { comp: { size: { cs: { mat: price } } } }
+    // or flat: { comp: { mat: price } } — handle both
+    for (const [comp, val] of Object.entries(extracted)) {
+      const key = comp.toLowerCase().trim();
+      if (!priceDB[key]) continue;
+      if (typeof val === 'object' && val !== null) {
+        const firstVal = Object.values(val)[0];
+        if (typeof firstVal === 'number') {
+          // Flat format: { mat: price } — apply to all sizes at default cs
+          const isV = isValveOrFlange(key);
+          const cs  = isV ? '600#' : 'SCH 40';
+          for (const [mat, price] of Object.entries(val)) {
+            if (price == null || isNaN(price)) continue;
+            for (const sz of [0.5,0.75,1,1.5,2,2.5,3,4,6,8,10,12]) {
+              if (priceDB[key][sz]?.[cs]?.[mat] !== undefined) {
+                // Scale from 6" base
+                const SF = {0.5:0.08,0.75:0.11,1:0.14,1.5:0.20,2:0.27,2.5:0.35,3:0.44,4:0.58,6:1.0,8:1.55,10:2.20,12:2.95};
+                priceDB[key][sz][cs][mat] = Math.round(price * SF[sz]);
+                PRICE_DB[key][sz][cs][mat] = priceDB[key][sz][cs][mat];
+                updated++;
+              }
+            }
+          }
+        } else {
+          // Nested format — merge directly
+          for (const [sz, csMap] of Object.entries(val)) {
+            for (const [cs, matMap] of Object.entries(csMap)) {
+              for (const [mat, price] of Object.entries(matMap)) {
+                if (price != null && !isNaN(price) && priceDB[key]?.[sz]?.[cs]) {
+                  priceDB[key][sz][cs][mat] = Math.round(price);
+                  PRICE_DB[key][sz][cs][mat] = Math.round(price);
+                  updated++;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    renderPriceDB();
+    setPdfStatus('✓ Extracted ' + updated + ' price entr' + (updated!==1?'ies':'y') + ' — review below and click Save.', '#22c55e');
+  } catch(err) {
+    setPdfStatus('⚠ ' + err.message, '#ef4444');
+  }
+}
+</script>
+
+<!-- ══ ADMIN PASSWORD OVERLAY ════════════════════════════════════════════ -->
+<div id="admin-overlay" style="display:none;position:fixed;inset:0;background:rgba(5,8,18,.92);
+  z-index:9999;backdrop-filter:blur(8px);align-items:center;justify-content:center;">
+  <div style="background:#161b22;border:1px solid #2a3441;border-radius:14px;
+    width:380px;box-shadow:0 0 60px rgba(0,0,0,.6);overflow:hidden;">
+    <!-- Admin header -->
+    <div style="background:#1c2330;border-bottom:1px solid #2a3441;padding:16px 20px;
+      display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-weight:800;font-size:14px;letter-spacing:.05em;">⚙️ Admin Panel</div>
+      <button onclick="closeAdmin()" style="background:none;border:none;color:#7d8fa3;
+        font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <!-- Password gate -->
+    <div id="admin-gate" style="padding:32px 28px;text-align:center;">
+      <div style="font-size:11px;color:#7d8fa3;margin-bottom:18px;letter-spacing:.05em;">ENTER ADMIN PASSWORD</div>
+      <input type="password" id="admin-pw" placeholder="••••••••"
+        style="width:100%;background:#0d1117;border:1px solid #2a3441;color:#e6edf3;
+        padding:12px 14px;border-radius:8px;font-family:'DM Mono',monospace;font-size:18px;
+        text-align:center;letter-spacing:6px;outline:none;margin-bottom:10px;"
+        onkeydown="if(event.key==='Enter')checkAdminPw()">
+      <div id="admin-pw-err" style="color:#ef4444;font-size:11px;margin-bottom:10px;min-height:16px;"></div>
+      <button onclick="checkAdminPw()"
+        style="width:100%;padding:12px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);
+        color:white;border:none;border-radius:8px;font-weight:700;font-size:12px;
+        letter-spacing:2px;cursor:pointer;font-family:inherit;">UNLOCK</button>
+    </div>
+    <!-- Admin content (shown after auth) -->
+    <div id="admin-content" style="display:none;padding:0;">
+
+      <!-- Tab bar -->
+      <div style="display:flex;border-bottom:1px solid #2a3441;background:#0d1117;">
+        <button class="adm-tab active" onclick="switchAdminTab(this,'adm-prices')"
+          style="flex:1;padding:12px;background:none;border:none;color:#e6edf3;font-family:inherit;
+          font-size:11px;font-weight:700;letter-spacing:.08em;cursor:pointer;border-bottom:2px solid #3b82f6;">
+          💰 PRICE DATABASE
+        </button>
+      </div>
+
+      <!-- ── TAB 2: PRICE DATABASE ───────────────────────────────────── -->
+      <div id="adm-prices" class="adm-tab-content" style="padding:20px;">
+        <div style="font-size:10px;color:#7d8fa3;margin-bottom:12px;line-height:1.7;">
+          Edit base prices per component/material. Drag & drop a supplier PDF quote to auto-extract prices via AI.
+        </div>
+
+        <!-- PDF Drop zone -->
+        <div id="pdf-drop-zone"
+          style="border:2px dashed #2a3441;border-radius:9px;padding:20px;text-align:center;
+          cursor:pointer;background:#0d1117;margin-bottom:14px;transition:all .2s;"
+          onclick="document.getElementById('pdf-file-inp').click()"
+          ondragover="event.preventDefault();this.style.borderColor='#3b82f6';this.style.background='rgba(59,130,246,.05)'"
+          ondragleave="this.style.borderColor='#2a3441';this.style.background='#0d1117'"
+          ondrop="pdfDrop(event)">
+          <div style="font-size:26px;margin-bottom:6px;">📄</div>
+          <div style="font-size:11px;color:#7d8fa3;">Drag & drop supplier PDF quote</div>
+          <div style="font-size:9px;color:#3a4a5c;margin-top:4px;">AI will extract prices and update the database below</div>
+        </div>
+        <input type="file" id="pdf-file-inp" accept=".pdf" style="display:none;" onchange="pdfFileSelected(event)">
+
+        <!-- API key (offline use) -->
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;">
+          <span style="font-size:9px;color:#7d8fa3;white-space:nowrap;letter-spacing:.05em;">API KEY</span>
+          <input type="password" id="pdf-api-key" placeholder="sk-ant-... (only needed for downloaded HTML)"
+            style="flex:1;background:#0d1117;border:1px solid #2a3441;color:#e6edf3;padding:5px 9px;
+            border-radius:5px;font-size:10px;font-family:'DM Mono',monospace;outline:none;">
+        </div>
+
+        <!-- PDF status -->
+        <div id="pdf-status" style="font-size:10px;font-family:'DM Mono',monospace;color:#7d8fa3;
+          min-height:16px;margin-bottom:10px;"></div>
+
+        <!-- Price table -->
+        <div style="max-height:340px;overflow-y:auto;border-radius:8px;border:1px solid #2a3441;">
+          <table style="width:100%;border-collapse:collapse;font-size:10px;">
+            <thead>
+              <tr style="background:#1c2330;position:sticky;top:0;z-index:1;">
+                <th style="padding:7px 9px;text-align:left;font-family:'DM Mono',monospace;font-size:8px;
+                  letter-spacing:.1em;color:#7d8fa3;text-transform:uppercase;border-bottom:1px solid #2a3441;font-weight:500;">
+                  Component
+                </th>
+                <th style="padding:7px 9px;text-align:right;font-family:'DM Mono',monospace;font-size:8px;
+                  letter-spacing:.1em;color:#22c55e;text-transform:uppercase;border-bottom:1px solid #2a3441;font-weight:500;">
+                  Duplex
+                </th>
+                <th style="padding:7px 9px;text-align:right;font-family:'DM Mono',monospace;font-size:8px;
+                  letter-spacing:.1em;color:#06b6d4;text-transform:uppercase;border-bottom:1px solid #2a3441;font-weight:500;">
+                  SS316
+                </th>
+                <th style="padding:7px 9px;text-align:right;font-family:'DM Mono',monospace;font-size:8px;
+                  letter-spacing:.1em;color:#a855f7;text-transform:uppercase;border-bottom:1px solid #2a3441;font-weight:500;">
+                  Super Duplex
+                </th>
+                <th style="padding:7px 9px;text-align:right;font-family:'DM Mono',monospace;font-size:8px;
+                  letter-spacing:.1em;color:#7d8fa3;text-transform:uppercase;border-bottom:1px solid #2a3441;font-weight:500;">
+                  GRE
+                </th>
+                <th style="padding:7px 9px;text-align:right;font-family:'DM Mono',monospace;font-size:8px;
+                  letter-spacing:.1em;color:#7d8fa3;text-transform:uppercase;border-bottom:1px solid #2a3441;font-weight:500;">
+                  HDPE
+                </th>
+                <th style="padding:7px 9px;text-align:right;font-family:'DM Mono',monospace;font-size:8px;
+                  letter-spacing:.1em;color:#7d8fa3;text-transform:uppercase;border-bottom:1px solid #2a3441;font-weight:500;">
+                  C.Steel
+                </th>
+              </tr>
+            </thead>
+            <tbody id="price-db-tbody"></tbody>
+          </table>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <button onclick="savePriceDB()"
+            style="flex:1;padding:8px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;
+            border:none;border-radius:6px;font-weight:700;font-size:10px;letter-spacing:.05em;cursor:pointer;font-family:inherit;">
+            💾 Save to Database
+          </button>
+          <button onclick="resetPriceDB()"
+            style="padding:8px 12px;background:transparent;border:1px solid #2a3441;color:#7d8fa3;
+            border-radius:6px;font-size:10px;cursor:pointer;font-family:inherit;">
+            ↺ Reset
+          </button>
+        </div>
+      </div>
+
+    </div><!-- end admin-content -->
+  </div>
+</div>
+
+</body>
+</html>

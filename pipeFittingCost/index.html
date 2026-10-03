@@ -1,0 +1,2452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipe & Fittings Cost Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0f1a;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: #1e2d50;
+  --border2: #2a3a5a;
+  --teal: #00d4ff;
+  --teal2: #0099cc;
+  --green: #00ff88;
+  --gold: #f0b429;
+  --red: #ff4455;
+  --text: #c8d8f0;
+  --text2: #7a9ab8;
+  --text3: #3a5070;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* ── HEADER ── */
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:200}
+.hdr-logo{display:flex;align-items:center;gap:10px}
+.hdr-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--teal2),var(--teal));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.hdr-title{font-weight:800;font-size:15px;letter-spacing:.5px}
+.hdr-title span{color:var(--teal)}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.adm-trigger{background:rgba(255,255,255,.06);border:1px solid var(--border2);color:var(--text2);padding:5px 14px;border-radius:6px;cursor:pointer;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;transition:all .18s}
+.adm-trigger:hover{border-color:var(--teal);color:var(--teal)}
+
+/* ── TABS ── */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 24px;gap:4px}
+.tab{padding:11px 18px;cursor:pointer;font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:'Syne',sans-serif}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+.tab:hover:not(.active){color:var(--text)}
+.panel{display:none;padding:20px 24px;max-width:1400px;margin:0 auto}
+.panel.active{display:block}
+
+/* ── CARDS / BOXES ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.card-hd{background:linear-gradient(135deg,var(--teal2),rgba(0,153,204,.3));padding:9px 15px;font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#e8f4ff;display:flex;align-items:center;justify-content:space-between}
+.card-bd{padding:14px}
+
+/* ── FORM ELEMENTS ── */
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;font-family:'Syne',sans-serif;outline:none;transition:border .18s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--teal)}
+label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);font-weight:700;display:block;margin-bottom:4px}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px}
+.form-group{display:flex;flex-direction:column}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;font-family:'Syne',sans-serif;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,var(--teal2),var(--teal));color:#000}
+.btn-primary:hover{opacity:.85}
+.btn-success{background:linear-gradient(135deg,#00aa55,var(--green));color:#000}
+.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red)}
+.btn-danger:hover{background:rgba(255,68,85,.1)}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal)}
+.btn-sm{padding:5px 10px;font-size:10px}
+.btn-gold{background:linear-gradient(135deg,#c8860a,var(--gold));color:#000}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{background:var(--surface2);padding:8px 10px;text-align:left;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border);white-space:nowrap;font-weight:700}
+.tbl td{padding:7px 10px;border-bottom:1px solid rgba(30,45,80,.35);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(0,212,255,.03)}
+.tbl-wrap{overflow-x:auto}
+
+/* ── PIPE SIZER ── */
+.sizer-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pipe-result{background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(0,212,255,.03));border:1px solid rgba(0,212,255,.2);border-radius:8px;padding:14px 16px}
+.pipe-dn{font-family:'Space Mono',monospace;font-size:2rem;font-weight:700;color:var(--teal);line-height:1}
+.pipe-sub{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-top:4px}
+.pipe-v{font-size:.85rem;color:var(--text);margin-top:8px;font-family:'Space Mono',monospace}
+.pipe-match{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-top:10px}
+.match-row{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-bottom:1px solid rgba(30,45,80,.3);font-size:11px}
+.match-row:last-child{border-bottom:none}
+.match-row.best{background:rgba(0,212,255,.07)}
+.dn-tag{background:rgba(0,212,255,.15);color:var(--teal);border:1px solid rgba(0,212,255,.3);padding:2px 8px;border-radius:4px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700}
+.ok-tag{background:rgba(0,255,136,.12);color:var(--green);border:1px solid rgba(0,255,136,.3);padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
+.hi-tag{background:rgba(240,180,41,.12);color:var(--gold);border:1px solid rgba(240,180,41,.3);padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700}
+
+/* ── BOQ TABLE ROWS ── */
+.boq-row td{border-bottom:1px solid rgba(30,45,80,.4);vertical-align:middle;padding:5px 6px}
+.boq-row:last-child td{border-bottom:none}
+.boq-row:hover td{background:rgba(0,212,255,.025)}
+.boq-row.group-first td{border-top:2px solid rgba(0,212,255,.2)}
+.boq-cell-input{background:transparent;border:none;border-bottom:1.5px solid transparent;border-radius:0;color:var(--text);font-family:'Syne',sans-serif;font-size:12px;padding:4px 5px;width:100%;outline:none;transition:border-color .15s}
+.boq-cell-input:focus{border-bottom-color:var(--teal);background:rgba(0,212,255,.04)}
+.boq-cell-input::placeholder{color:var(--text3)}
+.boq-cell-select{background:transparent;border:none;border-bottom:1.5px solid transparent;border-radius:0;color:var(--text);font-family:'Syne',sans-serif;font-size:11px;padding:4px 5px;width:100%;outline:none}
+.boq-cell-select:focus{border-bottom-color:var(--teal);background:rgba(0,212,255,.04)}
+.dn-auto{background:rgba(0,212,255,.12);color:var(--teal);border:1px solid rgba(0,212,255,.3);border-radius:5px;padding:3px 8px;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;white-space:nowrap;display:inline-block;text-align:center;min-width:50px}
+.dn-empty{color:var(--text3);font-size:11px;text-align:center}
+.row-total{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--gold);text-align:right;padding-right:8px;white-space:nowrap}
+.row-del{width:26px;height:26px;border:1px solid rgba(255,68,85,.2);background:none;color:rgba(255,68,85,.5);border-radius:4px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.row-del:hover{border-color:var(--red);color:var(--red);background:rgba(255,68,85,.1)}
+.boq-row.sub-row td{background:rgba(0,212,255,.025);border-bottom:1px solid rgba(30,45,80,.25)}
+.boq-row.sub-row:hover td{background:rgba(0,212,255,.045)}
+.sub-indent{display:flex;align-items:center;gap:5px;padding-left:10px}
+.sub-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--text3);font-weight:700}
+.sub-line{width:12px;height:1px;background:var(--border2);flex-shrink:0}
+.add-sub-btn{width:24px;height:22px;border:1px solid rgba(0,212,255,.2);background:rgba(0,212,255,.05);color:rgba(0,212,255,.5);border-radius:4px;cursor:pointer;font-size:11px;font-weight:700;line-height:1;transition:all .15s;flex-shrink:0}
+.add-sub-btn:hover{border-color:var(--teal);color:var(--teal);background:rgba(0,212,255,.12)}
+/* ITEM SEARCH INSIDE TABLE */
+.item-search-wrap{position:relative;width:100%}
+.item-search-inp{background:transparent;border:none;border-bottom:1.5px solid transparent;color:var(--text);font-family:'Syne',sans-serif;font-size:12px;padding:4px 5px;width:100%;outline:none;transition:border-color .15s}
+.item-search-inp:focus{border-bottom-color:var(--teal);background:rgba(0,212,255,.04)}
+.item-search-inp::placeholder{color:var(--text3)}
+.item-drop{display:none;position:absolute;top:calc(100% + 2px);left:-10px;right:-10px;z-index:300;background:var(--surface);border:1px solid var(--border2);border-radius:8px;max-height:260px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.item-drop.open{display:block}
+.item-opt{padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(30,45,80,.3);transition:background .1s}
+.item-opt:hover{background:rgba(0,212,255,.08)}
+.item-opt:last-child{border-bottom:none}
+.io-top{font-size:12px;font-weight:600;color:var(--text)}
+.io-mid{font-size:10px;color:var(--text2);margin-top:1px}
+.io-price{font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);margin-top:2px}
+.io-type{display:inline-block;font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;background:rgba(0,212,255,.1);color:var(--teal);border:1px solid rgba(0,212,255,.2);margin-right:4px;letter-spacing:.5px}
+
+/* ── TOTALS / SUMMARY ── */
+.summary-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;position:sticky;bottom:0;z-index:90;margin-top:16px}
+.sum-item{display:flex;flex-direction:column}
+.sum-lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2)}
+.sum-val{font-family:'Space Mono',monospace;font-size:1.3rem;color:var(--teal);font-weight:700}
+.sum-val.big{font-size:1.6rem;color:var(--gold)}
+.sum-sep{width:1px;height:36px;background:var(--border);flex-shrink:0}
+
+/* ── ADMIN / OVERLAY ── */
+.overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(6,15,28,.88);backdrop-filter:blur(6px);align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:420px;max-width:95vw;overflow:hidden}
+.modal-hd{background:linear-gradient(135deg,var(--teal2),rgba(0,153,204,.4));padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.modal-hd h3{font-weight:800;font-size:14px;letter-spacing:1px;color:#e8f4ff}
+.modal-x{background:none;border:none;color:rgba(232,244,255,.6);cursor:pointer;font-size:18px;line-height:1}
+.modal-bd{padding:20px}
+.modal-inp{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:7px;font-family:'Space Mono',monospace;font-size:1rem;text-align:center;letter-spacing:4px;outline:none}
+.modal-inp:focus{border-color:var(--teal)}
+.modal-err{color:var(--red);font-size:11px;text-align:center;min-height:16px;margin-top:6px}
+/* ── ADMIN PANEL DRAWER (tabbed) ── */
+.adm-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(6,15,28,.75);backdrop-filter:blur(5px);justify-content:flex-end}
+.adm-overlay.open{display:flex}
+.adm-panel{background:var(--surface);width:680px;max-width:100vw;height:100vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:-8px 0 50px rgba(0,0,0,.5)}
+.adm-hd{background:var(--surface2);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+/* Admin inner tab bar */
+.adm-tab{padding:10px 16px;cursor:pointer;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'Syne',sans-serif;white-space:nowrap}
+.adm-tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+.adm-tab:hover:not(.active){color:var(--text)}
+/* Admin tab panels */
+.apanel{display:none;overflow-y:auto;flex:1}
+.apanel.active{display:block}
+.adm-body{padding:16px 20px}
+.adm-sec{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:14px 16px;margin-bottom:14px}
+.adm-sec h4{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.adm-sub{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);font-weight:700;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+/* DB table */
+.db-tbl-wrap{max-height:360px;overflow:auto;border:1px solid var(--border);border-radius:7px}
+
+/* PIPE SIZE TABLE */
+.sz-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.sz-tbl th{background:var(--surface2);padding:6px 8px;text-align:center;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);border-bottom:1px solid var(--border)}
+.sz-tbl td{padding:5px 8px;border-bottom:1px solid rgba(30,45,80,.3);text-align:center;font-family:'Space Mono',monospace}
+
+/* SEARCH DROPDOWN */
+.search-wrap{position:relative}
+.search-drop{display:none;position:absolute;top:100%;left:0;right:0;z-index:100;background:var(--surface);border:1px solid var(--border2);border-radius:6px;max-height:220px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.search-drop.open{display:block}
+.search-opt{padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid rgba(30,45,80,.3);line-height:1.4}
+.search-opt:hover{background:rgba(0,212,255,.08)}
+.search-opt:last-child{border-bottom:none}
+.search-opt .so-top{color:var(--text);font-weight:600}
+.search-opt .so-bot{color:var(--text2);font-size:10px}
+.search-opt .so-price{color:var(--gold);font-family:'Space Mono',monospace;font-size:11px}
+
+/* MISC */
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.5px}
+.badge-teal{background:rgba(0,212,255,.12);color:var(--teal);border:1px solid rgba(0,212,255,.25)}
+.badge-green{background:rgba(0,255,136,.12);color:var(--green);border:1px solid rgba(0,255,136,.25)}
+.ibox{background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:7px;padding:9px 13px;font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:12px}
+.export-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+@media(max-width:720px){.sizer-grid{grid-template-columns:1fr}.boq-item-row{grid-template-columns:1fr 1fr}.panel{padding:12px}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">
+    <div class="hdr-icon">🔧</div>
+    <div>
+      <div class="hdr-title"><span>Pipe</span> Cost Calculator</div>
+      <div style="font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase">RO Design Library · v2.0</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div id="proj-badge" style="font-size:11px;color:var(--text2);font-family:'Space Mono',monospace">No project</div>
+    <button class="adm-trigger" onclick="openLogin()">⚙ Admin</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('sizer',this)">📐 Pipe Sizer</button>
+  <button class="tab" onclick="showTab('boq',this)">📋 BOQ Builder</button>
+  <button class="tab" onclick="showTab('summary',this)">📊 Summary</button>
+</div>
+
+<!-- ══ PIPE SIZER ══ -->
+<div class="panel active" id="panel-sizer">
+  <div class="card">
+    <div class="card-hd">📐 Pipe Size Calculator — Flow → DN (Nearest Standard)</div>
+    <div class="card-bd">
+      <div class="ibox">
+        Formula: <b>A = Q / V</b> &nbsp;→&nbsp; <b>D = √(4A/π)</b> &nbsp;→&nbsp; Select nearest standard DN (DN15 to DN1200).
+        Typical velocity: <b>1.0–1.5 m/s</b> (suction), <b>1.5–2.5 m/s</b> (discharge/general), <b>0.5–1.0 m/s</b> (gravity).
+      </div>
+      <div class="sizer-grid">
+        <div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Description / Line tag</label>
+              <input type="text" id="sz-desc" placeholder="e.g. MMF inlet pipe" value="">
+            </div>
+            <div class="form-group">
+              <label>Flow rate (m³/hr)</label>
+              <input type="number" id="sz-flow" value="225" step="1" oninput="calcPipeSize()">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Design velocity (m/s)</label>
+              <input type="number" id="sz-vel" value="1.8" step="0.1" oninput="calcPipeSize()">
+            </div>
+            <div class="form-group">
+              <label>MOC / Pipe type</label>
+              <select id="sz-moc" onchange="calcPipeSize()">
+                <option value="HDPE">HDPE - SDR17</option>
+                <option value="UPVC">UPVC - PN16</option>
+                <option value="SS316L">SS316L - Sch40</option>
+                <option value="Duplex 2205" selected>Duplex 2205 - Sch40</option>
+                <option value="Super Duplex 2507">Super Duplex 2507 - Sch40</option>
+                <option value="Carbon Steel">Carbon Steel - Sch40</option>
+                <option value="GRP">GRP</option>
+                <option value="Custom">Custom</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Pressure class</label>
+              <select id="sz-pn">
+                <option>PN10</option>
+                <option selected>PN16</option>
+                <option>#150</option>
+                <option>#300</option>
+                <option>#600</option>
+                <option>Sch 40</option>
+                <option>Sch 80</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Length of line (m)</label>
+              <input type="number" id="sz-len" value="10" step="1" oninput="calcPipeSize()">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button class="btn btn-primary" onclick="calcPipeSize()">▶ Calculate</button>
+            <button class="btn btn-success" onclick="addLineToBOQ()">+ Add to BOQ</button>
+          </div>
+        </div>
+        <div>
+          <div class="pipe-result" id="sz-result">
+            <div style="color:var(--text2);font-size:12px">Enter flow rate to calculate pipe size</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Standard pipe sizes reference -->
+      <div style="margin-top:14px">
+        <div class="adm-sub" style="margin-top:0">Standard DN Sizes Reference (ISO 4065 / ASME)</div>
+        <div style="overflow-x:auto">
+          <table class="sz-tbl">
+            <thead><tr><th>DN</th><th>NPS (inch)</th><th>OD (mm)</th><th>ID sch40 (mm)</th><th>Flow @ 1.5 m/s</th><th>Flow @ 2.0 m/s</th><th>Flow @ 2.5 m/s</th></tr></thead>
+            <tbody id="sz-ref-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BOQ BUILDER ══ -->
+<div class="panel" id="panel-boq">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+    <div>
+      <div style="font-size:18px;font-weight:800">Bill of Quantities</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">
+        Fill each row: enter flow &amp; pressure → DN auto-calculates → search item → qty auto-fills → total is computed. Press <b>Enter</b> or click <b>+ Row</b> to add a new line.
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span id="boq-grand" style="font-family:'Space Mono',monospace;font-size:13px;color:var(--gold);font-weight:700"></span>
+      <button class="btn btn-ghost btn-sm" id="pf-save-btn" onclick="savePFProject()"
+        style="background:rgba(0,255,136,.1);color:var(--green);border-color:rgba(0,255,136,.3);font-weight:700">💾 Save</button>
+      <button class="btn btn-ghost btn-sm" onclick="loadPFProject()" title="Load last saved project">📂 Load</button>
+      <button class="btn btn-ghost btn-sm" onclick="addBOQRow()">+ Row</button>
+      <button class="btn btn-danger btn-sm" onclick="if(confirm('Clear all rows?')){boqRows=[];renderBOQTable();}">🗑 Clear</button>
+      <button class="btn btn-primary btn-sm" onclick="showTab('summary',document.querySelectorAll('.tab')[2])">Summary →</button>
+    </div>
+  </div>
+  <div id="pf-save-status" style="display:none;font-size:10px;color:var(--text3);margin-bottom:8px;font-family:'Space Mono',monospace"></div>
+
+  <!-- BOQ TABLE -->
+  <div style="overflow-x:auto;border:1px solid var(--border);border-radius:10px;background:var(--surface)">
+    <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:1100px" id="boq-table">
+      <thead>
+        <tr style="background:var(--surface2)">
+          <th style="width:46px;padding:9px 8px;text-align:center;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:700">Sr</th>
+          <th style="min-width:160px;padding:9px 10px;text-align:left;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:700">Details / Line Tag</th>
+          <th style="width:90px;padding:9px 8px;text-align:center;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:700">Flow (m³/hr)</th>
+          <th style="width:90px;padding:9px 8px;text-align:center;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:700">Press. (bar)</th>
+          <th style="width:130px;padding:9px 8px;text-align:center;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:700">Material (MOC)</th>
+          <th style="width:72px;padding:9px 8px;text-align:center;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);font-weight:700">DN Size ⚡</th>
+          <th style="width:64px;padding:9px 8px;text-align:center;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:700">Length (m)</th>
+          <th style="min-width:280px;padding:9px 10px;text-align:left;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:700">Item / Component</th>
+          <th style="width:70px;padding:9px 8px;text-align:center;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:700">Qty</th>
+          <th style="width:110px;padding:9px 8px;text-align:right;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);font-weight:700">Unit Price (AED)</th>
+          <th style="width:110px;padding:9px 8px;text-align:right;border-bottom:2px solid var(--border);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:700">Total (AED)</th>
+          <th style="width:36px;padding:9px 6px;border-bottom:2px solid var(--border)"></th>
+        </tr>
+      </thead>
+      <tbody id="boq-tbody"></tbody>
+      <tfoot>
+        <tr id="boq-tfoot" style="background:var(--surface2);display:none">
+          <td colspan="10" style="padding:10px 14px;font-weight:700;font-size:13px;letter-spacing:.5px">GRAND TOTAL</td>
+          <td style="padding:10px 10px;text-align:right;font-family:'Space Mono',monospace;font-size:15px;font-weight:700;color:var(--gold)" id="boq-tfoot-total">—</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+  <div id="boq-empty-msg" style="text-align:center;padding:50px 20px;color:var(--text2)">
+    <div style="font-size:3rem;margin-bottom:10px">📋</div>
+    <div style="font-weight:700;font-size:15px">No rows yet</div>
+    <div style="font-size:12px;margin-top:4px;margin-bottom:18px">Click + Row to start building your BOQ, or use the Pipe Sizer and click "Add to BOQ"</div>
+    <button class="btn btn-primary" onclick="addBOQRow()">+ Add First Row</button>
+  </div>
+</div>
+
+<!-- ══ SUMMARY ══ -->
+<div class="panel" id="panel-summary">
+  <div class="card">
+    <div class="card-hd">📊 Project Cost Summary</div>
+    <div class="card-bd">
+      <div class="form-row" style="max-width:500px;margin-bottom:14px">
+        <div class="form-group">
+          <label>Project / Job reference</label>
+          <input type="text" id="proj-name" placeholder="e.g. RO Plant – Pipe & Fittings" oninput="updateProjBadge()">
+        </div>
+        <div class="form-group">
+          <label>Profit margin (%)</label>
+          <input type="number" id="profit-pct" value="15" step="1" oninput="renderSummary()">
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl" id="sum-tbl">
+          <thead><tr><th>#</th><th>Line Description</th><th>DN</th><th>Length (m)</th><th>MOC</th><th>Items</th><th>Material Cost (AED)</th><th>Profit (%)</th><th>Sale Price (AED)</th></tr></thead>
+          <tbody id="sum-tb"></tbody>
+          <tfoot>
+            <tr style="background:var(--surface2)">
+              <td colspan="6" style="font-weight:700;padding:9px 10px;font-size:13px">TOTAL</td>
+              <td style="font-family:'Space Mono',monospace;font-weight:700;color:var(--gold);padding:9px 10px" id="sum-tot-cost">—</td>
+              <td style="color:var(--text2);padding:9px 10px" id="sum-tot-pct">—</td>
+              <td style="font-family:'Space Mono',monospace;font-weight:700;color:var(--teal);font-size:1rem;padding:9px 10px" id="sum-tot-sale">—</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="export-row">
+        <button class="btn btn-gold" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn btn-ghost" onclick="window.print()">🖨 Print</button>
+        <button class="btn btn-danger btn-sm" onclick="if(confirm('Clear all BOQ data?')){boqRows=[];renderBOQTable();renderSummary();}">🗑 Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Per-category breakdown -->
+  <div class="card" style="margin-top:12px">
+    <div class="card-hd">Cost Breakdown by Item Type</div>
+    <div class="card-bd">
+      <div id="breakdown-bars"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN LOGIN MODAL ══ -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3>🔐 Admin Access</h3>
+      <button class="modal-x" onclick="closeLogin()">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:2rem;margin-bottom:6px">🔧</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Pipe Cost Calculator</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px">Enter admin password to manage settings &amp; database</div>
+      </div>
+      <input class="modal-inp" type="password" id="adm-pwd" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="modal-err" id="login-err"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px;padding:11px" onclick="doLogin()">Unlock Admin Panel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN PANEL — FULL PAGE OVERLAY ══ -->
+<div class="adm-overlay" id="admOverlay">
+  <div class="adm-panel">
+
+    <!-- Admin Header -->
+    <div class="adm-hd">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;background:linear-gradient(135deg,var(--teal2),var(--teal));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:16px">⚙</div>
+        <div>
+          <div style="font-weight:800;font-size:14px;letter-spacing:.5px;color:var(--teal)">Admin Panel</div>
+          <div style="font-size:10px;color:var(--text2);letter-spacing:1px;text-transform:uppercase">Pipe Cost Calculator</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="modal-x" style="color:var(--text2);font-size:20px" onclick="closeAdmin()">✕</button>
+      </div>
+    </div>
+
+    <!-- Admin Tabs -->
+    <div style="display:flex;background:var(--surface2);border-bottom:1px solid var(--border);padding:0 20px;gap:2px;flex-shrink:0;overflow-x:auto">
+      <button class="adm-tab active" id="atab-db"      onclick="showAdmTab('db',this)">📦 DB Browser</button>
+      <button class="adm-tab"        id="atab-add"     onclick="showAdmTab('add',this)">✚ Add Record</button>
+      <button class="adm-tab"        id="atab-ptable"  onclick="showAdmTab('ptable',this)">📋 Price Table</button>
+      <button class="adm-tab"        id="atab-stats"   onclick="showAdmTab('stats',this)">📊 Stats</button>
+    </div>
+
+    <!-- ── DATABASE BROWSER TAB ── -->
+    <div class="adm-body apanel active" id="apanel-db">
+      <div class="adm-sec">
+        <h4>🔍 Browse & Edit Component Database</h4>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <input type="text" id="db-search" placeholder="Search model, size, MOC, supplier..." oninput="renderDBBrowser()"
+            style="flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;outline:none">
+          <select id="db-cat" onchange="renderDBBrowser()"
+            style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;outline:none">
+            <option value="">All categories</option>
+            <option value="Pipe And Fittings">Pipe &amp; Fittings</option>
+            <option value="Flange">Flange</option>
+            <option value="Valves - Upvc">Valves UPVC</option>
+            <option value="Valves - Matellic">Valves Metallic</option>
+            <option value="Fastners">Fasteners</option>
+          </select>
+          <select id="db-moc" onchange="renderDBBrowser()"
+            style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;outline:none">
+            <option value="">All MOC</option>
+            <option>HDPE</option><option>UPVC</option><option>SS316L</option>
+            <option>Duplex 2205</option><option>Super Duplex 2507</option>
+          </select>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:6px" id="db-count-label">— records</div>
+        <div class="db-tbl-wrap">
+          <table class="tbl" style="font-size:11px">
+            <thead>
+              <tr>
+                <th>Component</th><th>Type</th><th style="min-width:180px">Model / Size</th>
+                <th>MOC</th><th>Supplier</th><th style="text-align:right">AED/unit</th><th style="width:32px"></th>
+              </tr>
+            </thead>
+            <tbody id="db-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="adm-sec" style="background:rgba(255,68,85,.05);border-color:rgba(255,68,85,.2)">
+        <h4 style="color:var(--red)">⚠ Database Reset</h4>
+        <p style="font-size:11px;color:var(--text2);margin-bottom:10px">Restore all prices and records to the original built-in defaults. This cannot be undone.</p>
+        <button class="btn btn-danger btn-sm" onclick="if(confirm('Reset ALL database records to defaults?')){DB=JSON.parse(JSON.stringify(DB_DEFAULT));renderDBBrowser();updateAdmStats();}">Reset DB to Factory Defaults</button>
+      </div>
+    </div>
+
+    <!-- ── ADD RECORD TAB ── -->
+    <div class="adm-body apanel" id="apanel-add">
+      <div class="adm-sec">
+        <h4>✚ Add New Component / Price</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Component Category</label>
+            <select id="adm-comp">
+              <option>Pipe And Fittings</option>
+              <option>Flange</option>
+              <option>Valves - Upvc</option>
+              <option>Valves - Matellic</option>
+              <option>Fastners</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Type / Sub-category</label>
+            <input type="text" id="adm-type" placeholder="e.g. Pipe, Elbow, Gate Valve...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Model / Size Description</label>
+            <input type="text" id="adm-model" placeholder='e.g. 4" Elbow 90 Deg BW Sch40 - Duplex 2205'>
+          </div>
+          <div class="form-group">
+            <label>MOC (Material)</label>
+            <input type="text" id="adm-moc" placeholder="e.g. Duplex 2205, HDPE, UPVC">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Supplier</label>
+            <input type="text" id="adm-sup" placeholder="Supplier / vendor name">
+          </div>
+          <div class="form-group">
+            <label>Unit Price (AED)</label>
+            <input type="number" id="adm-price" placeholder="0.00" step="0.01">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px;align-items:center">
+          <button class="btn btn-success" onclick="addDBRecord()">✚ Add to Database</button>
+          <button class="btn btn-ghost" onclick="clearAdmForm()">Clear Form</button>
+          <span style="font-size:11px;color:var(--text2)" id="adm-add-msg"></span>
+        </div>
+      </div>
+
+      <!-- Edit price inline -->
+      <div class="adm-sec">
+        <h4>✏ Quick-Edit Price by Model Name</h4>
+        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <input type="text" id="edit-search" placeholder="Type model name to find..." oninput="renderEditSearch()"
+            style="flex:1;min-width:200px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;outline:none">
+        </div>
+        <div id="edit-results" style="max-height:260px;overflow-y:auto"></div>
+      </div>
+    </div>
+
+    <!-- ── STATS TAB ── -->
+    <div class="adm-body apanel" id="apanel-stats">
+      <div class="adm-sec">
+        <h4>📊 Database Statistics</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px" id="stat-grid"></div>
+      </div>
+      <div class="adm-sec">
+        <h4>📋 Records by Category</h4>
+        <div id="stat-bars"></div>
+      </div>
+      <div class="adm-sec">
+        <h4>💰 Price Range by MOC</h4>
+        <div style="overflow-x:auto">
+          <table class="tbl" style="font-size:11px" id="stat-price-tbl">
+            <thead><tr><th>MOC</th><th>Records</th><th>Min (AED)</th><th>Max (AED)</th><th>Avg (AED)</th></tr></thead>
+            <tbody id="stat-price-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRICE TABLE TAB ── -->
+    <div class="adm-body apanel" id="apanel-ptable">
+
+      <!-- Info banner -->
+      <div style="background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.25);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:var(--text2);line-height:1.7">
+        <span style="color:var(--gold);font-weight:700">📋 Reference Price Table</span> — applicable for <b>HDPE / UPVC / GRP / PVC</b> pipes only.
+        Prices are <b>AED/metre</b> for Pipe; <b>AED/each</b> for Tee, Elbow, Flange, Valve, NRV, Auto Valve.
+        PN16 prices are auto-calculated at ×1.18 of PN10 base price.
+        Edit any cell inline and press Tab/Enter to save. Click <b>+ Row</b> to add a new size. Changes take effect immediately in the BOQ.
+      </div>
+
+      <!-- Toolbar -->
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <button class="btn btn-success btn-sm" onclick="addPriceTableRow()">+ Add Size Row</button>
+        <button class="btn btn-ghost btn-sm" onclick="if(confirm('Reset Price Table to factory defaults?')){resetPriceTable();renderPriceTableAdmin();}">↺ Reset to Defaults</button>
+        <span style="font-size:10px;color:var(--text2)" id="pt-row-count"></span>
+      </div>
+
+      <!-- Scrollable full price table -->
+      <div style="overflow:auto;border:1px solid var(--border);border-radius:8px;max-height:calc(100vh - 320px)">
+        <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:900px" id="pt-admin-table">
+          <thead>
+            <tr style="background:var(--surface2);position:sticky;top:0;z-index:2">
+              <th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);min-width:52px">DN</th>
+              <th style="padding:8px 6px;text-align:center;border-bottom:2px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);min-width:48px">NPS</th>
+              <th style="padding:8px 6px;text-align:right;border-bottom:2px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);min-width:80px">Pipe<br><span style="font-weight:400;color:var(--text3)">/m</span></th>
+              <th style="padding:8px 6px;text-align:right;border-bottom:2px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);min-width:80px">Tee<br><span style="font-weight:400;color:var(--text3)">/ea</span></th>
+              <th style="padding:8px 6px;text-align:right;border-bottom:2px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);min-width:80px">Elbow<br><span style="font-weight:400;color:var(--text3)">/ea</span></th>
+              <th style="padding:8px 6px;text-align:right;border-bottom:2px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);min-width:80px">Flange<br><span style="font-weight:400;color:var(--text3)">/ea</span></th>
+              <th style="padding:8px 6px;text-align:right;border-bottom:2px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);min-width:80px">Valve<br><span style="font-weight:400;color:var(--text3)">/ea</span></th>
+              <th style="padding:8px 6px;text-align:right;border-bottom:2px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);min-width:80px">NRV<br><span style="font-weight:400;color:var(--text3)">/ea</span></th>
+              <th style="padding:8px 6px;text-align:right;border-bottom:2px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--teal);min-width:90px">Auto Valve<br><span style="font-weight:400;color:var(--text3)">/ea</span></th>
+              <th style="padding:8px 6px;text-align:right;border-bottom:2px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);min-width:80px">PN16 Pipe<br><span style="font-weight:400;color:var(--text3)">×1.18</span></th>
+              <th style="padding:8px 4px;border-bottom:2px solid var(--border);width:30px"></th>
+            </tr>
+          </thead>
+          <tbody id="pt-admin-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Editable DB section below -->
+      <div class="adm-sec" style="margin-top:14px">
+        <h4>🗄 Component Database — Full Edit</h4>
+        <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <input type="text" id="db2-search" placeholder="Search any field..." oninput="renderDBFull()"
+            style="flex:1;min-width:160px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:11px;outline:none">
+          <select id="db2-cat" onchange="renderDBFull()"
+            style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:11px;outline:none">
+            <option value="">All categories</option>
+            <option>Pipe And Fittings</option><option>Flange</option>
+            <option>Valves - Upvc</option><option>Valves - Matellic</option><option>Fastners</option>
+          </select>
+          <select id="db2-moc" onchange="renderDBFull()"
+            style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:11px;outline:none">
+            <option value="">All MOC</option>
+            <option>HDPE</option><option>UPVC</option><option>SS316L</option>
+            <option>Duplex 2205</option><option>Super Duplex 2507</option>
+          </select>
+          <button class="btn btn-success btn-sm" onclick="showAddInlineRow()">+ Add Row</button>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:6px" id="db2-count"></div>
+        <!-- Inline add row (hidden by default) -->
+        <div id="db2-add-row" style="display:none;background:rgba(0,255,136,.05);border:1px solid rgba(0,255,136,.2);border-radius:7px;padding:10px 12px;margin-bottom:8px">
+          <div style="font-size:10px;font-weight:700;color:var(--green);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">✚ New Record</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 2fr 1fr 1fr 100px;gap:6px;align-items:center">
+            <select id="na-comp" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 7px;border-radius:5px;font-size:11px;outline:none">
+              <option>Pipe And Fittings</option><option>Flange</option>
+              <option>Valves - Upvc</option><option>Valves - Matellic</option><option>Fastners</option>
+            </select>
+            <input id="na-type"  type="text" placeholder="Type (e.g. Pipe)" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 7px;border-radius:5px;font-size:11px;outline:none">
+            <input id="na-model" type="text" placeholder="Model / Size description" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 7px;border-radius:5px;font-size:11px;outline:none">
+            <input id="na-moc"   type="text" placeholder="MOC" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 7px;border-radius:5px;font-size:11px;outline:none">
+            <input id="na-sup"   type="text" placeholder="Supplier" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 7px;border-radius:5px;font-size:11px;outline:none">
+            <input id="na-price" type="number" placeholder="AED" step="0.01" style="background:var(--surface2);border:1px solid var(--border);color:var(--gold);padding:5px 7px;border-radius:5px;font-size:11px;outline:none;text-align:right">
+          </div>
+          <div style="display:flex;gap:6px;margin-top:8px">
+            <button class="btn btn-success btn-sm" onclick="saveInlineRow()">✔ Save</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('db2-add-row').style.display='none'">Cancel</button>
+          </div>
+        </div>
+        <div style="overflow:auto;max-height:400px;border:1px solid var(--border);border-radius:7px">
+          <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:800px">
+            <thead>
+              <tr style="background:var(--surface2);position:sticky;top:0;z-index:1">
+                <th style="padding:7px 8px;text-align:left;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text2)">Category</th>
+                <th style="padding:7px 8px;text-align:left;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text2)">Type</th>
+                <th style="padding:7px 8px;text-align:left;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text2);min-width:200px">Model / Size</th>
+                <th style="padding:7px 8px;text-align:left;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text2)">MOC</th>
+                <th style="padding:7px 8px;text-align:left;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text2)">Supplier</th>
+                <th style="padding:7px 8px;text-align:right;border-bottom:1px solid var(--border);font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--gold)">AED/unit</th>
+                <th style="padding:7px 4px;border-bottom:1px solid var(--border);width:28px"></th>
+              </tr>
+            </thead>
+            <tbody id="db2-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end adm-panel -->
+</div><!-- end adm-overlay -->
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// PIPE SIZE DATA
+// ══════════════════════════════════════════════════════════════════
+const PIPE_SIZES = [
+  {dn:15,  nps:'1/2"',  od:21.3,  id_s40:15.8},
+  {dn:20,  nps:'3/4"',  od:26.7,  id_s40:20.9},
+  {dn:25,  nps:'1"',    od:33.4,  id_s40:26.6},
+  {dn:32,  nps:'1.25"', od:42.2,  id_s40:35.1},
+  {dn:40,  nps:'1.5"',  od:48.3,  id_s40:40.9},
+  {dn:50,  nps:'2"',    od:60.3,  id_s40:52.5},
+  {dn:65,  nps:'2.5"',  od:73.0,  id_s40:62.7},
+  {dn:80,  nps:'3"',    od:88.9,  id_s40:77.9},
+  {dn:100, nps:'4"',    od:114.3, id_s40:102.3},
+  {dn:125, nps:'5"',    od:141.3, id_s40:128.2},
+  {dn:150, nps:'6"',    od:168.3, id_s40:154.1},
+  {dn:200, nps:'8"',    od:219.1, id_s40:202.7},
+  {dn:250, nps:'10"',   od:273.1, id_s40:254.5},
+  {dn:300, nps:'12"',   od:323.9, id_s40:303.2},
+  {dn:350, nps:'14"',   od:355.6, id_s40:333.3},
+  {dn:400, nps:'16"',   od:406.4, id_s40:381.0},
+  {dn:450, nps:'18"',   od:457.0, id_s40:428.6},
+  {dn:500, nps:'20"',   od:508.0, id_s40:477.8},
+  {dn:600, nps:'24"',   od:610.0, id_s40:574.7},
+  {dn:700, nps:'28"',   od:711.0, id_s40:671.0},
+  {dn:800, nps:'32"',   od:813.0, id_s40:769.0},
+  {dn:900, nps:'36"',   od:914.0, id_s40:866.0},
+  {dn:1000,nps:'40"',   od:1016,  id_s40:965.0},
+  {dn:1200,nps:'48"',   od:1220,  id_s40:1162},
+];
+
+// ══════════════════════════════════════════════════════════════════
+// ALL STATE — declared here so available everywhere
+// ══════════════════════════════════════════════════════════════════
+let boqRows   = [];   // main BOQ data: each row = one item line
+let boqNextId = 1;    // row ID counter
+let nextLineId = 1;   // legacy alias
+
+const MOC_OPTIONS = [
+  'Duplex 2205','Super Duplex 2507','SS316L','SS304',
+  'HDPE','UPVC','Carbon Steel','GRP','HDPE-SDR17','Custom'
+];
+
+// ══════════════════════════════════════════════════════════════════
+// COMPONENT DB  (extracted from ComponentDB - Pipe, Fittings, Flanges, Valves)
+// ══════════════════════════════════════════════════════════════════
+const DB_DEFAULT = [
+  // HDPE Pipes
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'110NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:16.5},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'160NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:34},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'200NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:48.5},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'250NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:77},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'315NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:118},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'450NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:238},
+  // HDPE Fittings
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'110NB - Elbow 90 Deg',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:46.2},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'160NB - Elbow 90 Deg',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:102.2},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'200NB - Elbow 90 Deg',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:194},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'250NB - Elbow 90 Deg',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:426},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'315NB - Elbow 90 Deg',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:760},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'450NB - Elbow 90 Deg',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:2362},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'110NB - Tee equal',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:59},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'160NB - Tee equal',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:146},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'200NB - Tee equal',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:297},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'250NB - Tee equal',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:661},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'315NB - Tee equal',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:1226},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'450NB - Tee equal',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:3446},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'110NB - Adaptor + Backing ring',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:76},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'160NB - Adaptor + Backing ring',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:140},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'200NB - Adaptor + Backing ring',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:268},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'250NB - Adaptor + Backing ring',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:389},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'315NB - Adaptor + Backing ring',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:585},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'450NB - Adaptor + Backing ring',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:2117},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'200 - 160NB Reducer',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:90.75},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'250 - 200NB Reducer',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:207},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'315 - 250NB Reducer',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:355},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'450 - 315NB Reducer',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:1236},
+  // UPVC Pipes
+  {Component:'Pipe And Fittings',Type:'Pipe - UPVC',ModelSize:'1/2" UPVC pipe PN15 (per m)',MOC:'UPVC',Supplier:'PVS general',UnitPrice:2.4},
+  {Component:'Pipe And Fittings',Type:'Pipe - UPVC',ModelSize:'1" UPVC pipe PN15 (per m)',MOC:'UPVC',Supplier:'PVS general',UnitPrice:3},
+  {Component:'Pipe And Fittings',Type:'Pipe - UPVC',ModelSize:'3" UPVC pipe PN15 (per m)',MOC:'UPVC',Supplier:'PVS general',UnitPrice:21.66},
+  {Component:'Pipe And Fittings',Type:'Pipe - UPVC',ModelSize:'4" UPVC pipe PN15 (per m)',MOC:'UPVC',Supplier:'PVS general',UnitPrice:32.5},
+  {Component:'Pipe And Fittings',Type:'Pipe - UPVC',ModelSize:'8" UPVC pipe PN15 (per m)',MOC:'UPVC',Supplier:'PVS general',UnitPrice:123},
+  // UPVC Fittings
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'3" Elbow 90 Deg - sch.40',MOC:'UPVC',Supplier:'PVS general',UnitPrice:18.2},
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'4" Elbow 90 Deg - sch.40',MOC:'UPVC',Supplier:'PVS general',UnitPrice:34.07},
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'4" Elbow 45 Deg - sch.40',MOC:'UPVC',Supplier:'PVS general',UnitPrice:32.63},
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'6" Elbow 90 Deg - sch.40',MOC:'UPVC',Supplier:'PVS general',UnitPrice:105},
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'2" Equal Tee - sch.40',MOC:'UPVC',Supplier:'PVS general',UnitPrice:8.59},
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'3" Equal Tee - sch.40',MOC:'UPVC',Supplier:'PVS general',UnitPrice:23.14},
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'4" Equal Tee - sch.80',MOC:'UPVC',Supplier:'PVS general',UnitPrice:52.78},
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'6" Equal Tee - sch.80',MOC:'UPVC',Supplier:'PVS general',UnitPrice:105},
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'4"x3" Reducer - sch.40',MOC:'UPVC',Supplier:'PVS general',UnitPrice:22.6},
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'6"x4" Reducer - sch.40',MOC:'UPVC',Supplier:'PVS general',UnitPrice:65},
+  {Component:'Pipe And Fittings',Type:'Fittings - UPVC',ModelSize:'8"x4" Reducer - sch.40',MOC:'UPVC',Supplier:'PVS general',UnitPrice:125},
+  {Component:'Pipe And Fittings',Type:'Flange - UPVC',ModelSize:'1" Stub + Backing ring - UPVC',MOC:'UPVC',Supplier:'PVS general',UnitPrice:16},
+  {Component:'Pipe And Fittings',Type:'Flange - UPVC',ModelSize:'3" Stub + Backing ring - UPVC',MOC:'UPVC',Supplier:'PVS general',UnitPrice:30.3},
+  {Component:'Pipe And Fittings',Type:'Flange - UPVC',ModelSize:'4" Stub + Backing ring - UPVC',MOC:'UPVC',Supplier:'PVS general',UnitPrice:34.17},
+  {Component:'Pipe And Fittings',Type:'Flange - UPVC',ModelSize:'6" Stub + Backing ring - UPVC',MOC:'UPVC',Supplier:'PVS general',UnitPrice:81.5},
+  // SS316L Pipes (Sch 40, per m)
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'1.5" Seamless Sch40 - SS316L (per m)',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:92},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'2" Seamless Sch40 - SS316L (per m)',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:128.8},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'3" Seamless Sch40 - SS316L (per m)',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:264.96},
+  // Duplex 2205 Pipes (per m)
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'1" Seamless Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:84.64},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'1.5" Seamless Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:147.2},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'2" Seamless Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:204.6},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'3" Seamless Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:426.88},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'4" Seamless Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:550.16},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'6" Seamless Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:986.24},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'8" Welded Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:1444.55},
+  // Super Duplex 2507 Pipes (per m)
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'1.5" Seamless Sch40 - Super Duplex 2507 (per m)',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:239.2},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'2" Seamless Sch40 - Super Duplex 2507 (per m)',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:276},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'2.5" Seamless Sch40 - Super Duplex 2507 (per m)',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:369.84},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'3" Seamless Sch40 - Super Duplex 2507 (per m)',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:552},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'4" Seamless Sch40 - Super Duplex 2507 (per m)',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:736},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'6" Seamless Sch40 - Super Duplex 2507 (per m)',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:1593.44},
+  // Duplex Fittings
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'1" Elbow 90 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:14.72},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'2" Elbow 90 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'American Stainless steel',UnitPrice:40.48},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'3" Elbow 90 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'American Stainless steel',UnitPrice:88.32},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'4" Elbow 90 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'American Stainless steel',UnitPrice:121.44},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'4" Elbow 45 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:172.96},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6" Elbow 90 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:721.28},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'8" Elbow 90 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:2152.8},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'1" Equal Tee BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:36.8},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'3" Equal Tee BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:202.4},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'4" Equal Tee BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'American Stainless steel',UnitPrice:331.2},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6" Equal Tee BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'American Stainless steel',UnitPrice:920},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'3"x2" Reducer BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:55.2},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'4"x3" Reducer BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'American Stainless steel',UnitPrice:66.24},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'4"x2" Reducer BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:103.04},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6"x3" Reducer BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:217.12},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'8"x6" Reducer BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:412.16},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'2" End Cap BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:73.6},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'3" End Cap BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:92},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'4" End Cap BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:114.08},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6" End Cap BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:217.12},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'8" End Cap BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:356.96},
+  // Super Duplex fittings
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6" Equal Tee BW Sch40 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:2675.36},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6" Elbow 90 Deg BW Sch40 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:2344.16},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6" End Cap BW Sch40 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:331.2},
+  // Flanges
+  {Component:'Flange',Type:'Flange',ModelSize:'1" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:103.04},
+  {Component:'Flange',Type:'Flange',ModelSize:'2" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:220.8},
+  {Component:'Flange',Type:'Flange',ModelSize:'3" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'American Stainless steel',UnitPrice:441.6},
+  {Component:'Flange',Type:'Flange',ModelSize:'4" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'American Stainless steel',UnitPrice:772.8},
+  {Component:'Flange',Type:'Flange',ModelSize:'6" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:1324.8},
+  {Component:'Flange',Type:'Flange',ModelSize:'8" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:1876.8},
+  {Component:'Flange',Type:'Flange',ModelSize:'10" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'American Stainless steel',UnitPrice:3499.68},
+  {Component:'Flange',Type:'Flange',ModelSize:'3" SORF Flange #300 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:158.24},
+  // UPVC Valves
+  {Component:'Valves - Upvc',Type:'Butterfly valve - Handle',ModelSize:'2.5" UPVC butterfly valve Handle',MOC:'UPVC',Supplier:'PVS general',UnitPrice:232},
+  {Component:'Valves - Upvc',Type:'Butterfly valve - Handle',ModelSize:'3" UPVC butterfly valve Handle',MOC:'UPVC',Supplier:'PVS general',UnitPrice:371.6},
+  {Component:'Valves - Upvc',Type:'Butterfly valve - Motorized',ModelSize:'4" UPVC butterfly valve Motorized',MOC:'UPVC',Supplier:'PVS general',UnitPrice:2433},
+  {Component:'Valves - Upvc',Type:'Butterfly valve - Pneumatic',ModelSize:'4" UPVC butterfly valve Pneumatic',MOC:'UPVC',Supplier:'PVS general',UnitPrice:1980},
+  {Component:'Valves - Upvc',Type:'Butterfly valve - Pneumatic',ModelSize:'6" UPVC butterfly valve Pneumatic',MOC:'UPVC',Supplier:'PVS general',UnitPrice:2650},
+  {Component:'Valves - Upvc',Type:'Butterfly valve - Pneumatic',ModelSize:'8" UPVC butterfly valve Pneumatic',MOC:'UPVC',Supplier:'PVS general',UnitPrice:3200},
+  {Component:'Valves - Upvc',Type:'Butterfly valve - Pneumatic',ModelSize:'10" UPVC butterfly valve Pneumatic',MOC:'UPVC',Supplier:'PVS general',UnitPrice:4450},
+  {Component:'Valves - Upvc',Type:'Ball valve - UPVC',ModelSize:'1/2" UPVC double union ball valve',MOC:'UPVC',Supplier:'PVS general',UnitPrice:24.88},
+  {Component:'Valves - Upvc',Type:'Ball valve - UPVC',ModelSize:'1" UPVC double union ball valve',MOC:'UPVC',Supplier:'PVS general',UnitPrice:32.76},
+  {Component:'Valves - Upvc',Type:'Check Valve - UPVC',ModelSize:'3" Check valve wafer PN16',MOC:'UPVC',Supplier:'PVS general',UnitPrice:72},
+  {Component:'Valves - Upvc',Type:'Check Valve - UPVC',ModelSize:'6" Check valve wafer PN16',MOC:'UPVC',Supplier:'PVS general',UnitPrice:102.4},
+  {Component:'Valves - Upvc',Type:'Check Valve - UPVC',ModelSize:'8" Check valve wafer PN16',MOC:'UPVC',Supplier:'PVS general',UnitPrice:185},
+  {Component:'Valves - Upvc',Type:'Check Valve - UPVC',ModelSize:'10" Check valve wafer PN16',MOC:'UPVC',Supplier:'PVS general',UnitPrice:305},
+  // Metallic valves
+  {Component:'Valves - Matellic',Type:'NRV - Wafer type',ModelSize:'3" single plate Duplex NRV Class 600',MOC:'Duplex 2205',Supplier:'Phoenix Valsteer',UnitPrice:607.2},
+  {Component:'Valves - Matellic',Type:'NRV - Wafer type',ModelSize:'4" dual plate Duplex NRV Class 600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:1048.8},
+  {Component:'Valves - Matellic',Type:'NRV - Wafer type',ModelSize:'6" dual plate Duplex NRV Class 600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:5041.6},
+  {Component:'Valves - Matellic',Type:'NRV - Wafer type',ModelSize:'10" dual plate DSS NRV Class 600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:13340},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'1/2" Gate valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:158.24},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'1.5" Gate valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:379.04},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'2" Gate valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:544.64},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'3" Gate valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:982.56},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'3" Gate valve Duplex 2205 #600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:3724.16},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'4" Gate valve Duplex 2205 #600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:6421.6},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'6" Gate valve Duplex 2205 #600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:11809.12},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'2" Butterfly valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:217.12},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'3" Butterfly valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:371.68},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'6" Butterfly valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:850.08},
+  {Component:'Valves - Matellic',Type:'Ball Valve - Flanged',ModelSize:'1" Ball valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:139.84},
+  {Component:'Valves - Matellic',Type:'Ball Valve - Flanged',ModelSize:'2" Ball valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:309.12},
+  {Component:'Valves - Matellic',Type:'Ball Valve - Flanged',ModelSize:'3" Ball valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:621.92},
+  // Fasteners
+  {Component:'Fastners',Type:'Nuts and Bolts',ModelSize:'M16x90 full threaded SS316L set',MOC:'SS316L',Supplier:'Great steel',UnitPrice:6.18},
+  {Component:'Fastners',Type:'Nuts and Bolts',ModelSize:'M16x120 full threaded SS316L set',MOC:'SS316L',Supplier:'Great steel',UnitPrice:6.84},
+  {Component:'Fastners',Type:'Nuts and Bolts',ModelSize:'M20x90 full threaded SS316L set',MOC:'SS316L',Supplier:'Great steel',UnitPrice:9.79},
+  {Component:'Fastners',Type:'Nuts and Bolts',ModelSize:'M20x120 full threaded SS316L set',MOC:'SS316L',Supplier:'Great steel',UnitPrice:11.33},
+  {Component:'Fastners',Type:'Nuts and Bolts',ModelSize:'M20x150 full threaded SS316L set',MOC:'SS316L',Supplier:'Great steel',UnitPrice:13.03},
+  {Component:'Fastners',Type:'Nuts and Bolts',ModelSize:'M24x140 full threaded SS316L set',MOC:'SS316L',Supplier:'Great steel',UnitPrice:32.02},
+  // ── HDPE extended sizes (355 / 500 / 630 / 710 / 800 / 900 / 1000 NB) ──
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'355NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'Redius pipe',UnitPrice:141},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'500NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:310},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'560NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:385},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'630NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:490},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'710NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:620},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'800NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:790},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'900NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:1000},
+  {Component:'Pipe And Fittings',Type:'HDPE pipe',ModelSize:'1000NB - HDPE pipe - SDR 17',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:1240},
+  // HDPE fittings extended
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'355NB - Elbow 90 Deg',MOC:'HDPE',Supplier:'Redius pipe',UnitPrice:665},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'500NB - Elbow 90 Deg',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:2800},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'630NB - Elbow 90 Deg',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:4200},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'355NB - Tee equal',MOC:'HDPE',Supplier:'Redius pipe',UnitPrice:900},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'500NB - Tee equal',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:3800},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'630NB - Tee equal',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:5600},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'355NB - Adaptor + Backing ring',MOC:'HDPE',Supplier:'Redius pipe',UnitPrice:660},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'500NB - Adaptor + Backing ring',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:2117},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'630NB - Adaptor + Backing ring',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:3200},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'355 - 250NB Reducer',MOC:'HDPE',Supplier:'Redius pipe',UnitPrice:403},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'450 - 355NB Reducer',MOC:'HDPE',Supplier:'Redius pipe',UnitPrice:700},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'500 - 450NB Reducer',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:1100},
+  {Component:'Pipe And Fittings',Type:'HDPE fitting',ModelSize:'630 - 500NB Reducer',MOC:'HDPE',Supplier:'RAK universal plastic',UnitPrice:1650},
+  // ── UPVC extended (10" / 12" / 16" / 20" / 24") ──
+  {Component:'Pipe And Fittings',Type:'Pipe - UPVC',ModelSize:'10" UPVC pipe PN10 (per m)',MOC:'UPVC',Supplier:'PVS general',UnitPrice:155},
+  {Component:'Pipe And Fittings',Type:'Pipe - UPVC',ModelSize:'12" UPVC pipe PN10 (per m)',MOC:'UPVC',Supplier:'PVS general',UnitPrice:215},
+  {Component:'Pipe And Fittings',Type:'Pipe - UPVC',ModelSize:'16" UPVC pipe PN10 (per m)',MOC:'UPVC',Supplier:'PVS general',UnitPrice:340},
+  {Component:'Pipe And Fittings',Type:'Pipe - UPVC',ModelSize:'20" UPVC pipe PN10 (per m)',MOC:'UPVC',Supplier:'PVS general',UnitPrice:530},
+  {Component:'Valves - Upvc',Type:'Butterfly valve - Motorized',ModelSize:'12" UPVC butterfly valve Motorized',MOC:'UPVC',Supplier:'PVS general',UnitPrice:9200},
+  {Component:'Valves - Upvc',Type:'Butterfly valve - Motorized',ModelSize:'16" UPVC butterfly valve Motorized',MOC:'UPVC',Supplier:'PVS general',UnitPrice:14500},
+  {Component:'Valves - Upvc',Type:'Butterfly valve - Motorized',ModelSize:'20" UPVC butterfly valve Motorized',MOC:'UPVC',Supplier:'PVS general',UnitPrice:22000},
+  {Component:'Valves - Upvc',Type:'Check Valve - UPVC',ModelSize:'12" Check valve wafer PN10',MOC:'UPVC',Supplier:'PVS general',UnitPrice:580},
+  {Component:'Valves - Upvc',Type:'Check Valve - UPVC',ModelSize:'16" Check valve wafer PN10',MOC:'UPVC',Supplier:'PVS general',UnitPrice:950},
+  {Component:'Valves - Upvc',Type:'Check Valve - UPVC',ModelSize:'20" Check valve wafer PN10',MOC:'UPVC',Supplier:'PVS general',UnitPrice:1450},
+  // ── Duplex 2205 extended sizes (8" to 24") ──
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'10" Seamless Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:2100},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'12" Welded Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:2980},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'14" Welded Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:3800},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'16" Welded Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:4600},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'18" Welded Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:5500},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'20" Welded Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:6600},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'24" Welded Sch40 - Duplex 2205 (per m)',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:9200},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'10" Elbow 90 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:4200},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'12" Elbow 90 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:7800},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'16" Elbow 90 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:14500},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'20" Elbow 90 Deg BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:24000},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'10" Equal Tee BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:5600},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'12" Equal Tee BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:9800},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'16" Equal Tee BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:18500},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'20" Equal Tee BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:32000},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'10" End Cap BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:780},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'12" End Cap BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:1250},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'10"x8" Reducer BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:1100},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'12"x10" Reducer BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:1900},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'16"x12" Reducer BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:3400},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'20"x16" Reducer BW Sch40 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:5800},
+  {Component:'Flange',Type:'Flange',ModelSize:'10" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'American Stainless steel',UnitPrice:3499.68},
+  {Component:'Flange',Type:'Flange',ModelSize:'12" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:5200},
+  {Component:'Flange',Type:'Flange',ModelSize:'16" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:9800},
+  {Component:'Flange',Type:'Flange',ModelSize:'20" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:16500},
+  {Component:'Flange',Type:'Flange',ModelSize:'24" SORF Flange #600 - Duplex 2205',MOC:'Duplex 2205',Supplier:'Great steel',UnitPrice:24000},
+  {Component:'Valves - Matellic',Type:'NRV - Wafer type',ModelSize:'12" dual plate Duplex NRV Class 600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:28500},
+  {Component:'Valves - Matellic',Type:'NRV - Wafer type',ModelSize:'16" dual plate Duplex NRV Class 600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:52000},
+  {Component:'Valves - Matellic',Type:'NRV - Wafer type',ModelSize:'20" dual plate Duplex NRV Class 600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:88000},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'8" Gate valve Duplex 2205 #600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:21500},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'10" Gate valve Duplex 2205 #600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:38000},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'12" Gate valve Duplex 2205 #600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:58000},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'16" Gate valve Duplex 2205 #600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:98000},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'20" Gate valve Duplex 2205 #600',MOC:'Duplex 2205',Supplier:'Controtec',UnitPrice:165000},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'8" Butterfly valve Duplex 2205 #150',MOC:'Duplex 2205',Supplier:'Phoenix Valsteer',UnitPrice:2850},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'10" Butterfly valve Duplex 2205 #150',MOC:'Duplex 2205',Supplier:'Phoenix Valsteer',UnitPrice:4800},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'12" Butterfly valve Duplex 2205 #150',MOC:'Duplex 2205',Supplier:'Phoenix Valsteer',UnitPrice:7500},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'16" Butterfly valve Duplex 2205 #150',MOC:'Duplex 2205',Supplier:'Phoenix Valsteer',UnitPrice:14200},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'20" Butterfly valve Duplex 2205 #150',MOC:'Duplex 2205',Supplier:'Phoenix Valsteer',UnitPrice:24000},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'24" Butterfly valve Duplex 2205 #150',MOC:'Duplex 2205',Supplier:'Phoenix Valsteer',UnitPrice:38000},
+  // ── Super Duplex 2507 extended ──
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'8" Welded Sch40 - Super Duplex 2507 (per m)',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:2150},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'10" Welded Sch40 - Super Duplex 2507 (per m)',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:3200},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'12" Welded Sch40 - Super Duplex 2507 (per m)',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:4600},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'8" Elbow 90 Deg BW Sch40 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:3200},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'10" Elbow 90 Deg BW Sch40 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:5800},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'8" Equal Tee BW Sch40 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:4100},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'10" Equal Tee BW Sch40 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:7200},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'8" End Cap BW Sch40 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:580},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'10" End Cap BW Sch40 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:950},
+  {Component:'Flange',Type:'Flange',ModelSize:'8" SORF Flange #600 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:2800},
+  {Component:'Flange',Type:'Flange',ModelSize:'10" SORF Flange #600 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:4800},
+  {Component:'Flange',Type:'Flange',ModelSize:'12" SORF Flange #600 - Super Duplex 2507',MOC:'Super Duplex 2507',Supplier:'Great steel',UnitPrice:7500},
+  // ── SS316L extended ──
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'4" Seamless Sch40 - SS316L (per m)',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:420},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'6" Seamless Sch40 - SS316L (per m)',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:720},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'8" Welded Sch40 - SS316L (per m)',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:1100},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'10" Welded Sch40 - SS316L (per m)',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:1600},
+  {Component:'Pipe And Fittings',Type:'Pipe',ModelSize:'12" Welded Sch40 - SS316L (per m)',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:2300},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'4" Elbow 90 Deg BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:95},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6" Elbow 90 Deg BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:420},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'8" Elbow 90 Deg BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:980},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'10" Elbow 90 Deg BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:2100},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'4" Equal Tee BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:180},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6" Equal Tee BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:680},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'8" Equal Tee BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:1500},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'4" End Cap BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:48},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6" End Cap BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:148},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'4"x3" Reducer BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:62},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'6"x4" Reducer BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:195},
+  {Component:'Pipe And Fittings',Type:'Fittings',ModelSize:'8"x6" Reducer BW Sch40 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:420},
+  {Component:'Flange',Type:'Flange',ModelSize:'4" SORF Flange #150 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:320},
+  {Component:'Flange',Type:'Flange',ModelSize:'6" SORF Flange #150 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:580},
+  {Component:'Flange',Type:'Flange',ModelSize:'8" SORF Flange #150 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:950},
+  {Component:'Flange',Type:'Flange',ModelSize:'10" SORF Flange #150 - SS316L',MOC:'SS316L',Supplier:'American Stainless steel',UnitPrice:1600},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'4" Gate valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:1850},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'6" Gate valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:3800},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'8" Gate valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:7200},
+  {Component:'Valves - Matellic',Type:'Gate Valve - Flanged',ModelSize:'10" Gate valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:13500},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'4" Butterfly valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:680},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'8" Butterfly valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:2100},
+  {Component:'Valves - Matellic',Type:'Butterfly Valve',ModelSize:'10" Butterfly valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:3600},
+  {Component:'Valves - Matellic',Type:'NRV - Wafer type',ModelSize:'8" dual plate SS316L NRV #150',MOC:'SS316L',Supplier:'Controtec',UnitPrice:4200},
+  {Component:'Valves - Matellic',Type:'NRV - Wafer type',ModelSize:'10" dual plate SS316L NRV #150',MOC:'SS316L',Supplier:'Controtec',UnitPrice:7800},
+  {Component:'Valves - Matellic',Type:'Ball Valve - Flanged',ModelSize:'4" Ball valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:1100},
+  {Component:'Valves - Matellic',Type:'Ball Valve - Flanged',ModelSize:'6" Ball valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:2400},
+  {Component:'Valves - Matellic',Type:'Ball Valve - Flanged',ModelSize:'8" Ball valve SS316L #150',MOC:'SS316L',Supplier:'Phoenix Valsteer',UnitPrice:5200},
+];
+
+let DB = JSON.parse(JSON.stringify(DB_DEFAULT));
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  buildSizeRefTable();
+  calcPipeSize();
+  renderBOQTable();
+  renderSummary();
+  checkPFSave();
+});
+
+// Ctrl+S to save
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); savePFProject(); }
+});
+
+// Close item dropdowns on outside click
+document.addEventListener('click', e => {
+  document.querySelectorAll('.item-drop.open').forEach(d => {
+    if (!d.closest('.item-search-wrap')?.contains(e.target)) d.classList.remove('open');
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════
+// TAB
+// ══════════════════════════════════════════════════════════════════
+function showTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+  if (id === 'summary') renderSummary();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PIPE SIZER
+// ══════════════════════════════════════════════════════════════════
+function buildSizeRefTable() {
+  const tbody = document.getElementById('sz-ref-body');
+  tbody.innerHTML = PIPE_SIZES.map(p => {
+    const a = Math.PI * (p.id_s40/1000)**2 / 4;
+    const f15 = (a * 1.5 * 3600).toFixed(0);
+    const f20 = (a * 2.0 * 3600).toFixed(0);
+    const f25 = (a * 2.5 * 3600).toFixed(0);
+    return `<tr>
+      <td><span class="dn-tag">DN${p.dn}</span></td>
+      <td>${p.nps}</td>
+      <td>${p.od}</td>
+      <td>${p.id_s40}</td>
+      <td>${f15} m³/hr</td>
+      <td>${f20} m³/hr</td>
+      <td>${f25} m³/hr</td>
+    </tr>`;
+  }).join('');
+}
+
+function calcPipeSize() {
+  const Q = parseFloat(document.getElementById('sz-flow').value) || 0;
+  const V = parseFloat(document.getElementById('sz-vel').value) || 1.8;
+  if (Q <= 0) { document.getElementById('sz-result').innerHTML = '<div style="color:var(--text2)">Enter flow rate</div>'; return; }
+
+  const Qms = Q / 3600;
+  const D_calc = Math.sqrt(4 * Qms / V / Math.PI) * 1000; // required ID mm
+
+  // Recommended = nearest HIGHER or equal standard size (never undersized)
+  const higherSizes = PIPE_SIZES.filter(p => p.id_s40 >= D_calc);
+  const best = higherSizes.length > 0 ? higherSizes[0] : PIPE_SIZES[PIPE_SIZES.length-1];
+
+  // Show 4 sizes around the recommended (2 above, 1-2 below for reference)
+  const bestIdx = PIPE_SIZES.indexOf(best);
+  const showFrom = Math.max(0, bestIdx - 1);
+  const showTo   = Math.min(PIPE_SIZES.length, bestIdx + 3);
+  const nearby   = PIPE_SIZES.slice(showFrom, showTo);
+
+  const vBest = (Qms / (Math.PI*(best.id_s40/1000)**2/4)).toFixed(2);
+
+  const matchRows = nearby.map(p => {
+    const vp = (Qms / (Math.PI*(p.id_s40/1000)**2/4)).toFixed(2);
+    const ok = vp >= 1.2 && vp <= 2.8;
+    const isRec = p === best;
+    return `<div class="match-row ${isRec?'best':''}">
+      <span class="dn-tag" ${isRec?'style="background:rgba(0,255,136,.15);border-color:var(--green);color:var(--green)"':''}>DN${p.dn}</span>
+      <span style="font-size:11px;color:var(--text2)">${p.nps} · ID ${p.id_s40}mm</span>
+      <span style="font-family:'Space Mono',monospace;font-size:12px;color:var(--text)">${vp} m/s</span>
+      <span class="${ok?'ok-tag':'hi-tag'}">${ok?'✓ OK':'⚠ Review'}</span>
+      ${isRec?'<span style="font-size:9px;font-weight:700;color:var(--green);letter-spacing:.5px">◀ SELECTED</span>':''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('sz-result').innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div>
+        <div class="pipe-sub">Required ID</div>
+        <div class="pipe-dn">${D_calc.toFixed(1)} mm</div>
+        <div class="pipe-v">Min ID at ${V} m/s</div>
+      </div>
+      <div>
+        <div class="pipe-sub">Recommended (next size up)</div>
+        <div class="pipe-dn" style="color:var(--green)">DN${best.dn}</div>
+        <div class="pipe-v">${best.nps} · V = ${vBest} m/s</div>
+      </div>
+    </div>
+    <div class="pipe-match" style="margin-top:12px">${matchRows}</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--text3)">Always selects next standard size up — pipe is never undersized.</div>
+  `;
+
+  window._szDn  = best.dn;
+  window._szNps = best.nps;
+}
+
+function addLineToBOQ() {
+  const desc  = document.getElementById('sz-desc').value.trim() || ('Line '+(boqRows.length+1));
+  const flow  = document.getElementById('sz-flow').value || '';
+  const moc   = document.getElementById('sz-moc').value;
+  const press = document.getElementById('sz-pn').value;
+  const len   = parseFloat(document.getElementById('sz-len').value) || 1;
+  const dn    = window._szDn ? `DN${window._szDn}` : autoDN(flow);
+
+  // Add the main pipeline row — qty = len (metres of pipe)
+  addBOQRow({ desc, flow, press, moc, dn, len, qty: len });
+  showTab('boq', document.querySelectorAll('.tab')[1]);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// BOQ — SPREADSHEET TABLE  (one row = one item)
+// ══════════════════════════════════════════════════════════════════
+// Row schema: { id, desc, flow, press, moc, dn(auto), item, itemMoc, qty, unitPrice }
+
+function addBOQRow(prefill) {
+  // Inherit MOC from the last MAIN row (not sub-rows)
+  const lastMain = [...boqRows].reverse().find(r => !r.isSubRow);
+  const lastMoc = lastMain ? lastMain.moc : 'Duplex 2205';
+  const row = Object.assign({
+    id: boqNextId++,
+    isSubRow: false, parentId: null,
+    desc:'', flow:'', press:'', moc: lastMoc,
+    dn:'', len:0, item:'', itemMoc:'', qty:1, unitPrice:0
+  }, prefill||{});
+  boqRows.push(row);
+  renderBOQTable();
+  setTimeout(()=>{ document.getElementById(`bd-${row.id}`)?.focus(); }, 60);
+}
+
+// Insert a sub-row after the last sub-row of parent at parentRi
+function addSubRow(parentRi) {
+  const parent = boqRows[parentRi];
+  let insertAt = parentRi + 1;
+  while (insertAt < boqRows.length && boqRows[insertAt].isSubRow && boqRows[insertAt].parentId === parent.id) {
+    insertAt++;
+  }
+  const sub = {
+    id: boqNextId++,
+    isSubRow: true, parentId: parent.id,
+    desc: parent.desc, flow: parent.flow, press: parent.press, moc: parent.moc,
+    dn: parent.dn || autoDN(parent.flow), len: parent.len || 0,
+    item:'', itemMoc:'', qty:1, unitPrice:0
+  };
+  boqRows.splice(insertAt, 0, sub);
+  renderBOQTable();
+  setTimeout(()=>{ document.getElementById(`bi-${sub.id}`)?.focus(); }, 60);
+}
+
+// Sync parent pipeline info down to all its sub-rows when parent changes
+function syncSubRows(parentRi) {
+  const parent = boqRows[parentRi];
+  const newDn = parent.dn || autoDN(parent.flow);
+  boqRows.forEach(r => {
+    if (r.isSubRow && r.parentId === parent.id) {
+      r.desc=parent.desc; r.flow=parent.flow; r.press=parent.press;
+      r.moc=parent.moc;   r.dn=newDn;        r.len=parent.len;
+    }
+  });
+}
+
+function addLineToBOQTable(lineData) {
+  addBOQRow({
+    desc: lineData.desc,
+    flow: lineData.flow,
+    press: lineData.press || '',
+    moc:  lineData.moc,
+    dn:   lineData.dn || '',
+    item: lineData.item || '',
+    qty:  1,
+    unitPrice: 0
+  });
+}
+
+// Auto-calc DN from flow + velocity — always selects nearest HIGHER or equal standard DN
+// e.g. calculated 218mm → returns DN250, never DN200
+function autoDN(flowStr) {
+  const Q = parseFloat(flowStr);
+  if (!Q || Q <= 0) return '';
+  const Qms = Q / 3600;
+  const D = Math.sqrt(4 * Qms / 1.8 / Math.PI) * 1000; // required ID in mm
+  // Find the smallest standard size whose ID ≥ calculated D (next size up)
+  const higher = PIPE_SIZES.filter(p => p.id_s40 >= D);
+  if (higher.length > 0) return `DN${higher[0].dn}`;
+  // If D exceeds all standard sizes, return the largest
+  return `DN${PIPE_SIZES[PIPE_SIZES.length-1].dn}`;
+}
+
+// Extract numeric DN from a row (from stored dn or calculated)
+function getRowDN(row) {
+  const dnStr = row.dn || autoDN(row.flow);
+  const m = dnStr.match(/(\d+)/);
+  return m ? parseInt(m[1]) : null;
+}
+
+// ── Components allowed in BOQ item dropdown ──
+const BOQ_COMPONENTS = new Set([
+  'Pipe And Fittings','Flange','Valves - Upvc','Valves - Matellic','Fastners'
+]);
+
+// ── Reference Price Table ──
+// Applicable ONLY for: HDPE, UPVC, PVC, GRP pipes at PN10 or PN16
+// Prices are AED/metre for pipe, AED/each for fittings
+// PN16 price = PN10 × 1.18 (standard uprating factor for plastic pipes)
+// Source: project reference table D19
+const PRICE_TABLE = [
+  {thresh:1,   nps:'1"',   dn:25,   pipe:3.32,  tee:2.8,   elbow:2,    flange:6.4,  valve:20,    nrv:43,    auto:1568},
+  {thresh:2.1, nps:'2"',   dn:50,   pipe:10.5,  tee:9.2,   elbow:6.5,  flange:13,   valve:59,    nrv:93,    auto:1522},
+  {thresh:3.2, nps:'3"',   dn:80,   pipe:15.4,  tee:23,    elbow:18,   flange:47,   valve:224,   nrv:58,    auto:1816},
+  {thresh:4.2, nps:'4"',   dn:100,  pipe:24,    tee:47,    elbow:33,   flange:32,   valve:254,   nrv:71,    auto:1961},
+  {thresh:6.2, nps:'6"',   dn:150,  pipe:53,    tee:91,    elbow:71,   flange:84,   valve:362,   nrv:55,    auto:2308},
+  {thresh:8.2, nps:'8"',   dn:200,  pipe:92,    tee:197,   elbow:149,  flange:133,  valve:2169,  nrv:2169,  auto:5714},
+  {thresh:10.2,nps:'10"',  dn:250,  pipe:145,   tee:250,   elbow:230,  flange:212,  valve:2959,  nrv:2929,  auto:7760},
+  {thresh:12.2,nps:'12"',  dn:300,  pipe:210,   tee:1245,  elbow:1065, flange:970,  valve:4003,  nrv:4312,  auto:9405},
+  {thresh:14.2,nps:'14"',  dn:350,  pipe:350,   tee:4500,  elbow:1905, flange:1510, valve:2656,  nrv:9131,  auto:18000},
+  {thresh:16.2,nps:'16"',  dn:400,  pipe:350,   tee:4500,  elbow:1905, flange:1510, valve:8710,  nrv:9131,  auto:22919},
+  {thresh:18.2,nps:'18"',  dn:450,  pipe:500,   tee:4500,  elbow:2985, flange:1635, valve:13381, nrv:12099, auto:24000},
+  {thresh:20.2,nps:'20"',  dn:500,  pipe:850,   tee:6560,  elbow:2985, flange:2180, valve:19971, nrv:33620, auto:29000},
+  {thresh:22.2,nps:'22"',  dn:550,  pipe:1000,  tee:6560,  elbow:3700, flange:3275, valve:21000, nrv:null,  auto:null},
+  {thresh:24.2,nps:'24"',  dn:600,  pipe:1190,  tee:6560,  elbow:3700, flange:3275, valve:19971, nrv:null,  auto:null},
+  {thresh:26.2,nps:'26"',  dn:650,  pipe:1500,  tee:9000,  elbow:7565, flange:6610, valve:21000, nrv:null,  auto:null},
+  {thresh:28.2,nps:'28"',  dn:700,  pipe:1800,  tee:10000, elbow:7565, flange:6610, valve:3055,  nrv:null,  auto:null},
+  {thresh:32.2,nps:'32"',  dn:800,  pipe:2040,  tee:11000, elbow:7565, flange:6610, valve:41820, nrv:null,  auto:null},
+  {thresh:36.3,nps:'36"',  dn:900,  pipe:2570,  tee:12145, elbow:7565, flange:7940, valve:50000, nrv:null,  auto:null},
+  {thresh:40.2,nps:'40"',  dn:1000, pipe:4000,  tee:20000, elbow:null, flange:null, valve:59372, nrv:null,  auto:null},
+  {thresh:48.2,nps:'48"',  dn:1200, pipe:4460,  tee:25500, elbow:null, flange:null, valve:96350, nrv:null,  auto:null},
+];
+
+// PN16 uprating factor vs PN10 base prices (plastic pipes/fittings)
+const PN16_FACTOR = 1.18;
+
+// MOC values for which the price table is applicable (plastic / GRP only)
+const PRICE_TABLE_MOCS = new Set(['hdpe','upvc','pvc','grp','frp','plastic','hdpe-sdr17']);
+
+// Check if a MOC string is a plastic/GRP type (price table applies)
+function isPriceTableMOC(moc) {
+  if (!moc) return false;
+  const m = moc.toLowerCase().replace(/[-\s]/g,'');
+  return PRICE_TABLE_MOCS.has(m) ||
+    m.includes('hdpe') || m.includes('upvc') || m.includes('pvc') ||
+    m.includes('grp')  || m.includes('frp')  || m.includes('plastic');
+}
+
+// Detect pressure rating from the row's press field
+// Returns 'PN10', 'PN16', or null
+function detectPN(pressStr) {
+  if (!pressStr) return null;
+  const p = String(pressStr).toLowerCase();
+  if (/pn\s*16|16\s*bar|class\s*e|sch\s*40/.test(p)) return 'PN16';
+  if (/pn\s*10|10\s*bar|class\s*d/.test(p)) return 'PN10';
+  if (/pn\s*6|6\s*bar/.test(p)) return 'PN6';
+  return null;
+}
+
+// Map keyword → price column name in PRICE_TABLE
+const ITEM_TO_COL = {
+  pipe:'pipe', elbow:'elbow', tee:'tee', reducer:'elbow',
+  flange:'flange', union:'flange',
+  valve:'valve', gate:'valve', ball:'valve', butterfly:'valve', globe:'valve', needle:'valve', diaphragm:'valve',
+  nrv:'nrv', check:'nrv',
+  auto:'auto', control:'auto', actuated:'auto',
+};
+
+// Get the matching PRICE_TABLE row for a given DN number
+// Get the matching PRICE_TABLE row for a given DN — always selects nearest HIGHER or equal size
+// Uses live PT (admin-edited copy) if available, else falls back to PRICE_TABLE const
+function getPriceRow(dnNum) {
+  if (!dnNum) return null;
+  const src = PT || PRICE_TABLE;
+  const exact = src.find(r => r.dn === dnNum);
+  if (exact) return exact;
+  const higher = src.filter(r => r.dn >= dnNum).sort((a,b) => a.dn - b.dn);
+  if (higher.length > 0) return higher[0];
+  return src[src.length - 1];
+}
+
+// Build synthetic DB-style items from PRICE_TABLE
+// Only returns items when MOC is a plastic/GRP material
+// Shows both PN10 and PN16 prices when applicable
+function getPriceTableItems(kw, dnNum, moc, pressStr) {
+  // ── Only applicable for HDPE / UPVC / PVC / GRP ──
+  if (!isPriceTableMOC(moc)) return [];
+
+  const row = getPriceRow(dnNum);
+  if (!row) return [];
+  const kwLow = (kw||'').toLowerCase().trim();
+  const detectedPN = detectPN(pressStr);
+
+  // Build column list based on keyword
+  const allCols = [
+    {key:'pipe',   label:'Pipe',                  unit:'per m'},
+    {key:'tee',    label:'Tee (Equal)',             unit:'each'},
+    {key:'elbow',  label:'Elbow / Reducer',         unit:'each'},
+    {key:'flange', label:'Union / Flange',           unit:'each'},
+    {key:'valve',  label:'Valve',                   unit:'each'},
+    {key:'nrv',    label:'NRV / Check Valve',        unit:'each'},
+    {key:'auto',   label:'Auto / Control Valve',     unit:'each'},
+  ];
+
+  // Filter cols by keyword
+  let cols = allCols;
+  if (kwLow) {
+    const matchedKeys = Object.entries(ITEM_TO_COL)
+      .filter(([k]) => kwLow.includes(k))
+      .map(([,v]) => v);
+    if (matchedKeys.length > 0) {
+      cols = allCols.filter(c => matchedKeys.includes(c.key));
+    } else {
+      // Keyword doesn't match any known type — filter by substring in label
+      cols = allCols.filter(c => c.label.toLowerCase().includes(kwLow));
+    }
+    if (cols.length === 0) cols = allCols; // fallback: show all
+  }
+
+  const items = [];
+  cols.filter(c => row[c.key] != null).forEach(c => {
+    const pricePN10 = row[c.key];
+    const pricePN16 = Math.round(pricePN10 * PN16_FACTOR * 100) / 100;
+
+    // Show whichever PN ratings are relevant
+    const showPN10 = !detectedPN || detectedPN === 'PN10';
+    const showPN16 = !detectedPN || detectedPN === 'PN16';
+
+    if (showPN10) {
+      items.push({
+        _fromPriceTable: true,
+        ModelSize: `${row.nps} ${c.label} — PN10`,
+        Type: c.label,
+        MOC: moc + ' PN10',
+        Supplier: 'Price Table (Ref.)',
+        UnitPrice: pricePN10,
+        _unit: c.unit,
+        _pn: 'PN10',
+        _ptRow: row,
+      });
+    }
+    if (showPN16) {
+      items.push({
+        _fromPriceTable: true,
+        ModelSize: `${row.nps} ${c.label} — PN16`,
+        Type: c.label,
+        MOC: moc + ' PN16',
+        Supplier: 'Price Table (Ref.)',
+        UnitPrice: pricePN16,
+        _unit: c.unit,
+        _pn: 'PN16',
+        _ptRow: row,
+      });
+    }
+  });
+
+  return items;
+}
+
+// Core filter: BOQ components only, keyword in Type+ModelSize, MOC must match, DN must match
+function getItemResults(q, moc, dn) {
+  const kw = (q||'').toLowerCase().trim();
+  if (!kw) return [];
+  const dnVariants = dn ? getSizeVariants(dn) : null;
+  const mocKey = (moc||'').toLowerCase().split(' ')[0];
+
+  return DB.filter(r => {
+    if (!BOQ_COMPONENTS.has(r.Component)) return false;
+    const searchStr = ((r.Type||'')+' '+(r.ModelSize||'')).toLowerCase();
+    if (!searchStr.includes(kw)) return false;
+    if (mocKey) {
+      if (!(r.MOC||'').toLowerCase().includes(mocKey)) return false;
+    }
+    if (dnVariants) {
+      const nums = (r.ModelSize||'').match(/\d+/g)||[];
+      if (nums.length > 0 && !nums.some(n => dnVariants.includes(parseInt(n)))) return false;
+    }
+    return true;
+  }).slice(0, 25);
+}
+
+// Show all items of this DN+MOC for empty-focus hint (no keyword)
+function getHintResults(moc, dn) {
+  const mocKey = (moc||'').toLowerCase().split(' ')[0];
+  const dnVariants = dn ? getSizeVariants(dn) : null;
+
+  return DB.filter(r => {
+    if (!BOQ_COMPONENTS.has(r.Component)) return false;
+    if (mocKey && !(r.MOC||'').toLowerCase().includes(mocKey)) return false;
+    if (dnVariants) {
+      const nums = (r.ModelSize||'').match(/\d+/g)||[];
+      if (nums.length > 0 && !nums.some(n => dnVariants.includes(parseInt(n)))) return false;
+    }
+    return true;
+  }).slice(0, 30);
+}
+
+// Find nearest available DN in the DB for a given MOC — always picks HIGHER or equal size
+// e.g. target DN225 → returns DN250 if available, never DN200
+function nearestAvailableDN(moc, targetDn) {
+  const mocKey = (moc||'').toLowerCase().split(' ')[0];
+  const dnSet = new Set();
+  DB.forEach(r => {
+    if (!BOQ_COMPONENTS.has(r.Component)) return;
+    if (mocKey && !(r.MOC||'').toLowerCase().includes(mocKey)) return;
+    const nums = (r.ModelSize||'').match(/\d+/g)||[];
+    nums.forEach(n => { const v=parseInt(n); if(v>=15 && v<=2000) dnSet.add(v); });
+  });
+  if (!dnSet.size) return null;
+  const arr = [...dnSet].sort((a,b) => a-b);
+  // Prefer next size UP (≥ target)
+  const higher = arr.filter(v => v >= targetDn);
+  if (higher.length > 0) return higher[0];
+  // Nothing larger — return the biggest available
+  return arr[arr.length - 1];
+}
+
+// For a given DN, return the set of numbers that might represent it in pipe catalogs
+// e.g. DN100 → [100, 4] (4 inch NPS), DN50 → [50, 2], DN200 → [200, 8] etc.
+function getSizeVariants(dn) {
+  if (!dn) return [];
+  const variants = [dn];
+  // NPS inch equivalents
+  const dnToNps = {
+    15:0.5, 20:0.75, 25:1, 32:1.25, 40:1.5, 50:2, 65:2.5, 80:3,
+    100:4, 125:5, 150:6, 200:8, 250:10, 300:12, 350:14, 400:16,
+    450:18, 500:20, 600:24, 700:28, 800:32, 900:36, 1000:40, 1200:48
+  };
+  const nps = dnToNps[dn];
+  if (nps) {
+    // Add NPS as integer and half-integer variants
+    if (Number.isInteger(nps)) variants.push(nps);
+    // Also push string-matched forms — but since we compare numbers, add integer part
+    variants.push(Math.round(nps));
+  }
+  // Also add NB equivalent (same as DN numerically)
+  variants.push(dn);
+  return [...new Set(variants)].filter(v => v > 0);
+}
+
+function renderBOQTable() {
+  const tbody = document.getElementById('boq-tbody');
+  const empty = document.getElementById('boq-empty-msg');
+  const tfoot = document.getElementById('boq-tfoot');
+  if (!tbody) return;
+
+  if (boqRows.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    tfoot.style.display = 'none';
+    document.getElementById('boq-grand').textContent = '';
+    if(document.getElementById('sum-tb')) renderSummary();
+    return;
+  }
+  empty.style.display = 'none';
+  tfoot.style.display = '';
+
+  // Compute sr labels: main rows get 1,2,3... sub-rows get 1a,1b,1c...
+  let mainNum = 0;
+  const mainNumOf = {}; // parentId → mainNum
+  const subCountOf = {}; // parentId → count
+  const srLabels = boqRows.map(row => {
+    if (!row.isSubRow) {
+      mainNum++;
+      mainNumOf[row.id] = mainNum;
+      subCountOf[row.id] = 0;
+      return String(mainNum);
+    }
+    const mn = mainNumOf[row.parentId] || '?';
+    subCountOf[row.parentId] = (subCountOf[row.parentId]||0) + 1;
+    return `${mn}${'abcdefghijklmnopqrstuvwxyz'[(subCountOf[row.parentId]||1)-1]}`;
+  });
+
+  tbody.innerHTML = boqRows.map((row, ri) =>
+    row.isSubRow ? buildSubRow(row, ri, srLabels[ri]) : buildMainRow(row, ri, srLabels[ri])
+  ).join('');
+
+  updateBOQGrand();
+  renderSummary();
+}
+
+function buildMainRow(row, ri, srLabel) {
+  const dn = row.dn || autoDN(row.flow);
+  const dnHtml = dn ? `<span class="dn-auto">${dn}</span>` : `<span class="dn-empty">—</span>`;
+  const total = (row.qty||0)*(row.unitPrice||0);
+  const mocOpts = MOC_OPTIONS.map(m=>`<option ${row.moc===m?'selected':''}>${m}</option>`).join('');
+
+  return `<tr class="boq-row" id="boqrow-${row.id}">
+    <td style="text-align:center;padding:6px 4px"><span class="sr-num">${srLabel}</span></td>
+    <td style="padding:4px 6px;min-width:150px">
+      <input class="boq-cell-input" id="bd-${row.id}" type="text" value="${escHtml(row.desc)}"
+        placeholder="e.g. MMF inlet pipe"
+        onchange="boqRows[${ri}].desc=this.value;syncSubRows(${ri});updateBOQGrand()"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('bf-${row.id}')?.focus()}">
+    </td>
+    <td style="padding:4px 6px">
+      <input class="boq-cell-input" id="bf-${row.id}" type="number" value="${escHtml(row.flow)}"
+        placeholder="m³/hr" style="text-align:center"
+        oninput="boqRows[${ri}].flow=this.value;boqRows[${ri}].dn='';syncSubRows(${ri});refreshRow(${ri})"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('bp-${row.id}')?.focus()}">
+    </td>
+    <td style="padding:4px 6px">
+      <input class="boq-cell-input" id="bp-${row.id}" type="text" value="${escHtml(row.press)}"
+        placeholder="PN/class" style="text-align:center"
+        onchange="boqRows[${ri}].press=this.value;syncSubRows(${ri})"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('bm-${row.id}')?.focus()}">
+    </td>
+    <td style="padding:4px 6px">
+      <select class="boq-cell-select" id="bm-${row.id}"
+        onchange="boqRows[${ri}].moc=this.value;syncSubRows(${ri});refreshRow(${ri})">${mocOpts}</select>
+    </td>
+    <td style="padding:4px 6px;text-align:center">${dnHtml}</td>
+    <td style="padding:4px 6px">
+      <input class="boq-cell-input" id="bl-${row.id}" type="number" value="${row.len||''}"
+        placeholder="m" style="text-align:center"
+        oninput="boqRows[${ri}].len=parseFloat(this.value)||0;syncSubRows(${ri})"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('bi-${row.id}')?.focus()}">
+    </td>
+    <td style="padding:4px 6px;position:relative;min-width:240px">
+      <div class="item-search-wrap">
+        <input class="item-search-inp" id="bi-${row.id}" type="text" value="${escHtml(row.item)}"
+          placeholder="pipe / elbow / tee / flange / valve..." autocomplete="off"
+          oninput="onItemInput(${ri},this.value)" onkeydown="handleItemKey(event,${ri})"
+          onfocus="onItemInput(${ri},this.value)">
+        <div class="item-drop" id="idrop-${row.id}"></div>
+      </div>
+    </td>
+    <td style="padding:4px 6px">
+      <input class="boq-cell-input" id="bq-${row.id}" type="number" value="${row.qty||1}"
+        min="0.01" step="1" style="text-align:center"
+        oninput="boqRows[${ri}].qty=parseFloat(this.value)||0;refreshRowTotal(${ri})"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('bu-${row.id}')?.focus()}">
+    </td>
+    <td style="padding:4px 6px">
+      <input class="boq-cell-input" id="bu-${row.id}" type="number" value="${row.unitPrice||''}"
+        step="0.01" placeholder="0.00" style="text-align:right"
+        oninput="boqRows[${ri}].unitPrice=parseFloat(this.value)||0;refreshRowTotal(${ri})"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();addSubRow(${ri})}">
+    </td>
+    <td style="padding:4px 8px">
+      <div class="row-total" id="bt-${row.id}">${total>0?'AED '+fmt(total):'—'}</div>
+    </td>
+    <td style="padding:4px 4px;text-align:center;white-space:nowrap">
+      <button class="add-sub-btn" onclick="addSubRow(${ri})" title="Add sub-item (same pipeline)">+</button>
+      <button class="row-del" style="margin-left:2px" onclick="deleteBoqRow(${ri})">×</button>
+    </td>
+  </tr>`;
+}
+
+function buildSubRow(row, ri, srLabel) {
+  const total = (row.qty||0)*(row.unitPrice||0);
+  const dn = row.dn || autoDN(row.flow);
+
+  return `<tr class="boq-row sub-row" id="boqrow-${row.id}">
+    <td style="text-align:center;padding:5px 4px">
+      <span class="sr-num" style="color:var(--text3);font-size:10px">${srLabel}</span>
+    </td>
+    <td style="padding:3px 6px">
+      <div class="sub-indent"><span class="sub-line"></span><span class="sub-label">↳ same line</span></div>
+    </td>
+    <td style="padding:3px 6px;text-align:center">
+      <span style="color:var(--text3);font-size:10px;font-family:'Space Mono',monospace">${row.flow||'—'}</span>
+    </td>
+    <td style="padding:3px 6px;text-align:center">
+      <span style="color:var(--text3);font-size:10px">${escHtml(row.press||'—')}</span>
+    </td>
+    <td style="padding:3px 6px">
+      <span style="color:var(--text3);font-size:10px">${escHtml(row.moc||'')}</span>
+    </td>
+    <td style="padding:3px 6px;text-align:center">
+      ${dn?`<span class="dn-auto" style="opacity:.55;font-size:10px">${dn}</span>`:'<span class="dn-empty">—</span>'}
+    </td>
+    <td style="padding:3px 6px;text-align:center">
+      <span style="color:var(--text3);font-size:10px;font-family:'Space Mono',monospace">${row.len||'—'}</span>
+    </td>
+    <td style="padding:3px 6px;position:relative;min-width:240px">
+      <div class="item-search-wrap">
+        <input class="item-search-inp" id="bi-${row.id}" type="text" value="${escHtml(row.item)}"
+          placeholder="pipe / elbow / tee / flange / valve..." autocomplete="off"
+          oninput="onItemInput(${ri},this.value)" onkeydown="handleItemKey(event,${ri})"
+          onfocus="onItemInput(${ri},this.value)">
+        <div class="item-drop" id="idrop-${row.id}"></div>
+      </div>
+    </td>
+    <td style="padding:3px 6px">
+      <input class="boq-cell-input" id="bq-${row.id}" type="number" value="${row.qty||1}"
+        min="0.01" step="1" style="text-align:center"
+        oninput="boqRows[${ri}].qty=parseFloat(this.value)||0;refreshRowTotal(${ri})"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('bu-${row.id}')?.focus()}">
+    </td>
+    <td style="padding:3px 6px">
+      <input class="boq-cell-input" id="bu-${row.id}" type="number" value="${row.unitPrice||''}"
+        step="0.01" placeholder="0.00" style="text-align:right"
+        oninput="boqRows[${ri}].unitPrice=parseFloat(this.value)||0;refreshRowTotal(${ri})"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();
+          const pi=boqRows.findIndex(r=>r.id===boqRows[${ri}].parentId);
+          if(pi>=0)addSubRow(pi);}">
+    </td>
+    <td style="padding:3px 8px">
+      <div class="row-total" id="bt-${row.id}" style="font-size:11px">${total>0?'AED '+fmt(total):'—'}</div>
+    </td>
+    <td style="padding:3px 4px;text-align:center">
+      <button class="row-del" onclick="deleteBoqRow(${ri})">×</button>
+    </td>
+  </tr>`;
+}
+
+function refreshRow(ri) {
+  const row = boqRows[ri];
+  const dn = row.dn || autoDN(row.flow);
+  const cell = document.querySelector(`#boqrow-${row.id} td:nth-child(6)`);
+  if (cell) cell.innerHTML = dn ? `<span class="dn-auto">${dn}</span>` : `<span class="dn-empty">—</span>`;
+  updateBOQGrand();
+}
+
+function refreshRowTotal(ri) {
+  const row = boqRows[ri];
+  const total = (row.qty||0)*(row.unitPrice||0);
+  const el = document.getElementById(`bt-${row.id}`);
+  if (el) el.textContent = total > 0 ? 'AED '+fmt(total) : '—';
+  updateBOQGrand();
+}
+
+function updateBOQGrand() {
+  const grand = boqRows.reduce((s,r)=>s+(r.qty||0)*(r.unitPrice||0),0);
+  const grandEl = document.getElementById('boq-grand');
+  const footTot = document.getElementById('boq-tfoot-total');
+  if(grandEl) grandEl.textContent = grand>0 ? 'Total: AED '+fmt(grand) : '';
+  if(footTot) footTot.textContent = grand>0 ? 'AED '+fmt(grand) : '—';
+  renderSummary();
+}
+
+function deleteBoqRow(ri) {
+  const row = boqRows[ri];
+  if (!row.isSubRow) {
+    // Delete parent + all its sub-rows
+    const toDelete = new Set(boqRows.filter(r => r.id===row.id || r.parentId===row.id).map(r=>r.id));
+    boqRows = boqRows.filter(r => !toDelete.has(r.id));
+  } else {
+    boqRows.splice(ri, 1);
+  }
+  renderBOQTable();
+}
+
+// ── ITEM SEARCH INSIDE TABLE ──
+let _dropResults = {};
+
+function onItemInput(ri, val) {
+  const row = boqRows[ri];
+  const dropEl = document.getElementById(`idrop-${row.id}`);
+  if (!dropEl) return;
+
+  const q     = (val||'').trim();
+  const dnNum = getRowDN(row);
+  const moc   = row.moc   || '';
+  const press = row.press || '';
+
+  // ── EMPTY FOCUS: show all DN+MOC matched items grouped ──
+  if (q.length === 0) {
+    const hints   = getHintResults(moc, dnNum);
+    const ptItems = getPriceTableItems('', dnNum, moc, press);  // only shows for HDPE/UPVC/GRP
+
+    if (hints.length === 0 && ptItems.length === 0) {
+      dropEl.innerHTML = `<div style="padding:10px 14px;font-size:11px;color:var(--text2)">
+        No items found for <b>${moc}</b>${dnNum?' · DN'+dnNum:''}.<br>
+        <span style="color:var(--text3);font-size:10px">Add items via Admin → Add Record</span>
+      </div>`;
+      dropEl.classList.add('open');
+      return;
+    }
+
+    _dropResults[row.id] = [...hints, ...ptItems];
+    const dn = dnNum ? 'DN'+dnNum : (row.dn||'');
+    let html = `<div style="padding:5px 12px 4px;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border);background:var(--surface2)">📐 ${dn}${dn?' · ':''}${moc}</div>`;
+    if (hints.length > 0)   html += buildGroupedDropItems(ri, hints, 0);
+    if (ptItems.length > 0) html += buildPriceTableSection(ri, ptItems, hints.length);
+    dropEl.innerHTML = html;
+    dropEl.classList.add('open');
+    return;
+  }
+
+  // ── TYPED: strict MOC + DN + keyword ──
+  let results = getItemResults(q, moc, dnNum);
+
+  if (results.length === 0 && dnNum) {
+    // Try nearest available DN in this MOC
+    const nearestDN = nearestAvailableDN(moc, dnNum);
+    if (nearestDN && nearestDN !== dnNum) {
+      const nearResults = getItemResults(q, moc, nearestDN);
+      if (nearResults.length > 0) {
+        const ptItems = getPriceTableItems(q, dnNum, moc, press);
+        _dropResults[row.id] = [...nearResults, ...ptItems];
+        let html = `<div style="padding:5px 12px;font-size:10px;color:var(--gold);border-bottom:1px solid var(--border)">⚠ DN${dnNum} not in DB — using next higher size DN${nearestDN} (${moc})</div>`;
+        html += buildGroupedDropItems(ri, nearResults, 0);
+        if (ptItems.length > 0) html += buildPriceTableSection(ri, ptItems, nearResults.length);
+        dropEl.innerHTML = html;
+        dropEl.classList.add('open');
+        return;
+      }
+    }
+    // Same MOC, no DN filter
+    results = getItemResults(q, moc, null);
+    const ptItems = getPriceTableItems(q, dnNum, moc, press);
+    if (results.length > 0 || ptItems.length > 0) {
+      _dropResults[row.id] = [...results, ...ptItems];
+      let html = '';
+      if (results.length > 0) {
+        html += `<div style="padding:5px 12px;font-size:10px;color:var(--gold);border-bottom:1px solid var(--border)">⚠ DN${dnNum} not in DB — showing next higher ${moc} sizes</div>`;
+        html += buildGroupedDropItems(ri, results, 0);
+      }
+      if (ptItems.length > 0) html += buildPriceTableSection(ri, ptItems, results.length);
+      dropEl.innerHTML = html;
+      dropEl.classList.add('open');
+      return;
+    }
+  }
+
+  // Show DB results + price table alongside (for plastic MOC only)
+  const ptItems = getPriceTableItems(q, dnNum, moc, press);
+
+  if (results.length === 0 && ptItems.length === 0) {
+    dropEl.innerHTML = `<div style="padding:10px 14px;font-size:11px;color:var(--text2)">
+      No <b>${moc}</b> "${escHtml(q)}" found in DB or Price Table.<br>
+      <span style="color:var(--text3);font-size:10px">Add via Admin → Add Record</span>
+    </div>`;
+    dropEl.classList.add('open');
+    return;
+  }
+
+  _dropResults[row.id] = [...results, ...ptItems];
+  let html = results.length > 0 ? buildGroupedDropItems(ri, results, 0) : '';
+  if (ptItems.length > 0) html += buildPriceTableSection(ri, ptItems, results.length);
+  dropEl.innerHTML = html;
+  dropEl.classList.add('open');
+}
+
+// Build the price-table section in the dropdown (distinct golden style)
+function buildPriceTableSection(ri, ptItems, offset) {
+  const pns = [...new Set(ptItems.map(r => r._pn).filter(Boolean))].join(' & ');
+  let html = `<div style="padding:5px 12px 3px;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);background:rgba(240,180,41,.06)">📋 Reference Price Table${pns?' — '+pns:''} <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3)">(HDPE / UPVC / GRP)</span></div>`;
+  html += ptItems.map((r, i) => buildDropItem(ri, offset + i, r)).join('');
+  return html;
+}
+
+// Group results by item type (Pipe / Elbow / Tee / Valve etc.) for cleaner UX
+function buildGroupedDropItems(ri, results, offset) {
+  offset = offset || 0;
+  const groups = {};
+  const order = ['Pipe','Elbow','Tee','Reducer','End Cap','Adaptor','Flange','Check Valve','Gate Valve','Ball Valve','Butterfly Valve','Diaphragm Valve','Globe Valve','Needle Valve','NRV','Valve','Fitting','Fastener','Other'];
+
+  results.forEach((r, i) => {
+    const g = classifyItem(r);
+    if (!groups[g]) groups[g] = [];
+    groups[g].push({r, idx: offset + i});
+  });
+
+  let html = '';
+  order.forEach(grp => {
+    if (!groups[grp]) return;
+    html += `<div style="padding:4px 10px 2px;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--border)">${grp}</div>`;
+    html += groups[grp].map(({r, idx}) => buildDropItem(ri, idx, r)).join('');
+  });
+  return html || results.map((r, i) => buildDropItem(ri, offset + i, r)).join('');
+}
+
+// ── Inch → DN conversion map (NPS to ISO DN) ──
+const INCH_TO_DN = {
+  '1/4':8, '3/8':10, '1/2':15, '3/4':20,
+  '1':25, '1.25':32, '1.5':40, '1-1/4':32, '1-1/2':40,
+  '2':50, '2.5':65, '2-1/2':65,
+  '3':80, '4':100, '5':125, '6':150,
+  '8':200, '10':250, '12':300, '14':350, '16':400,
+  '18':450, '20':500, '22':550, '24':600,
+  '26':650, '28':700, '32':800, '36':900, '40':1000, '48':1200
+};
+
+// Convert a model-size string from inch notation to DN notation for display
+// e.g. '4" Elbow 90 Deg BW Sch40 - Duplex 2205' → 'DN100 Elbow 90 Deg BW Sch40 - Duplex 2205'
+// e.g. '4"x3" Reducer' → 'DN100×DN80 Reducer'
+// e.g. '250NB - HDPE pipe' → stays as 'DN250 - HDPE pipe'
+function toDisplayDN(modelSize) {
+  if (!modelSize) return modelSize;
+  let s = modelSize;
+
+  // Replace NB notation: 250NB → DN250
+  s = s.replace(/\b(\d+)NB\b/g, (m, n) => `DN${n}`);
+
+  // Replace inch fractions and decimals before the inch symbol
+  // Handles: 1/2", 3/4", 1", 1.25", 1.5", 2.5", etc.
+  // Also handles reducer patterns: 4"x3" → DN100×DN80
+  s = s.replace(/(\d+(?:[./]\d+)?)"?\s*[×xX]\s*(\d+(?:[./]\d+)?)"?/g, (m, a, b) => {
+    const dnA = INCH_TO_DN[a] || INCH_TO_DN[a.replace('-','/')] || Math.round(parseFloat(a)*25.4);
+    const dnB = INCH_TO_DN[b] || INCH_TO_DN[b.replace('-','/')] || Math.round(parseFloat(b)*25.4);
+    return `DN${dnA}×DN${dnB}`;
+  });
+
+  // Replace standalone inch sizes: 4", 1/2", 1.5", etc.
+  s = s.replace(/(\d+(?:[./]\d+)?)\\?"/g, (m, n) => {
+    const key = n.replace('\\','');
+    const dn = INCH_TO_DN[key] || INCH_TO_DN[key.replace('-','/')] || Math.round(parseFloat(key)*25.4);
+    return `DN${dn}`;
+  });
+
+  return s;
+}
+
+// Classify a DB record into a clean item-type label
+function classifyItem(r) {
+  const s = ((r.Type||'')+' '+(r.ModelSize||'')).toLowerCase();
+  if (/\bpipe\b|nb.*hdpe|seamless|welded.*pipe|upvc pipe/.test(s)) return 'Pipe';
+  if (/elbow/.test(s)) return 'Elbow';
+  if (/\btee\b/.test(s)) return 'Tee';
+  if (/reduc/.test(s)) return 'Reducer';
+  if (/end cap|cap\b/.test(s)) return 'End Cap';
+  if (/adapt|backing ring/.test(s)) return 'Adaptor';
+  if (/flange|sorf|stub/.test(s)) return 'Flange';
+  if (/check valve|nrv/.test(s)) return 'Check Valve';
+  if (/gate valve/.test(s)) return 'Gate Valve';
+  if (/ball valve/.test(s)) return 'Ball Valve';
+  if (/butterfly/.test(s)) return 'Butterfly Valve';
+  if (/diaphragm|diaphram/.test(s)) return 'Diaphragm Valve';
+  if (/globe valve/.test(s)) return 'Globe Valve';
+  if (/needle/.test(s)) return 'Needle Valve';
+  if (/\bvalve\b/.test(s)) return 'Valve';
+  if (/fitting|socket|union|nipple/.test(s)) return 'Fitting';
+  if (/bolt|nut|m\d\d/.test(s)) return 'Fastener';
+  return 'Other';
+}
+
+function buildDropItem(ri, idx, r) {
+  if (r._fromPriceTable) {
+    const pnColor = r._pn === 'PN16' ? '#00d4ff' : '#00ff88';
+    const pnBg    = r._pn === 'PN16' ? 'rgba(0,212,255,.12)' : 'rgba(0,255,136,.1)';
+    // Convert NPS to DN for price table display
+    const npsRaw = r._ptRow.nps; // e.g. '20"'
+    const dnLabel = toDisplayDN(npsRaw); // e.g. 'DN500'
+    return `<div class="item-opt" onmousedown="selectBoqItem(${ri},${idx})" style="background:rgba(240,180,41,.04);border-left:2px solid var(--gold)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
+          <span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;background:${pnBg};color:${pnColor};border:1px solid ${pnColor};flex-shrink:0">${r._pn||'REF'}</span>
+          <span style="font-size:12px;font-weight:600;color:var(--gold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.Type)}</span>
+          <span style="font-size:10px;color:var(--text2)">${escHtml(dnLabel)}</span>
+        </div>
+        <div style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--gold);flex-shrink:0">AED ${fmt(r.UnitPrice)}<span style="font-size:9px;color:var(--text3);font-weight:400"> /${r._unit==='per m'?'m':'ea'}</span></div>
+      </div>
+      <div style="font-size:9px;color:var(--text3);margin-top:2px">📋 Ref. Price Table · ${escHtml(r.MOC)} · indicative only</div>
+    </div>`;
+  }
+  // Normal DB item — convert inch to DN in display
+  const displayModel = toDisplayDN(r.ModelSize);
+  const moc = r.MOC ? `<span style="color:var(--text3);font-size:9px;margin-left:4px">${escHtml(r.MOC)}</span>` : '';
+  return `<div class="item-opt" onmousedown="selectBoqItem(${ri},${idx})">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+      <div class="io-top" style="flex:1">${escHtml(displayModel)}</div>
+      <div class="io-price" style="flex-shrink:0">AED ${fmt(r.UnitPrice)}</div>
+    </div>
+    <div class="io-mid">${escHtml(r.Supplier||'')}${moc}</div>
+  </div>`;
+}
+
+function selectBoqItem(ri, idx) {
+  const row = boqRows[ri];
+  const r = (_dropResults[row.id]||[])[idx];
+  if (!r) return;
+
+  boqRows[ri].item     = r.ModelSize;
+  boqRows[ri].itemMoc  = r.MOC;
+  boqRows[ri].unitPrice = r.UnitPrice;
+  // For pipe items keep existing qty (= length in m); for fittings/others reset to 1
+  const isPipeItem = /pipe|nb hdpe|seamless|welded/i.test(r.ModelSize+' '+(r.Type||''));
+  if (!isPipeItem) boqRows[ri].qty = 1;
+  const qty = boqRows[ri].qty;
+
+  // Update DOM directly — avoid full re-render so focus is not lost
+  const inp   = document.getElementById(`bi-${row.id}`);
+  const upInp = document.getElementById(`bu-${row.id}`);
+  const qInp  = document.getElementById(`bq-${row.id}`);
+  const totEl = document.getElementById(`bt-${row.id}`);
+  if (inp)   inp.value   = r.ModelSize;
+  if (upInp) upInp.value = r.UnitPrice.toFixed(2);
+  if (qInp)  qInp.value  = qty;
+  const total = qty * r.UnitPrice;
+  if (totEl) totEl.textContent = total > 0 ? 'AED '+fmt(total) : '—';
+
+  document.getElementById(`idrop-${row.id}`)?.classList.remove('open');
+  setTimeout(()=>document.getElementById(`bq-${row.id}`)?.focus(), 30);
+  updateBOQGrand();
+}
+
+function handleItemKey(e, ri) {
+  if (e.key === 'Escape') {
+    const row = boqRows[ri];
+    document.getElementById(`idrop-${row.id}`)?.classList.remove('open');
+  }
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const row = boqRows[ri];
+    document.getElementById(`idrop-${row.id}`)?.classList.remove('open');
+    document.getElementById(`bq-${row.id}`)?.focus();
+  }
+}
+
+// ── calcLineCost kept as alias ──
+function calcLineCost(line) { return (line.qty||0)*(line.unitPrice||0); }
+
+// ══════════════════════════════════════════════════════════════════
+// SUMMARY  (uses boqRows — the flat spreadsheet table)
+// ══════════════════════════════════════════════════════════════════
+function renderSummary() {
+  const profit = parseFloat(document.getElementById('profit-pct')?.value||15)/100;
+  const tbody = document.getElementById('sum-tb');
+  if (!tbody) return;
+
+  let grandCost = 0, grandSale = 0;
+
+  // Group rows by description for summary
+  const grouped = {};
+  boqRows.forEach(row => {
+    const key = row.desc || `Row ${row.id}`;
+    if (!grouped[key]) grouped[key] = { desc:key, dn:row.dn||autoDN(row.flow), moc:row.moc, rows:[] };
+    grouped[key].rows.push(row);
+  });
+
+  const groups = Object.values(grouped);
+
+  tbody.innerHTML = groups.length === 0
+    ? `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text2)">No BOQ rows yet</td></tr>`
+    : groups.map((g, gi) => {
+        const cost = g.rows.reduce((s,r)=>s+(r.qty||0)*(r.unitPrice||0),0);
+        const sale = cost*(1+profit);
+        grandCost+=cost; grandSale+=sale;
+        return `<tr>
+          <td style="font-family:'Space Mono',monospace;color:var(--text2)">${gi+1}</td>
+          <td style="font-weight:700">${escHtml(g.desc)}</td>
+          <td><span class="badge badge-teal">${g.dn||'—'}</span></td>
+          <td style="color:var(--text2)">${g.rows[0]?.flow||'—'} m³/hr</td>
+          <td style="color:var(--text2);font-size:11px">${escHtml(g.moc)}</td>
+          <td style="color:var(--text2)">${g.rows.length} item${g.rows.length!==1?'s':''}</td>
+          <td style="font-family:'Space Mono',monospace;color:var(--gold)">AED ${fmt(cost)}</td>
+          <td style="color:var(--text2)">${(profit*100).toFixed(0)}%</td>
+          <td style="font-family:'Space Mono',monospace;font-weight:700;color:var(--teal)">AED ${fmt(sale)}</td>
+        </tr>`;
+      }).join('');
+
+  document.getElementById('sum-tot-cost').textContent = 'AED '+fmt(grandCost);
+  document.getElementById('sum-tot-pct').textContent = (profit*100).toFixed(0)+'%';
+  document.getElementById('sum-tot-sale').textContent = 'AED '+fmt(grandSale);
+
+  renderBreakdown();
+}
+
+function renderBreakdown() {
+  // Aggregate by item type guessed from item name
+  const agg = {};
+  boqRows.forEach(row => {
+    const d = (row.item||'').toLowerCase();
+    let type = 'Other';
+    if (d.includes('pipe')||d.includes('seamless')||d.includes('nb hdpe')) type='Pipe';
+    else if (d.includes('elbow')) type='Elbow';
+    else if (d.includes('tee')) type='Tee';
+    else if (d.includes('reduc')) type='Reducer';
+    else if (d.includes('flange')||d.includes('sorf')||d.includes('stub')) type='Flange';
+    else if (d.includes('valve')||d.includes('nrv')||d.includes('gate')||d.includes('ball')||d.includes('butterfly')) type='Valve';
+    else if (d.includes('cap')) type='End Cap';
+    else if (d.includes('bolt')||d.includes('nut')||d.includes('m16')||d.includes('m20')) type='Fastener';
+    agg[type] = (agg[type]||0) + (row.qty||0)*(row.unitPrice||0);
+  });
+  const total = Object.values(agg).reduce((s,v)=>s+v,0)||1;
+  const COLORS=['var(--teal)','var(--green)','var(--gold)','#cc88ff','#ff6b88','#88ccff','#ffaa44','#44ffcc','#ff88cc'];
+  const bars = Object.entries(agg).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>`
+    <div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px;font-size:12px">
+        <span>${k}</span><span style="font-family:'Space Mono',monospace;color:var(--text2)">${(v/total*100).toFixed(1)}% · AED ${fmt(v)}</span>
+      </div>
+      <div style="height:10px;background:var(--surface2);border-radius:5px;overflow:hidden">
+        <div style="width:${(v/total*100).toFixed(1)}%;height:100%;background:${COLORS[i%COLORS.length]};border-radius:5px"></div>
+      </div>
+    </div>`).join('');
+  const el = document.getElementById('breakdown-bars');
+  if(el) el.innerHTML = bars||'<div style="color:var(--text2);font-size:12px">No items yet</div>';
+}
+
+function updateProjBadge() {
+  const v = document.getElementById('proj-name').value;
+  document.getElementById('proj-badge').textContent = v || 'No project';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════════════════════════
+const ADMIN_PASS = '42304230';
+
+// ══════════════════════════════════════════════════════════════════
+// ADMIN LOGIN & PANEL
+// ══════════════════════════════════════════════════════════════════
+function openLogin() {
+  document.getElementById('loginOverlay').classList.add('open');
+  document.getElementById('adm-pwd').value='';
+  document.getElementById('login-err').textContent='';
+  setTimeout(()=>document.getElementById('adm-pwd').focus(), 80);
+}
+function closeLogin() { document.getElementById('loginOverlay').classList.remove('open'); }
+
+function doLogin() {
+  if(document.getElementById('adm-pwd').value === ADMIN_PASS) {
+    closeLogin();
+    document.getElementById('admOverlay').classList.add('open');
+    showAdmTab('db', document.getElementById('atab-db'));
+    renderDBBrowser();
+    updateAdmStats();
+    renderStatTab();
+  } else {
+    document.getElementById('login-err').textContent = 'Incorrect password — try again.';
+    document.getElementById('adm-pwd').value = '';
+  }
+}
+
+function closeAdmin() { document.getElementById('admOverlay').classList.remove('open'); }
+
+function showAdmTab(id, btn) {
+  document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.apanel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('apanel-'+id).classList.add('active');
+  if(id==='db')      renderDBBrowser();
+  if(id==='stats')   renderStatTab();
+  if(id==='add')     renderEditSearch();
+  if(id==='ptable')  { renderPriceTableAdmin(); renderDBFull(); }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PRICE TABLE ADMIN — full editable grid
+// ══════════════════════════════════════════════════════════════════
+// Working copy of PRICE_TABLE (allow edits without touching the const)
+let PT = null; // initialised on first render
+
+function getPT() {
+  if (!PT) PT = PRICE_TABLE.map(r => ({...r}));
+  return PT;
+}
+
+function resetPriceTable() {
+  PT = PRICE_TABLE.map(r => ({...r}));
+}
+
+function renderPriceTableAdmin() {
+  const rows = getPT();
+  const lbl  = document.getElementById('pt-row-count');
+  if(lbl) lbl.textContent = rows.length + ' size rows';
+
+  const tbody = document.getElementById('pt-admin-tbody');
+  if(!tbody) return;
+
+  const inp = (val, field, ri) =>
+    `<input type="number" value="${val??''}" min="0" step="0.01"
+      style="width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);
+             color:var(--gold);font-family:'Space Mono',monospace;font-size:11px;text-align:right;
+             padding:2px 4px;outline:none"
+      onchange="PT[${ri}]['${field}']=parseFloat(this.value)||null;renderPriceTableAdmin()"
+      onfocus="this.style.borderBottomColor='var(--teal)'"
+      onblur="this.style.borderBottomColor='var(--border)'">`;
+
+  tbody.innerHTML = rows.map((r,ri) => {
+    const pn16 = r.pipe ? (r.pipe * 1.18).toFixed(2) : '—';
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <!-- DN — editable -->
+      <td style="padding:5px 10px">
+        <input type="number" value="${r.dn}" min="15" max="3000" step="1"
+          style="width:58px;background:transparent;border:none;border-bottom:1px solid var(--border2);
+                 color:var(--teal);font-family:'Space Mono',monospace;font-size:12px;font-weight:700;
+                 padding:2px 4px;outline:none"
+          onchange="PT[${ri}].dn=parseInt(this.value)||r.dn"
+          onfocus="this.style.borderBottomColor='var(--teal)'"
+          onblur="this.style.borderBottomColor='var(--border2)'">
+      </td>
+      <!-- NPS — editable label -->
+      <td style="padding:5px 6px;text-align:center">
+        <input type="text" value="${r.nps}" maxlength="8"
+          style="width:52px;background:transparent;border:none;border-bottom:1px solid var(--border2);
+                 color:var(--text2);font-size:11px;text-align:center;padding:2px 4px;outline:none"
+          onchange="PT[${ri}].nps=this.value">
+      </td>
+      <td style="padding:5px 6px">${inp(r.pipe,   'pipe',   ri)}</td>
+      <td style="padding:5px 6px">${inp(r.tee,    'tee',    ri)}</td>
+      <td style="padding:5px 6px">${inp(r.elbow,  'elbow',  ri)}</td>
+      <td style="padding:5px 6px">${inp(r.flange, 'flange', ri)}</td>
+      <td style="padding:5px 6px">${inp(r.valve,  'valve',  ri)}</td>
+      <td style="padding:5px 6px">${inp(r.nrv,    'nrv',    ri)}</td>
+      <td style="padding:5px 6px">${inp(r.auto,   'auto',   ri)}</td>
+      <!-- PN16 pipe — computed, read-only -->
+      <td style="padding:5px 10px;text-align:right;font-family:'Space Mono',monospace;font-size:11px;color:var(--green)">
+        ${r.pipe ? (r.pipe*1.18).toFixed(2) : '<span style="color:var(--text3)">—</span>'}
+      </td>
+      <!-- Delete -->
+      <td style="padding:5px 4px;text-align:center">
+        <button class="row-del" onclick="deletePTRow(${ri})" title="Delete row">×</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function deletePTRow(ri) {
+  if(!confirm(`Delete DN${getPT()[ri].dn} row from Price Table?`)) return;
+  getPT().splice(ri,1);
+  renderPriceTableAdmin();
+}
+
+function addPriceTableRow() {
+  const pt = getPT();
+  const lastDN = pt.length > 0 ? pt[pt.length-1].dn : 25;
+  pt.push({thresh:9999, nps:'', dn:lastDN+50, pipe:null, tee:null, elbow:null, flange:null, valve:null, nrv:null, auto:null});
+  renderPriceTableAdmin();
+  // Scroll to bottom
+  const tbl = document.getElementById('pt-admin-table');
+  if(tbl) tbl.closest('div').scrollTop = 99999;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DB FULL EDITOR (in Price Table tab)
+// ══════════════════════════════════════════════════════════════════
+function renderDBFull() {
+  const q   = (document.getElementById('db2-search')?.value||'').toLowerCase();
+  const cat = document.getElementById('db2-cat')?.value||'';
+  const moc = document.getElementById('db2-moc')?.value||'';
+
+  const filtered = DB.filter(r =>
+    (!cat || r.Component===cat) &&
+    (!moc || (r.MOC||'').includes(moc)) &&
+    (!q   || (r.Component+' '+r.Type+' '+r.ModelSize+' '+r.MOC+' '+(r.Supplier||'')).toLowerCase().includes(q))
+  );
+
+  const lbl = document.getElementById('db2-count');
+  if(lbl) lbl.textContent = filtered.length + ' record' + (filtered.length!==1?'s':'') +
+    (filtered.length > 120 ? ' (showing first 120)' : '');
+
+  const tbody = document.getElementById('db2-tbody');
+  if(!tbody) return;
+
+  const cell = (val, field, idx, gold) =>
+    `<input type="${field==='UnitPrice'?'number':'text'}" value="${escHtml(String(val??''))}"
+      step="${field==='UnitPrice'?'0.01':undefined}"
+      style="width:100%;background:transparent;border:none;border-bottom:1px solid transparent;
+             color:${gold?'var(--gold)':'var(--text)'};font-size:11px;padding:2px 4px;outline:none"
+      onchange="DB[${idx}]['${field}']=this.value${field==='UnitPrice'?'*1':''}"
+      onfocus="this.style.borderBottomColor='var(--teal)';this.style.background='var(--surface2)'"
+      onblur="this.style.borderBottomColor='transparent';this.style.background='transparent'">`;
+
+  tbody.innerHTML = filtered.slice(0,120).map(r => {
+    const idx = DB.indexOf(r);
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:4px 8px;font-size:10px;color:var(--text2)">
+        <select onchange="DB[${idx}].Component=this.value"
+          style="background:transparent;border:none;color:var(--text2);font-size:10px;outline:none;cursor:pointer;width:100%">
+          ${['Pipe And Fittings','Flange','Valves - Upvc','Valves - Matellic','Fastners']
+            .map(o=>`<option ${r.Component===o?'selected':''}>${o}</option>`).join('')}
+        </select>
+      </td>
+      <td style="padding:4px 8px">${cell(r.Type,      'Type',      idx, false)}</td>
+      <td style="padding:4px 8px;max-width:220px">${cell(r.ModelSize, 'ModelSize', idx, false)}</td>
+      <td style="padding:4px 8px">${cell(r.MOC,       'MOC',       idx, false)}</td>
+      <td style="padding:4px 8px">${cell(r.Supplier,  'Supplier',  idx, false)}</td>
+      <td style="padding:4px 8px;text-align:right">${cell(r.UnitPrice,'UnitPrice', idx, true)}</td>
+      <td style="padding:4px 4px;text-align:center">
+        <button class="row-del" onclick="deleteDBRecord(${idx});renderDBFull();renderStatTab()" title="Delete">×</button>
+      </td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text2)">No records found</td></tr>`;
+}
+
+function showAddInlineRow() {
+  const d = document.getElementById('db2-add-row');
+  if(d){ d.style.display='block'; document.getElementById('na-model')?.focus(); }
+}
+
+function saveInlineRow() {
+  const comp  = document.getElementById('na-comp').value;
+  const type  = document.getElementById('na-type').value.trim();
+  const model = document.getElementById('na-model').value.trim();
+  const moc   = document.getElementById('na-moc').value.trim();
+  const sup   = document.getElementById('na-sup').value.trim();
+  const price = parseFloat(document.getElementById('na-price').value)||0;
+  if(!model || !price){ alert('Model/Size and Unit Price are required.'); return; }
+  DB.push({Component:comp, Type:type, ModelSize:model, MOC:moc, Supplier:sup, UnitPrice:price});
+  document.getElementById('db2-add-row').style.display='none';
+  ['na-type','na-model','na-moc','na-sup','na-price'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  renderDBFull();
+  renderStatTab();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DB BROWSER
+// ══════════════════════════════════════════════════════════════════
+function updateAdmStats() {
+  // no-op — stats now live in stats tab
+}
+
+function renderDBBrowser() {
+  const q   = (document.getElementById('db-search')?.value||'').toLowerCase();
+  const cat = document.getElementById('db-cat')?.value||'';
+  const moc = document.getElementById('db-moc')?.value||'';
+  const tbody = document.getElementById('db-tbody');
+  if(!tbody) return;
+
+  const filtered = DB.filter(r =>
+    (!cat || r.Component===cat) &&
+    (!moc || (r.MOC||'').includes(moc)) &&
+    (!q   || (r.Component+' '+r.Type+' '+r.ModelSize+' '+r.MOC+' '+(r.Supplier||'')).toLowerCase().includes(q))
+  );
+  const lbl = document.getElementById('db-count-label');
+  if(lbl) lbl.textContent = filtered.length + ' record' + (filtered.length!==1?'s':'') + (filtered.length>100?' (showing first 100)':'');
+
+  tbody.innerHTML = filtered.slice(0,100).map((r,i) => {
+    const idx = DB.indexOf(r);
+    return `<tr>
+      <td style="font-size:10px;color:var(--text2)">${r.Component}</td>
+      <td style="font-size:10px;color:var(--text2)">${r.Type||'—'}</td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(r.ModelSize)}">${escHtml(r.ModelSize)}</td>
+      <td style="font-size:10px;color:var(--text2)">${r.MOC||'—'}</td>
+      <td style="font-size:10px;color:var(--text3)">${r.Supplier||'—'}</td>
+      <td style="text-align:right">
+        <input type="number" value="${r.UnitPrice}" step="0.01" min="0"
+          style="width:88px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--gold);font-family:'Space Mono',monospace;font-size:11px;text-align:right;outline:none;padding:2px 4px"
+          onchange="DB[${idx}].UnitPrice=parseFloat(this.value)||0"
+          onfocus="this.style.borderBottomColor='var(--teal)'"
+          onblur="this.style.borderBottomColor='var(--border)'">
+      </td>
+      <td style="text-align:center;padding:4px">
+        <button class="row-del" onclick="deleteDBRecord(${idx})" title="Delete">×</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--text2)">No results</td></tr>';
+}
+
+function deleteDBRecord(idx) {
+  if(confirm('Delete: '+DB[idx].ModelSize+'?')) {
+    DB.splice(idx, 1);
+    renderDBBrowser();
+    renderStatTab();
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ADD RECORD + QUICK EDIT
+// ══════════════════════════════════════════════════════════════════
+function addDBRecord() {
+  const comp  = document.getElementById('adm-comp').value;
+  const type  = document.getElementById('adm-type').value.trim();
+  const model = document.getElementById('adm-model').value.trim();
+  const moc   = document.getElementById('adm-moc').value.trim();
+  const sup   = document.getElementById('adm-sup').value.trim();
+  const price = parseFloat(document.getElementById('adm-price').value)||0;
+  if(!model || !price) { alert('Model/Size and Unit price are required.'); return; }
+  DB.push({Component:comp, Type:type, ModelSize:model, MOC:moc, Supplier:sup, UnitPrice:price});
+  renderDBBrowser();
+  renderStatTab();
+  clearAdmForm();
+  const msg = document.getElementById('adm-add-msg');
+  if(msg){ msg.textContent='✓ Added!'; msg.style.color='var(--green)'; setTimeout(()=>msg.textContent='',2000); }
+}
+
+function clearAdmForm() {
+  ['adm-type','adm-model','adm-moc','adm-sup','adm-price'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+}
+
+function renderEditSearch() {
+  const q = (document.getElementById('edit-search')?.value||'').toLowerCase();
+  const cont = document.getElementById('edit-results');
+  if(!cont) return;
+  if(!q) { cont.innerHTML='<div style="color:var(--text3);font-size:11px;padding:8px 0">Type to search records…</div>'; return; }
+  const results = DB.filter(r=>
+    (r.Component+' '+r.Type+' '+r.ModelSize+' '+r.MOC).toLowerCase().includes(q)
+  ).slice(0,20);
+  if(!results.length) { cont.innerHTML='<div style="color:var(--text2);font-size:11px;padding:8px 0">No matches</div>'; return; }
+  cont.innerHTML = results.map(r => {
+    const idx = DB.indexOf(r);
+    return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;background:var(--surface)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.ModelSize)}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:2px">${r.Component} · ${r.MOC}</div>
+      </div>
+      <input type="number" value="${r.UnitPrice}" step="0.01" min="0"
+        style="width:96px;background:var(--surface2);border:1px solid var(--border);color:var(--gold);font-family:'Space Mono',monospace;font-size:12px;text-align:right;padding:5px 8px;border-radius:5px;outline:none;flex-shrink:0"
+        onchange="DB[${idx}].UnitPrice=parseFloat(this.value)||0"
+        onfocus="this.style.borderColor='var(--teal)'"
+        onblur="this.style.borderColor='var(--border)'">
+      <span style="color:var(--text3);font-size:10px;flex-shrink:0">AED</span>
+      <button class="row-del" onclick="deleteDBRecord(${idx});renderEditSearch()" title="Delete">×</button>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// STATS TAB
+// ══════════════════════════════════════════════════════════════════
+function renderStatTab() {
+  // Summary grid
+  const cats = {};
+  DB.forEach(r => { cats[r.Component]=(cats[r.Component]||0)+1; });
+  const grid = document.getElementById('stat-grid');
+  if(grid) {
+    const cards = [
+      ['Total Records', DB.length, 'var(--teal)'],
+      ['Pipe & Fittings', cats['Pipe And Fittings']||0, 'var(--green)'],
+      ['Valves', (cats['Valves - Upvc']||0)+(cats['Valves - Matellic']||0), 'var(--gold)'],
+      ['Flanges', cats['Flange']||0, '#cc88ff'],
+    ];
+    grid.innerHTML = cards.map(([l,v,c])=>`
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+        <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);margin-bottom:5px">${l}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:1.6rem;font-weight:700;color:${c}">${v}</div>
+      </div>`).join('');
+  }
+  // Category bars
+  const barsEl = document.getElementById('stat-bars');
+  if(barsEl) {
+    const total = DB.length||1;
+    const COLORS=['var(--teal)','var(--green)','var(--gold)','#cc88ff','#ff6b88','#88ccff'];
+    barsEl.innerHTML = Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>`
+      <div style="margin-bottom:9px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+          <span>${k}</span><span style="font-family:'Space Mono',monospace;color:var(--text2)">${v} records · ${(v/total*100).toFixed(0)}%</span>
+        </div>
+        <div style="height:10px;background:var(--surface);border-radius:5px;overflow:hidden">
+          <div style="width:${(v/total*100).toFixed(1)}%;height:100%;background:${COLORS[i%COLORS.length]};border-radius:5px"></div>
+        </div>
+      </div>`).join('');
+  }
+  // Price by MOC
+  const mocMap = {};
+  DB.forEach(r => {
+    const m = r.MOC||'Unknown';
+    if(!mocMap[m]) mocMap[m]={count:0,min:Infinity,max:-Infinity,sum:0};
+    mocMap[m].count++; mocMap[m].sum+=r.UnitPrice;
+    if(r.UnitPrice<mocMap[m].min) mocMap[m].min=r.UnitPrice;
+    if(r.UnitPrice>mocMap[m].max) mocMap[m].max=r.UnitPrice;
+  });
+  const ptbody = document.getElementById('stat-price-tbody');
+  if(ptbody) {
+    ptbody.innerHTML = Object.entries(mocMap).sort((a,b)=>b[1].count-a[1].count).map(([m,d])=>`<tr>
+      <td style="font-weight:600">${m}</td>
+      <td style="text-align:right;font-family:'Space Mono',monospace">${d.count}</td>
+      <td style="text-align:right;font-family:'Space Mono',monospace;color:var(--green)">${fmt(d.min)}</td>
+      <td style="text-align:right;font-family:'Space Mono',monospace;color:var(--red)">${fmt(d.max)}</td>
+      <td style="text-align:right;font-family:'Space Mono',monospace;color:var(--gold)">${fmt(d.sum/d.count)}</td>
+    </tr>`).join('');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════════════════════════
+function exportCSV() {
+  const profit = parseFloat(document.getElementById('profit-pct').value||15)/100;
+  const proj = document.getElementById('proj-name').value||'Project';
+  let csv = `"${proj} - Pipe & Fittings BOQ"\n`;
+  csv += '"Sr","Details","Flow (m3/hr)","Press (bar)","MOC","DN","Item / Component","Qty","Unit Price (AED)","Total (AED)"\n';
+  boqRows.forEach((row, i) => {
+    const total = (row.qty||0)*(row.unitPrice||0);
+    const dn = row.dn || autoDN(row.flow);
+    csv += `"${i+1}","${row.desc}","${row.flow}","${row.press}","${row.moc}","${dn}","${row.item}","${row.qty}","${(row.unitPrice||0).toFixed(2)}","${total.toFixed(2)}"\n`;
+  });
+  const grand = boqRows.reduce((s,r)=>s+(r.qty||0)*(r.unitPrice||0),0);
+  csv += `"","TOTAL","","","","","","","","${grand.toFixed(2)}"\n`;
+  const blob = new Blob([csv],{type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (proj.replace(/\s+/g,'_')+'_BOQ.csv');
+  a.click();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SAVE / LOAD  (localStorage)
+// ══════════════════════════════════════════════════════════════════
+const PF_SAVE_KEY = 'pf_boq_project';
+
+function savePFProject() {
+  const proj = {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    projName: document.getElementById('proj-name')?.value || '',
+    profitPct: document.getElementById('profit-pct')?.value || 15,
+    boqRows: boqRows,
+    boqNextId: boqNextId,
+  };
+  try {
+    localStorage.setItem(PF_SAVE_KEY, JSON.stringify(proj));
+    showPFStatus('✔ Saved — ' + new Date().toLocaleTimeString(), 'var(--green)');
+    const btn = document.getElementById('pf-save-btn');
+    if (btn) {
+      btn.textContent = '✔ Saved';
+      btn.style.background = 'rgba(0,255,136,.25)';
+      setTimeout(() => { btn.textContent = '💾 Save'; btn.style.background = 'rgba(0,255,136,.1)'; }, 1800);
+    }
+  } catch(e) {
+    showPFStatus('⚠ Save failed (storage full?)', 'var(--red)');
+  }
+}
+
+function loadPFProject() {
+  const raw = localStorage.getItem(PF_SAVE_KEY);
+  if (!raw) { alert('No saved project found in this browser.'); return; }
+  try {
+    const proj = JSON.parse(raw);
+    const savedAt = new Date(proj.savedAt).toLocaleString();
+    if (confirm(`Load saved project "${proj.projName || 'Unnamed'}"?\nSaved: ${savedAt}\n\nThis will replace current data.`)) {
+      boqRows  = proj.boqRows  || [];
+      boqNextId = proj.boqNextId || boqRows.length + 1;
+      const pn = document.getElementById('proj-name');
+      if (pn) { pn.value = proj.projName || ''; document.getElementById('proj-badge').textContent = proj.projName || 'No project'; }
+      const pp = document.getElementById('profit-pct');
+      if (pp) pp.value = proj.profitPct || 15;
+      renderBOQTable();
+      renderSummary();
+      showPFStatus('📂 Loaded — saved ' + new Date(proj.savedAt).toLocaleTimeString(), 'var(--teal)');
+    }
+  } catch(e) { alert('Could not load save — data may be corrupted.'); }
+}
+
+function showPFStatus(msg, color) {
+  const el = document.getElementById('pf-save-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = color || 'var(--text2)';
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.display = 'none', 4000);
+}
+
+function checkPFSave() {
+  const raw = localStorage.getItem(PF_SAVE_KEY);
+  if (!raw) return;
+  try {
+    const proj = JSON.parse(raw);
+    showPFStatus(`💾 Saved project: "${proj.projName || 'Unnamed'}" (${new Date(proj.savedAt).toLocaleString()}) — click 📂 Load to restore`, 'var(--text3)');
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════════
+function fmt(n){return (n||0).toLocaleString('en-AE',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+</body>
+</html>

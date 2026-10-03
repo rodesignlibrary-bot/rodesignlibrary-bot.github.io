@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROdesignlibrary — Calcite MMF Design Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2330;
+  --border:rgba(100,160,255,0.15);--border2:rgba(100,160,255,0.28);
+  --accent:#4fa3e0;--success:#2dd4a0;--warn:#f0a050;--danger:#e05b5b;
+  --text:#e8edf5;--text2:#8b9ab8;--text3:#556070;--r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;min-height:100vh;}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;gap:14px;}
+.badge{background:var(--accent);color:#071220;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;padding:4px 10px;border-radius:4px;letter-spacing:0.08em;}
+header h1{font-size:15px;font-weight:500;}
+header small{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+.layout{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 54px);}
+.side{background:var(--bg2);border-right:1px solid var(--border);padding:18px 16px;overflow-y:auto;}
+.main{padding:18px 22px;overflow-y:auto;}
+.slabel{font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--text3);margin:0 0 10px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.fg{margin-bottom:14px;}
+.fg label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text2);margin-bottom:5px;}
+.unit{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text3);}
+input[type=number],select{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;font-size:13px;font-family:'IBM Plex Mono',monospace;outline:none;padding:7px 9px;transition:border-color .15s;}
+input[type=number]:focus,select:focus{border-color:var(--accent);}
+select{appearance:none;cursor:pointer;}
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:var(--bg3);border:none;border-radius:2px;padding:0;cursor:pointer;width:100%;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);cursor:pointer;}
+.rrow{display:flex;align-items:center;gap:8px;}
+.rval{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);min-width:62px;text-align:right;}
+.auto-b{background:rgba(79,163,224,0.15);color:var(--accent);font-size:10px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;}
+.man-b{background:rgba(240,160,80,0.15);color:var(--warn);font-size:10px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:3px;}
+.ov-t{font-size:10px;color:var(--accent);cursor:pointer;text-decoration:underline dotted;margin-left:5px;}
+.hint{font-size:10px;color:var(--text3);margin-top:4px;line-height:1.5;}
+.hint.warn{color:var(--warn);}
+.calc-btn{background:var(--accent);color:#071220;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;letter-spacing:0.06em;padding:9px 0;border:none;border-radius:6px;cursor:pointer;width:100%;margin-top:10px;transition:all .15s;}
+.calc-btn:hover{background:#6ab8f0;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.kcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;}
+.kcard.hl{border-color:rgba(79,163,224,0.4);background:rgba(79,163,224,0.05);}
+.klbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
+.kval{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:500;}
+.kval.ac{color:var(--accent);}
+.kval.ok{color:var(--success);}
+.kval.wn{color:var(--warn);}
+.kunit{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+
+/* Result cards */
+.rsections{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.rcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;}
+.rcard h3{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.rrow2{display:flex;justify-content:space-between;align-items:baseline;padding:3.5px 0;border-bottom:1px solid rgba(100,160,255,0.05);font-size:12px;}
+.rrow2:last-child{border-bottom:none;}
+.rk{color:var(--text2);}
+.rv{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text);font-weight:500;}
+.rv.ok{color:var(--success);}
+.rv.wn{color:var(--warn);}
+.rv.er{color:var(--danger);}
+.full{grid-column:1/-1;}
+
+/* Alert */
+.alert-b{background:rgba(240,160,80,0.08);border:1px solid rgba(240,160,80,0.3);border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:11.5px;color:var(--warn);display:none;line-height:1.65;}
+.alert-b.on{display:block;}
+.pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-family:'IBM Plex Mono',monospace;font-weight:500;}
+.pill.ok{background:rgba(45,212,160,.12);color:var(--success);}
+.pill.wn{background:rgba(240,160,80,.12);color:var(--warn);}
+.rhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.rhdr h2{font-size:14px;font-weight:500;}
+
+/* Filter table */
+.ftbl{width:100%;border-collapse:collapse;font-size:11px;}
+.ftbl th{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:5px 6px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+.ftbl td{padding:4px 6px;color:var(--text2);border-bottom:1px solid rgba(100,160,255,.05);font-family:'IBM Plex Mono',monospace;font-size:10px;white-space:nowrap;vertical-align:middle;}
+.ftbl tr.auto-sel td{background:rgba(79,163,224,.12);color:var(--text);}
+.ftbl tr.auto-sel td:first-child{border-left:3px solid var(--accent);}
+.ftbl tr.man-sel td{background:rgba(240,160,80,.1);color:var(--text);}
+.ftbl tr.man-sel td:first-child{border-left:3px solid var(--warn);}
+.ftbl tr.invalid td{opacity:0.35;}
+.click-row{cursor:pointer;}
+.click-row:hover td{background:rgba(79,163,224,.06);}
+
+/* Manual override panel */
+.ovr-panel{background:var(--bg3);border:1px solid rgba(240,160,80,.3);border-radius:8px;padding:12px;margin-top:12px;display:none;}
+.ovr-panel.on{display:block;}
+.ovr-panel .op-title{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--warn);margin-bottom:10px;}
+.ovr-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap;}
+.ovr-row label{font-size:11px;color:var(--text2);min-width:110px;}
+.ovr-row select, .ovr-row input[type=number]{width:auto;flex:1;min-width:80px;font-size:12px;padding:5px 8px;}
+.clear-btn{font-size:11px;color:var(--danger);cursor:pointer;text-decoration:underline;background:none;border:none;padding:0;font-family:'IBM Plex Sans',sans-serif;}
+
+/* Cost grids */
+.cost-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:6px;}
+.cstat{background:var(--bg3);border-radius:8px;padding:10px 12px;}
+.cstat .cl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:3px;}
+.cstat .cv{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;}
+.cv.ok{color:var(--success);}
+.cv.ac{color:var(--accent);}
+.green-card{background:rgba(45,212,160,.04);border:1px solid rgba(45,212,160,.18);}
+.blue-card{background:rgba(79,163,224,.04);border:1px solid rgba(79,163,224,.22);}
+.sel-card{background:rgba(79,163,224,.07);border:1px solid rgba(79,163,224,.38);}
+.warn-card{background:rgba(240,160,80,.05);border:1px solid rgba(240,160,80,.28);}
+
+/* tank diagram */
+.tank-viz{display:flex;gap:14px;align-items:flex-end;padding:5px 0;overflow-x:auto;flex-wrap:wrap;}
+.tw{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.tl{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--text3);}
+.gap{margin-top:16px;}
+
+/* height box */
+.hbox{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px;}
+.hbox .ht{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text3);margin-bottom:8px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">ROdesignlibrary</div>
+  <div>
+    <h1>Calcite MMF Design Tool</h1>
+    <small>Multi-Media Filter · Upflow Calcite Remineralisation · AED</small>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- ══ SIDEBAR ══ -->
+<div class="side">
+  <div class="slabel">Process Inputs</div>
+
+  <div class="fg">
+    <label>Total Plant Flowrate <span class="unit">m³/d</span></label>
+    <input type="number" id="totalFlow" value="10000" min="100" max="500000" step="100" oninput="calc()">
+  </div>
+  <div class="fg">
+    <label>Number of Streams <span class="unit">#</span></label>
+    <select id="numStr" onchange="calc()">
+      <option selected>1</option><option>2</option><option>3</option><option>4</option>
+      <option>6</option><option>8</option>
+      <option>10</option><option>12</option>
+    </select>
+  </div>
+  <div class="fg">
+    <label>% of Flow to Treat <span class="unit">%</span></label>
+    <div class="rrow">
+      <input type="range" id="pctTreat" min="10" max="100" step="5" value="100"
+        oninput="sv('pctTV',this.value+'%');calc()">
+      <span class="rval" id="pctTV">100%</span>
+    </div>
+  </div>
+  <div class="fg">
+    <label>Min Water Temp <span class="unit">°C</span></label>
+    <div class="rrow">
+      <input type="range" id="tempMin" min="5" max="35" step="0.5" value="16"
+        oninput="sv('tMinV',pf(this.value,1)+'°C');autoEBCT();">
+      <span class="rval" id="tMinV">16.0°C</span>
+    </div>
+  </div>
+  <div class="fg">
+    <label>Max Water Temp (CO₂) <span class="unit">°C</span></label>
+    <div class="rrow">
+      <input type="range" id="tempMax" min="15" max="45" step="0.5" value="29"
+        oninput="sv('tMaxV',pf(this.value,1)+'°C');calc()">
+      <span class="rval" id="tMaxV">29.0°C</span>
+    </div>
+  </div>
+
+  <div class="gap"></div>
+  <div class="slabel">Bed Height &amp; Contact Time</div>
+
+  <div class="hbox">
+    <div class="ht">Calcite Bed Height
+      &nbsp;<span class="auto-b" id="htBadge">STD 1500mm</span>
+      &nbsp;<span class="ov-t" id="htTog" onclick="toggleHt()">override</span>
+    </div>
+    <div class="rrow" id="htSliderRow" style="display:none;margin-bottom:8px;">
+      <input type="range" id="htSlider" min="500" max="4000" step="100" value="1500"
+        oninput="sv('htSV',fmt(this.value,0)+' mm');htOvr=true;recomputeVsup();calc();">
+      <span class="rval" id="htSV">1,500 mm</span>
+    </div>
+    <div class="hint" id="htHint">Default max = 1,500 mm. Override increases vessel cost proportionally (cost × h/1500). Diameter unchanged.</div>
+  </div>
+
+  <div class="fg">
+    <label>
+      EBCT (Empty Bed Contact Time)
+      <span><span class="auto-b" id="ebctBadge">AUTO</span><span class="ov-t" id="ebctTog" onclick="toggleEBCTOvr()">override</span></span>
+    </label>
+    <div class="rrow">
+      <input type="range" id="ebctR" min="10" max="60" step="1" value="30"
+        oninput="sv('ebctRV',this.value+' min');ebctOvr=true;recomputeVsup();calc();">
+      <span class="rval" id="ebctRV">30 min</span>
+    </div>
+    <div class="hint">25–40 min typical · auto-set from temperature</div>
+  </div>
+
+  <div class="fg">
+    <label>Filtration Velocity (Vsup) <span class="unit">m/h</span>
+      <span><span class="auto-b" id="velBadge">DERIVED</span><span class="ov-t" id="velTog" onclick="toggleVelOvr()">override</span></span>
+    </label>
+    <div class="rrow">
+      <input type="range" id="velR" min="0.5" max="20" step="0.05" value="3.0" disabled style="opacity:.5;"
+        oninput="onVelSlider(this.value)">
+      <span class="rval" id="velRV">3.00 m/h</span>
+    </div>
+    <div class="hint" id="velHint">Vsup = Bed Height ÷ EBCT — drag to override, EBCT updates automatically</div>
+  </div>
+
+  <div class="gap"></div>
+  <div class="slabel">Target Water Quality</div>
+
+  <div class="fg">
+    <label>Target pH</label>
+    <div class="rrow">
+      <input type="range" id="tPH" min="6.8" max="8.5" step="0.05" value="7.8"
+        oninput="sv('tPHV',pf(this.value,2));autoCO2();calc();">
+      <span class="rval" id="tPHV">7.80</span>
+    </div>
+  </div>
+  <div class="fg">
+    <label>Calcite Dose <span class="unit">mg/L</span></label>
+    <div class="rrow">
+      <input type="range" id="calcD" min="20" max="200" step="1" value="80"
+        oninput="sv('calcDV',this.value+' mg/L');calc()">
+      <span class="rval" id="calcDV">80 mg/L</span>
+    </div>
+    <div class="hint">Typical 60–120 mg/L</div>
+  </div>
+  <div class="fg">
+    <label>CO₂ Dose (max temp) <span class="unit">mg/L</span></label>
+    <div class="rrow">
+      <input type="range" id="co2D" min="5" max="100" step="0.5" value="38.5"
+        oninput="sv('co2DV',pf(this.value,1)+' mg/L');calc()">
+      <span class="rval" id="co2DV">38.5 mg/L</span>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calc()">▶ CALCULATE DESIGN</button>
+</div>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="rhdr">
+    <h2>Design Results</h2>
+    <span id="statusPill" class="pill ok">READY</span>
+  </div>
+
+  <div class="alert-b" id="alertB"></div>
+
+  <div class="kpi-grid">
+    <div class="kcard hl"><div class="klbl">Flow per Stream</div><div class="kval ac" id="kFlow">—</div><div class="kunit" id="kFlowSub">m³/h · — m³/d total</div></div>
+    <div class="kcard"><div class="klbl">Area Required / Stream</div><div class="kval ac" id="kSurfArea">—</div><div class="kunit" id="kSurfAreaSub">m² per stream</div></div>
+    <div class="kcard hl" style="grid-column:span 1"><div class="klbl">MMF Selected</div><div class="kval" id="kMMFSel" style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div><div class="kunit" id="kMMFSub">—</div></div>
+    <div class="kcard"><div class="klbl">Annual OpEx</div><div class="kval ok" id="kOpex">—</div><div class="kunit">AED/year</div></div>
+  </div>
+
+  <div class="rsections">
+
+    <!-- ─── FILTER SELECTION TABLE ─── -->
+    <div class="rcard full">
+      <h3>MMF Size Selection — ROdesignlibrary Catalogue &nbsp;·&nbsp;
+        <span style="color:var(--accent);font-size:10px;">■ Auto-selected</span>
+        &nbsp;<span style="color:var(--warn);font-size:10px;">■ Manual override</span>
+        &nbsp;<span style="color:var(--danger);font-size:10px;">■ Out of range</span>
+        &nbsp;· Click any valid row to select
+      </h3>
+
+      <div style="overflow-x:auto;">
+        <table class="ftbl">
+          <thead><tr>
+            <th>Size &amp; Material</th>
+            <th>T</th>
+            <th>Unit area (m²)</th>
+            <th>Max MMF</th>
+            <th>MMF needed</th>
+            <th>MMF base cost</th>
+            <th>Ht adj cost</th>
+            <th>Auto valve</th>
+            <th>Pipe</th>
+            <th>Unit total</th>
+            <th>Total CAPEX</th>
+            <th>Status</th>
+          </tr></thead>
+          <tbody id="ftblB"></tbody>
+        </table>
+      </div>
+
+      <!-- Manual override panel -->
+      <div class="ovr-panel" id="ovrPanel">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--warn);">⚙ Manual Override</span>
+            <span id="ovrSizeName" style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);font-weight:500;">—</span>
+            <span style="font-size:11px;color:var(--text3);">MMF / stream:</span>
+            <button onclick="adjustQty(-1)" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);width:26px;height:26px;border-radius:4px;font-size:15px;cursor:pointer;line-height:1;padding:0;">−</button>
+            <span id="ovrQtyDisp" style="font-family:'IBM Plex Mono',monospace;font-size:17px;color:var(--warn);min-width:22px;text-align:center;font-weight:500;">1</span>
+            <input type="hidden" id="ovrQty" value="1">
+            <button onclick="adjustQty(1)" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);width:26px;height:26px;border-radius:4px;font-size:15px;cursor:pointer;line-height:1;padding:0;">+</button>
+            <span style="font-size:10px;color:var(--text3);" id="ovrQtyHint">max: —</span>
+          </div>
+          <button onclick="clearManual()" style="background:var(--success);color:#071220;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;padding:6px 16px;border:none;border-radius:5px;cursor:pointer;letter-spacing:.04em;">⟳ AUTO MODE</button>
+        </div>
+        <div class="hint warn" id="ovrAreaNote" style="margin-top:6px;"></div>
+      </div>
+
+      <div style="margin-top:8px;font-size:11px;color:var(--text3);">
+        Required area: <span id="reqArea" style="color:var(--accent);font-family:'IBM Plex Mono',monospace;">—</span>
+        &nbsp;· Bed height: <span id="bedHDisp" style="color:var(--warn);font-family:'IBM Plex Mono',monospace;">—</span>
+        &nbsp;· Vsup: <span id="vsupDisp" style="color:var(--accent);font-family:'IBM Plex Mono',monospace;">—</span>
+      </div>
+    </div>
+
+    <!-- ─── Selected Filter Detail ─── -->
+    <div class="rcard sel-card">
+      <h3>Selected MMF — Detail</h3>
+      <div class="rrow2"><span class="rk">Model</span><span class="rv" id="sfModel">—</span></div>
+      <div class="rrow2"><span class="rk">Vessel type</span><span class="rv" id="sfType">—</span></div>
+      <div class="rrow2"><span class="rk">Unit filter area</span><span class="rv" id="sfArea">—</span></div>
+      <div class="rrow2"><span class="rk">Max MMF per size</span><span class="rv" id="sfMaxMMF">—</span></div>
+      <div class="rrow2"><span class="rk">Bed height</span><span class="rv" id="sfBedH">—</span></div>
+      <div class="rrow2"><span class="rk">Height multiplier</span><span class="rv" id="sfHMult">—</span></div>
+      <div class="rrow2"><span class="rk">MMF qty / stream</span><span class="rv" id="sfQPS">—</span></div>
+      <div class="rrow2"><span class="rk">Total MMF units</span><span class="rv" id="sfTotU">—</span></div>
+      <div class="rrow2"><span class="rk">Total filter area</span><span class="rv" id="sfTotA">—</span></div>
+      <div class="rrow2"><span class="rk">Actual Vsup</span><span class="rv" id="sfVsup">—</span></div>
+      <div class="rrow2"><span class="rk">Actual EBCT</span><span class="rv" id="sfEBCT">—</span></div>
+      <div class="rrow2"><span class="rk">Frontal pipe</span><span class="rv" id="sfPipe">—</span></div>
+      <div class="rrow2"><span class="rk">MMF base cost / unit</span><span class="rv" id="sfBase">—</span></div>
+      <div class="rrow2"><span class="rk">MMF adj cost / unit</span><span class="rv" id="sfAdj">—</span></div>
+      <div class="rrow2"><span class="rk">Pipe + valve / unit</span><span class="rv" id="sfPV">—</span></div>
+      <div class="rrow2"><span class="rk">Total CAPEX</span><span class="rv ok" id="sfCAPEX">—</span></div>
+    </div>
+
+    <!-- ─── Calcite Bed ─── -->
+    <div class="rcard">
+      <h3>Calcite Bed (per MMF unit)</h3>
+      <div class="rrow2"><span class="rk">Flow per unit</span><span class="rv" id="rFPU">—</span></div>
+      <div class="rrow2"><span class="rk">Unit filter area</span><span class="rv" id="rAU">—</span></div>
+      <div class="rrow2"><span class="rk">Filtration velocity</span><span class="rv" id="rVs">—</span></div>
+      <div class="rrow2"><span class="rk">Bed height</span><span class="rv" id="rBH">—</span></div>
+      <div class="rrow2"><span class="rk">EBCT</span><span class="rv" id="rEBCT">—</span></div>
+      <div class="rrow2"><span class="rk">Bed volume</span><span class="rv" id="rBVol">—</span></div>
+      <div class="rrow2"><span class="rk">Calcite bed dry (1500 kg/m³)</span><span class="rv" id="rCBed">—</span></div>
+      <div class="rrow2"><span class="rk">Silo charge (30 days)</span><span class="rv" id="rCSilo">—</span></div>
+      <div class="rrow2"><span class="rk">Total calcite to fill</span><span class="rv" id="rTFil">—</span></div>
+      <div class="rrow2"><span class="rk">Silo autonomy</span><span class="rv ok">30 days</span></div>
+    </div>
+
+    <!-- ─── Calcite Cost ─── -->
+    <div class="rcard">
+      <h3>Calcite Consumption &amp; Cost</h3>
+      <div class="rrow2"><span class="rk">Dose</span><span class="rv" id="rcDose">—</span></div>
+      <div class="rrow2"><span class="rk">Per unit / day</span><span class="rv" id="rcPU">—</span></div>
+      <div class="rrow2"><span class="rk">Total plant / day</span><span class="rv" id="rcTD">—</span></div>
+      <div class="rrow2"><span class="rk">25 kg bags / day</span><span class="rv" id="rcBags">—</span></div>
+      <div class="rrow2"><span class="rk">Unit cost</span><span class="rv">AED 160 / 25 kg bag</span></div>
+      <div class="rrow2"><span class="rk">Cost / day</span><span class="rv" id="rcCD">—</span></div>
+      <div class="rrow2"><span class="rk">Cost / m³</span><span class="rv" id="rcCM">—</span></div>
+      <div class="rrow2"><span class="rk">Cost / year</span><span class="rv ok" id="rcCY">—</span></div>
+    </div>
+
+    <!-- ─── CO2 ─── -->
+    <div class="rcard">
+      <h3>CO₂ Dissolver System</h3>
+      <div class="rrow2"><span class="rk">Dissolvers required</span><span class="rv" id="rND">—</span></div>
+      <div class="rrow2"><span class="rk">CO₂ dose (max temp)</span><span class="rv" id="rCO2D">—</span></div>
+      <div class="rrow2"><span class="rk">Total / day</span><span class="rv" id="rCO2T">—</span></div>
+      <div class="rrow2"><span class="rk">Unit cost</span><span class="rv">AED 1,800 / 1,000 kg</span></div>
+      <div class="rrow2"><span class="rk">Cost / day</span><span class="rv" id="rCO2CD">—</span></div>
+      <div class="rrow2"><span class="rk">Cost / m³</span><span class="rv" id="rCO2CM">—</span></div>
+      <div class="rrow2"><span class="rk">Cost / year</span><span class="rv ok" id="rCO2CY">—</span></div>
+    </div>
+
+    <!-- ─── Backwash ─── -->
+    <div class="rcard">
+      <h3>Backwash (per MMF unit)</h3>
+      <div class="rrow2"><span class="rk">Air (80 Nm³/h·m²)</span><span class="rv" id="rBwA">—</span></div>
+      <div class="rrow2"><span class="rk">Air pressure</span><span class="rv">0.70 bar</span></div>
+      <div class="rrow2"><span class="rk">Air vol (3 min)</span><span class="rv" id="rBwAV">—</span></div>
+      <div class="rrow2"><span class="rk">Water (32 m/h)</span><span class="rv" id="rBwWQ">—</span></div>
+      <div class="rrow2"><span class="rk">Water pressure</span><span class="rv">0.78 bar</span></div>
+      <div class="rrow2"><span class="rk">Water vol (10 min)</span><span class="rv" id="rBwWV">—</span></div>
+      <div class="rrow2"><span class="rk">Total wash vol</span><span class="rv wn" id="rBwT">—</span></div>
+      <div class="rrow2"><span class="rk">Frequency</span><span class="rv">Startup / annually</span></div>
+    </div>
+
+    <!-- ─── OpEx ─── -->
+    <div class="rcard green-card full">
+      <h3>Annual Operating Cost — AED (24 h / 365 d)</h3>
+      <div class="cost-grid">
+        <div class="cstat"><div class="cl">Calcite / year</div><div class="cv ok" id="sumCaY">—</div></div>
+        <div class="cstat"><div class="cl">CO₂ / year</div><div class="cv ok" id="sumCoY">—</div></div>
+        <div class="cstat"><div class="cl">Total OpEx / year</div><div class="cv ac" id="sumTY">—</div></div>
+        <div class="cstat"><div class="cl">Cost per m³</div><div class="cv ac" id="sumM3">—</div></div>
+      </div>
+    </div>
+
+    <!-- ─── CAPEX ─── -->
+    <div class="rcard blue-card full">
+      <h3>Equipment CAPEX — AED (Automated Valves)</h3>
+      <div class="cost-grid">
+        <div class="cstat"><div class="cl">MMF vessels</div><div class="cv ac" id="cxF">—</div></div>
+        <div class="cstat"><div class="cl">Piping</div><div class="cv" id="cxP">—</div></div>
+        <div class="cstat"><div class="cl">Auto valves</div><div class="cv" id="cxV">—</div></div>
+        <div class="cstat"><div class="cl">Total CAPEX</div><div class="cv ok" id="cxT">—</div></div>
+      </div>
+    </div>
+
+    <!-- ─── Height note ─── -->
+    <div class="rcard warn-card full" id="htNoteCard" style="display:none;">
+      <h3>Height Override — Cost Adjustment</h3>
+      <div style="font-size:12px;color:var(--warn);line-height:1.8;" id="htNoteText"></div>
+    </div>
+
+    <!-- ─── Tank diagram ─── -->
+    <div class="rcard full">
+      <h3>MMF Unit Scale Diagram</h3>
+      <div class="tank-viz" id="tankViz"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// CATALOGUE
+// maxMMF = maximum number of MMF units for this vessel size
+// amin   = area of 1 unit (minimum total area = 1 unit)
+// amax   = area of maxMMF units (maximum total area)
+// unitA  = area per single MMF unit = amin (since each unit is identical)
+// ─────────────────────────────────────────────────────────────────────────────
+const F = [
+  { l:'13"×54" FRP',     t:'V', maxMMF:1,  unitA:0.086,  mc:250,    pipe:'1"',   pc:800,   va:11700 },
+  { l:'16"×64" FRP',     t:'V', maxMMF:1,  unitA:0.130,  mc:450,    pipe:'1"',   pc:800,   va:11700 },
+  { l:'21"×72" FRP',     t:'V', maxMMF:1,  unitA:0.223,  mc:1750,   pipe:'1.5"', pc:1060,  va:12332 },
+  { l:'30"×72" FRP',     t:'V', maxMMF:3,  unitA:0.456,  mc:2350,   pipe:'2"',   pc:1678,  va:12332 },
+  { l:'36"×72" FRP',     t:'V', maxMMF:3,  unitA:0.657,  mc:2750,   pipe:'2"',   pc:1678,  va:12332 },
+  { l:'63"×67" FRP',     t:'V', maxMMF:6,  unitA:2.011,  mc:9500,   pipe:'3"',   pc:4362,  va:17074 },
+  { l:'63"×67" FRP ×10', t:'V', maxMMF:10, unitA:2.011,  mc:9501,   pipe:'3"',   pc:4362,  va:17074 },
+  { l:'2M×1.8M FRP',     t:'V', maxMMF:3,  unitA:3.142,  mc:41000,  pipe:'4"',   pc:5800,  va:19480 },
+  { l:'2.8M×1.8M MSRL',  t:'V', maxMMF:6,  unitA:6.158,  mc:65000,  pipe:'6"',   pc:10520, va:26676 },
+  { l:'3.2M×1.8M MSRL',  t:'V', maxMMF:6,  unitA:8.040,  mc:75000,  pipe:'6"',   pc:10520, va:26676 },
+  { l:'3.8M×1.8M MSRL',  t:'H', maxMMF:7,  unitA:11.340, mc:98000,  pipe:'8"',   pc:17600, va:36700 },
+  { l:'3M×10M MSRL',     t:'H', maxMMF:10, unitA:30.000, mc:225000, pipe:'10"',  pc:30000, va:55687 },
+];
+
+const STD_BED_H = 1500; // mm
+const CALC_COST = 160/25;
+const CO2_COST  = 1800/1000;
+
+let htOvr   = false;
+let ebctOvr = false;
+let velOvr  = false;
+let manualIdx = null;   // null = auto; number = index in F
+let manualQty = null;   // null = auto
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function sv(id,val){ document.getElementById(id).textContent = val; }
+function pf(v,d){ return parseFloat(v).toFixed(d); }
+function fmt(n,d=0){ return Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function getBedH(){ return htOvr ? parseFloat(document.getElementById('htSlider').value) : STD_BED_H; }
+function getVsup(){
+  const bh = getBedH()/1000;
+  const ebct = parseFloat(document.getElementById('ebctR').value)/60;
+  return bh/ebct;
+}
+
+// ── Height override ───────────────────────────────────────────────────────────
+function toggleHt(){
+  htOvr = !htOvr;
+  const badge = document.getElementById('htBadge');
+  const tog   = document.getElementById('htTog');
+  const row   = document.getElementById('htSliderRow');
+  const hint  = document.getElementById('htHint');
+  if(htOvr){
+    badge.textContent='CUSTOM'; badge.className='man-b';
+    tog.textContent='reset'; row.style.display='flex';
+    hint.textContent='Custom height — vessel cost = base × (height ÷ 1,500 mm). Diameter unchanged.';
+    hint.className='hint warn';
+    document.getElementById('htSlider').value=1500;
+    sv('htSV','1,500 mm');
+  } else {
+    badge.textContent='STD 1500mm'; badge.className='auto-b';
+    tog.textContent='override'; row.style.display='none';
+    hint.textContent='Default max = 1,500 mm. Override increases vessel cost proportionally.';
+    hint.className='hint';
+  }
+  recomputeVsup();
+}
+
+// ── EBCT override ─────────────────────────────────────────────────────────────
+function toggleEBCTOvr(){
+  ebctOvr=!ebctOvr;
+  const b=document.getElementById('ebctBadge'), t=document.getElementById('ebctTog');
+  if(ebctOvr){
+    b.textContent='MANUAL';b.className='man-b';t.textContent='auto';
+    // clear vel override when EBCT takes control
+    if(velOvr) clearVelOvr();
+  } else {
+    b.textContent='AUTO';b.className='auto-b';t.textContent='override';autoEBCT();
+  }
+  recomputeVsup();
+}
+function autoEBCT(){
+  if(ebctOvr) return;
+  const temp=parseFloat(document.getElementById('tempMin').value);
+  const e = temp<12?40 : temp<16?35 : temp<22?30 : 25;
+  document.getElementById('ebctR').value=e;
+  sv('ebctRV',e+' min');
+}
+function recomputeVsup(){
+  if(velOvr) return; // vel is driving, don't overwrite
+  const v=getVsup();
+  document.getElementById('velR').value=v.toFixed(2);
+  sv('velRV',v.toFixed(2)+' m/h');
+}
+
+// ── Velocity override ─────────────────────────────────────────────────────────
+function toggleVelOvr(){
+  velOvr=!velOvr;
+  if(velOvr){
+    // clear EBCT override — vel now drives
+    ebctOvr=false;
+    document.getElementById('ebctBadge').textContent='DERIVED';
+    document.getElementById('ebctBadge').className='auto-b';
+    document.getElementById('ebctTog').textContent='override';
+    // enable vel slider
+    const sl=document.getElementById('velR');
+    sl.disabled=false; sl.style.opacity='1';
+    document.getElementById('velBadge').textContent='MANUAL';
+    document.getElementById('velBadge').className='man-b';
+    document.getElementById('velTog').textContent='reset';
+    document.getElementById('velHint').textContent='Vsup overridden — EBCT = Bed Height ÷ Vsup, updates automatically.';
+    document.getElementById('velHint').className='hint warn';
+    // seed slider with current derived value and update EBCT
+    const cur=getVsup();
+    sl.value=cur.toFixed(2);
+    sv('velRV',cur.toFixed(2)+' m/h');
+    backCalcEBCT(cur);
+  } else {
+    clearVelOvr();
+  }
+}
+function clearVelOvr(){
+  velOvr=false;
+  const sl=document.getElementById('velR');
+  sl.disabled=true; sl.style.opacity='.5';
+  document.getElementById('velBadge').textContent='DERIVED';
+  document.getElementById('velBadge').className='auto-b';
+  document.getElementById('velTog').textContent='override';
+  document.getElementById('velHint').textContent='Vsup = Bed Height ÷ EBCT — drag to override, EBCT updates automatically';
+  document.getElementById('velHint').className='hint';
+  // restore auto EBCT
+  autoEBCT();
+  recomputeVsup();
+  calc();
+}
+function onVelSlider(val){
+  if(!velOvr) return;
+  const v=parseFloat(val);
+  sv('velRV',v.toFixed(2)+' m/h');
+  backCalcEBCT(v);
+  calc();
+}
+function backCalcEBCT(vsup){
+  // EBCT (min) = BedHeight (m) / Vsup (m/h) * 60
+  const bedH_m = getBedH()/1000;
+  const ebct = (bedH_m / vsup) * 60;
+  const clamped = Math.min(60, Math.max(10, ebct));
+  document.getElementById('ebctR').value=clamped.toFixed(1);
+  sv('ebctRV', clamped.toFixed(1)+' min');
+}
+
+function autoCO2(){
+  const ph=parseFloat(document.getElementById('tPH').value);
+  const tm=parseFloat(document.getElementById('tempMax').value);
+  const d=Math.max(5,Math.min(80,20+(8-ph)*15+(tm-20)*0.8));
+  document.getElementById('co2D').value=d.toFixed(1);
+  sv('co2DV',pf(d,1)+' mg/L');
+}
+
+// ── Manual filter selection ───────────────────────────────────────────────────
+function selectRow(idx){
+  // compute the needed qty for this size given current flow
+  const Q       = parseFloat(document.getElementById('totalFlow').value);
+  const pct     = parseFloat(document.getElementById('pctTreat').value)/100;
+  const nStr    = parseInt(document.getElementById('numStr').value);
+  const bedH_m  = getBedH()/1000;
+  const ebctMin = parseFloat(document.getElementById('ebctR').value);
+  const vsup    = bedH_m/(ebctMin/60);
+  const Qtreated= Q*pct;
+  const Qstream = (Qtreated/24)/nStr;
+  const reqAPS  = Qstream/vsup;
+  const autoQty = Math.max(1, Math.ceil(reqAPS / F[idx].unitA));
+
+  manualIdx = idx;
+  manualQty = autoQty;
+  document.getElementById('ovrQty').value    = autoQty;
+  document.getElementById('ovrQtyDisp').textContent = autoQty;
+  sv('ovrSizeName', F[idx].l);
+  sv('ovrQtyHint', 'max: '+F[idx].maxMMF);
+  document.getElementById('ovrPanel').classList.add('on');
+  calc();
+}
+function adjustQty(delta){
+  if(manualIdx===null) return;
+  const cur = parseInt(document.getElementById('ovrQty').value)||1;
+  const next = Math.max(1, Math.min(F[manualIdx].maxMMF, cur+delta));
+  document.getElementById('ovrQty').value = next;
+  document.getElementById('ovrQtyDisp').textContent = next;
+  calc();
+}
+function clearManual(){
+  manualIdx=null; manualQty=null;
+  document.getElementById('ovrPanel').classList.remove('on');
+  document.getElementById('ovrQty').value = 1;
+  document.getElementById('ovrQtyDisp').textContent = '1';
+  calc();
+}
+
+// ── Auto-select logic ─────────────────────────────────────────────────────────
+// For each size: find minimum qty of units needed so total area >= required
+// Only valid if qty <= maxMMF
+// Pick the option with the lowest total CAPEX that is valid
+function autoSelect(reqAreaPerStream){
+  let bestI=-1, bestCX=Infinity;
+  F.forEach((f,i)=>{
+    const qty = Math.ceil(reqAreaPerStream / f.unitA);
+    if(qty <= f.maxMMF){
+      const hm   = getBedH()/STD_BED_H;
+      const adjMC= f.mc * hm;
+      const uCost= adjMC + f.pc + f.va;
+      const nStr = parseInt(document.getElementById('numStr').value);
+      const totCX= uCost * qty * nStr;
+      if(totCX < bestCX){ bestCX=totCX; bestI=i; }
+    }
+  });
+  // fallback: if nothing fits within maxMMF (area too large), allow overflow
+  if(bestI===-1){
+    F.forEach((f,i)=>{
+      const qty=Math.ceil(reqAreaPerStream/f.unitA);
+      const hm=getBedH()/STD_BED_H;
+      const adjMC=f.mc*hm;
+      const uCost=adjMC+f.pc+f.va;
+      const nStr=parseInt(document.getElementById('numStr').value);
+      const totCX=uCost*qty*nStr;
+      if(totCX<bestCX){bestCX=totCX;bestI=i;}
+    });
+  }
+  return bestI;
+}
+
+// ── Main calculate ────────────────────────────────────────────────────────────
+function calc(){
+  const Q        = parseFloat(document.getElementById('totalFlow').value);
+  const pct      = parseFloat(document.getElementById('pctTreat').value)/100;
+  const nStr     = parseInt(document.getElementById('numStr').value);
+  const calcDose = parseFloat(document.getElementById('calcD').value);
+  const co2d     = parseFloat(document.getElementById('co2D').value);
+  const bedH_mm  = getBedH();
+  const bedH_m   = bedH_mm/1000;
+  const ebctMin  = parseFloat(document.getElementById('ebctR').value);
+  const vsup     = bedH_m/(ebctMin/60);
+  const hMult    = bedH_mm/STD_BED_H;
+
+  const Qtreated = Q*pct;
+  const Qthr     = Qtreated/24;
+  const Qstream  = Qthr/nStr;
+  const reqAPS   = Qstream/vsup;     // required m² per stream
+  const reqATot  = reqAPS*nStr;
+
+  sv('reqArea',  reqATot.toFixed(3)+' m²  ('+reqAPS.toFixed(3)+' m²/stream × '+nStr+')');
+  sv('bedHDisp', fmt(bedH_mm,0)+' mm'+(htOvr?' [custom]':''));
+  sv('vsupDisp', vsup.toFixed(2)+' m/h');
+
+  // Determine selected index and qty
+  let selIdx, selQty, isManual=false;
+  if(manualIdx!==null){
+    selIdx  = manualIdx;
+    selQty  = parseInt(document.getElementById('ovrQty').value)||1;
+    isManual= true;
+    // update hint
+    const totalA = F[selIdx].unitA * selQty;
+    const actV   = Qstream/totalA;
+    sv('ovrAreaNote',
+      'Area: '+fmt(totalA,3)+' m²/stream  ·  Vsup: '+actV.toFixed(2)+' m/h'+
+      (selQty > F[selIdx].maxMMF ? '  ⚠ Exceeds max MMF for this size ('+F[selIdx].maxMMF+')' : ''));
+  } else {
+    selIdx = autoSelect(reqAPS);
+    const f = F[selIdx];
+    selQty = Math.ceil(reqAPS/f.unitA);
+    // cap at maxMMF for display, but still show result
+  }
+
+  // ── Build table ──────────────────────────────────────────────────────────
+  const tb = document.getElementById('ftblB'); tb.innerHTML='';
+  F.forEach((f,i)=>{
+    const maxQty  = f.maxMMF;
+    const neededQ = Math.ceil(reqAPS/f.unitA);
+    const overMax = neededQ > maxQty;
+    const displayQ= isManual && i===selIdx ? parseInt(document.getElementById('ovrQty').value)||1 : neededQ;
+    const totalAps= f.unitA * displayQ;
+    const actV    = Qstream/totalAps;
+    const adjMC   = f.mc * hMult;
+    const uCost   = adjMC + f.pc + f.va;
+    const totCX   = uCost * displayQ * nStr;
+
+    const isSelected = i === selIdx;
+    const tr = document.createElement('tr');
+    tr.className = (isSelected ? (isManual ? 'man-sel' : 'auto-sel') : '') + (overMax ? ' invalid' : ' click-row');
+    if(!overMax) tr.style.cursor='pointer';
+    if(overMax)  tr.style.cursor='not-allowed';
+    if(!overMax) tr.onclick = ()=>selectRow(i);
+
+    const htNote = hMult!==1 ? 'AED '+fmt(adjMC,0)+' (×'+hMult.toFixed(2)+')' : '—';
+
+    // MMF needed cell — show qty badge + select hint
+    let mmfCell;
+    if(overMax){
+      mmfCell = `<td><span style="color:var(--danger);font-weight:500;">${neededQ}</span> <span style="color:var(--danger);font-size:9px;">/ max ${maxQty}</span></td>`;
+    } else if(isSelected && isManual){
+      mmfCell = `<td><span style="color:var(--warn);font-weight:500;">${displayQ}</span> <span style="color:var(--text3);font-size:9px;">/ ${maxQty}</span></td>`;
+    } else if(isSelected && !isManual){
+      mmfCell = `<td><span style="color:var(--success);font-weight:500;">${neededQ}</span> <span style="color:var(--text3);font-size:9px;">/ ${maxQty} AUTO</span></td>`;
+    } else {
+      mmfCell = `<td><span style="color:var(--accent);font-weight:500;">${neededQ}</span> <span style="color:var(--text3);font-size:9px;">/ ${maxQty}</span></td>`;
+    }
+
+    const statusTxt = overMax
+      ? `<span style="color:var(--danger);font-size:10px;">⚠ out of range</span>`
+      : isSelected && isManual
+        ? `<span style="color:var(--warn);font-size:10px;">⚙ manual · ${actV.toFixed(2)} m/h</span>`
+        : isSelected
+          ? `<span style="color:var(--success);font-size:10px;">✓ selected · ${actV.toFixed(2)} m/h</span>`
+          : `<span style="color:var(--text3);font-size:10px;">click to select</span>`;
+
+    tr.innerHTML =
+      `<td>${f.l}</td><td>${f.t}</td>`+
+      `<td>${f.unitA.toFixed(3)} m²</td>`+
+      `<td>${maxQty}</td>`+
+      mmfCell+
+      `<td>AED ${fmt(f.mc)}</td>`+
+      `<td>${htNote}</td>`+
+      `<td>AED ${fmt(f.va)}</td>`+
+      `<td>${f.pipe}</td>`+
+      `<td>AED ${fmt(uCost)}</td>`+
+      `<td style="color:var(--accent)">AED ${fmt(totCX)}</td>`+
+      `<td>${statusTxt}</td>`;
+    tb.appendChild(tr);
+  });
+
+  // ── Selected filter calculations ─────────────────────────────────────────
+  const f       = F[selIdx];
+  const adjMC   = f.mc * hMult;
+  const totUnits= selQty * nStr;
+  const totAreaPS= f.unitA * selQty;
+  const actVsup = Qstream / totAreaPS;
+  const actEBCT = (bedH_m / actVsup) * 60;
+  const capF    = adjMC   * totUnits;
+  const capP    = f.pc    * totUnits;
+  const capV    = f.va    * totUnits;
+  const capT    = capF + capP + capV;
+  const uCostSel= adjMC + f.pc + f.va;
+
+  sv('sfModel',  f.l + (isManual?' [manual]':' [auto]'));
+  sv('sfType',   f.t==='V'?'Vertical':'Horizontal');
+  sv('sfArea',   f.unitA.toFixed(3)+' m²');
+  sv('sfMaxMMF', f.maxMMF+' units');
+  sv('sfBedH',   fmt(bedH_mm,0)+' mm'+(htOvr?' (custom)':' (std)'));
+  sv('sfHMult',  hMult.toFixed(2)+'×'+(hMult!==1?' — cost adj':''));
+  sv('sfQPS',    selQty+' / stream'+(selQty>f.maxMMF?' ⚠ exceeds max':''));
+  sv('sfTotU',   totUnits+' units total');
+  sv('sfTotA',   (totAreaPS*nStr).toFixed(3)+' m²');
+  sv('sfVsup',   actVsup.toFixed(2)+' m/h');
+  document.getElementById('sfVsup').className='rv'+(actVsup>15?' wn':actVsup<1.5?' er':' ok');
+  sv('sfEBCT',   actEBCT.toFixed(1)+' min');
+  sv('sfPipe',   f.pipe);
+  sv('sfBase',   'AED '+fmt(f.mc)+' / unit');
+  sv('sfAdj',    'AED '+fmt(adjMC,0)+' / unit'+(hMult!==1?' (×'+hMult.toFixed(2)+')':''));
+  sv('sfPV',     'AED '+fmt(f.pc+f.va)+' / unit');
+  sv('sfCAPEX',  'AED '+fmt(capT));
+  sv('cxF','AED '+fmt(capF));
+  sv('cxP','AED '+fmt(capP));
+  sv('cxV','AED '+fmt(capV));
+  sv('cxT','AED '+fmt(capT));
+
+  // ── Calcite bed ───────────────────────────────────────────────────────────
+  const uA     = f.unitA;
+  const bedVol = uA * bedH_m;
+  const cBedKg = bedVol * 1500;
+  const cPU    = calcDose * Qstream * 24 / 1000;
+  const siloKg = cPU * 30;
+  const totFil = cBedKg + siloKg;
+
+  sv('rFPU',  fmt(Qstream,2)+' m³/h');
+  sv('rAU',   uA.toFixed(3)+' m²');
+  sv('rVs',   actVsup.toFixed(2)+' m/h');
+  document.getElementById('rVs').className='rv'+(actVsup>15?' wn':actVsup<1.5?' er':' ok');
+  sv('rBH',   fmt(bedH_mm,0)+' mm');
+  sv('rEBCT', actEBCT.toFixed(1)+' min');
+  sv('rBVol', bedVol.toFixed(3)+' m³');
+  sv('rCBed', fmt(cBedKg,0)+' kg');
+  sv('rCSilo',fmt(siloKg,0)+' kg');
+  sv('rTFil', fmt(totFil,0)+' kg');
+
+  // ── Calcite cost ──────────────────────────────────────────────────────────
+  const cTot  = cPU * totUnits;
+  const bags  = cTot / 25;
+  const ccDay = bags * 160;
+  const ccYr  = ccDay * 365;
+  const ccM3  = ccDay / Qtreated;
+
+  sv('rcDose', pf(calcDose,1)+' mg/L');
+  sv('rcPU',   fmt(cPU,1)+' kg/d');
+  sv('rcTD',   fmt(cTot,1)+' kg/d');
+  sv('rcBags', fmt(bags,1)+' bags');
+  sv('rcCD',   'AED '+fmt(ccDay,1));
+  sv('rcCM',   'AED '+ccM3.toFixed(4));
+  sv('rcCY',   'AED '+fmt(ccYr,0));
+
+  // ── CO2 ──────────────────────────────────────────────────────────────────
+  const co2eff = co2d/0.999;
+  const co2tot = co2eff*Qthr*24/1000;
+  const nDiss  = Math.max(1,Math.ceil(Qthr/500));
+  const coDay  = co2tot*CO2_COST;
+  const coYr   = coDay*365;
+  const coM3   = coDay/Qtreated;
+
+  sv('rND',    nDiss+' unit'+(nDiss>1?'s':''));
+  sv('rCO2D',  pf(co2d,1)+' mg/L');
+  sv('rCO2T',  fmt(co2tot,1)+' kg/d');
+  sv('rCO2CD', 'AED '+fmt(coDay,1));
+  sv('rCO2CM', 'AED '+coM3.toFixed(4));
+  sv('rCO2CY', 'AED '+fmt(coYr,0));
+
+  // ── Backwash ──────────────────────────────────────────────────────────────
+  const bwA=80*uA, bwAV=bwA*3/60, bwWQ=32*uA, bwWV=bwWQ*10/60;
+  sv('rBwA',  fmt(bwA,2)+' Nm³/h');
+  sv('rBwAV', fmt(bwAV,3)+' m³');
+  sv('rBwWQ', fmt(bwWQ,2)+' m³/h');
+  sv('rBwWV', fmt(bwWV,3)+' m³');
+  sv('rBwT',  fmt(bwAV+bwWV,3)+' m³');
+
+  // ── OpEx ─────────────────────────────────────────────────────────────────
+  const totOY=ccYr+coYr, totM3=ccM3+coM3;
+  sv('sumCaY','AED '+fmt(ccYr,0));
+  sv('sumCoY','AED '+fmt(coYr,0));
+  sv('sumTY', 'AED '+fmt(totOY,0));
+  sv('sumM3', 'AED '+totM3.toFixed(4)+'/m³');
+
+  // ── KPI ──────────────────────────────────────────────────────────────────
+  sv('kFlow',        Qstream.toFixed(2));
+  sv('kFlowSub',     'm³/h · '+fmt(Qtreated,0)+' m³/d total');
+  sv('kSurfArea',    reqAPS.toFixed(3));
+  sv('kSurfAreaSub', reqATot.toFixed(3)+' m² total ('+nStr+' streams)');
+  sv('kMMFSel',      f.l);
+  sv('kMMFSub',      totUnits+' units · '+selQty+'/stream');
+  sv('kOpex',        fmt(totOY,0));
+
+  // ── Height override note ─────────────────────────────────────────────────
+  const nc=document.getElementById('htNoteCard');
+  if(htOvr && hMult!==1){
+    nc.style.display='';
+    document.getElementById('htNoteText').innerHTML=
+      `Bed height: <strong>${fmt(bedH_mm,0)} mm</strong> vs standard 1,500 mm — multiplier: <strong>${hMult.toFixed(2)}×</strong><br>`+
+      `MMF unit cost: AED ${fmt(f.mc)} → <strong>AED ${fmt(adjMC,0)}</strong> &nbsp;(base × ${hMult.toFixed(2)})<br>`+
+      `Additional cost vs standard: AED ${fmt((adjMC-f.mc)*totUnits,0)} across ${totUnits} units · Diameter unchanged.`;
+  } else nc.style.display='none';
+
+  // ── Alerts ───────────────────────────────────────────────────────────────
+  const al=[];
+  if(actVsup>15)       al.push('⚠ Vsup '+actVsup.toFixed(2)+' m/h > 15 m/h — too fast for calcite bed. Increase EBCT or units.');
+  if(actVsup<1.5)      al.push('⚠ Vsup '+actVsup.toFixed(2)+' m/h < 1.5 m/h — bed may not fluidise. Reduce EBCT or fewer units.');
+  if(actEBCT<20)       al.push('⚠ EBCT '+actEBCT.toFixed(1)+' min is short — recommend ≥ 25 min for effective remineralisation.');
+  if(selQty>f.maxMMF)  al.push('⚠ Manual qty ('+selQty+') exceeds max MMF for '+f.l+' (max '+f.maxMMF+'). Consider a larger vessel size.');
+  if(f.t==='H')        al.push('ℹ Horizontal vessel selected — verify structural and installation requirements.');
+  if(nDiss>1)          al.push('ℹ '+nDiss+' CO₂ dissolvers required at this flow rate.');
+  if(isManual)         al.push('ℹ Manual filter selection active — auto-recommendation overridden.');
+  if(hMult>2.5)        al.push('⚠ Height ×'+hMult.toFixed(2)+' — consult manufacturer for structural suitability above 2× standard height.');
+
+  const ab=document.getElementById('alertB');
+  if(al.length){ab.innerHTML=al.join('<br>');ab.classList.add('on');}else ab.classList.remove('on');
+  const sp=document.getElementById('statusPill');
+  if(al.some(a=>a.startsWith('⚠'))){sp.textContent='WARNINGS';sp.className='pill wn';}
+  else{sp.textContent=isManual?'MANUAL':'OK';sp.className=isManual?'pill wn':'pill ok';}
+
+  // ── Tank diagram ─────────────────────────────────────────────────────────
+  renderTanks(uA, bedH_mm, cBedKg, siloKg, totUnits);
+}
+
+function renderTanks(uA, bedH_mm, cBedKg, siloKg, total){
+  const viz=document.getElementById('tankViz'); viz.innerHTML='';
+  const show=Math.min(total,10);
+  const SVGH=120, TH=96, TW=36;
+  const bHpx=Math.min((bedH_mm/4000)*TH*0.82,TH*0.80);
+  const sHpx=Math.min((siloKg/(siloKg+cBedKg+1))*TH*0.28,TH*0.22);
+  for(let i=0;i<show;i++){
+    const w=document.createElement('div'); w.className='tw';
+    w.innerHTML=`<svg width="${TW+14}" height="${SVGH}" viewBox="0 0 ${TW+14} ${SVGH}">
+      <rect x="2" y="6" width="${TW+10}" height="${TH}" rx="4" fill="#1c2330" stroke="#4fa3e0" stroke-width="1.2"/>
+      <rect x="3" y="${6+TH-bHpx-10}" width="${TW+8}" height="${bHpx}" fill="rgba(79,163,224,.28)" stroke="rgba(79,163,224,.55)" stroke-width="0.5"/>
+      <rect x="3" y="7" width="${TW+8}" height="${sHpx}" fill="rgba(240,160,80,.28)" stroke="rgba(240,160,80,.5)" stroke-width="0.5"/>
+      <text x="${(TW+14)/2}" y="${6+TH-bHpx/2-8}" text-anchor="middle" font-size="7" fill="#4fa3e0" font-family="IBM Plex Mono,monospace">BED</text>
+      <text x="${(TW+14)/2}" y="${7+sHpx/2+4}" text-anchor="middle" font-size="7" fill="#f0a050" font-family="IBM Plex Mono,monospace">SILO</text>
+    </svg>`;
+    const lb=document.createElement('div'); lb.className='tl'; lb.textContent='M'+(i+1);
+    w.appendChild(lb); viz.appendChild(w);
+  }
+  if(total>10){
+    const m=document.createElement('div'); m.className='tw';
+    m.innerHTML=`<div style="display:flex;align-items:center;height:${SVGH}px;width:44px;color:var(--text3);font-size:18px;font-family:'IBM Plex Mono',monospace;">+${total-10}</div>`;
+    const lb=document.createElement('div'); lb.className='tl'; lb.textContent='more';
+    m.appendChild(lb); viz.appendChild(m);
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.onload=()=>{
+  autoEBCT();
+  recomputeVsup();
+  autoCO2();
+  calc();
+};
+</script>
+</body>
+</html>
